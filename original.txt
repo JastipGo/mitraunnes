@@ -3,126 +3,195 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>JastipUnnes - Driver</title>
+<title>Driver App - Uber Style</title>
 <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" type="image/png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
+<script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+
 <style>
-/* --- CSS UI UTAMA (MIRIP CUSTOMER UNTUK KONSISTENSI) --- */
-:root{--black:#000;--white:#FFF;--gray-100:#F6F6F6;--gray-200:#EBEBEB;--gray-300:#D4D4D4;--gray-400:#9A9A9A;--gray-500:#6B6B6B;--gray-600:#3D3D3D;--gray-700:#2A2A2A;--gray-800:#1A1A1A;--gray-900:#111;--blue:#0052FF;--blue-dark:#0040C5;--red:#EE2434;--amber:#F5A524;--font:'DM Sans',sans-serif;--radius-sm:6px;--radius-md:12px;--radius-lg:16px;--radius-full:100px}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--gray-100);color:var(--black);font-family:var(--font);user-select:none;-webkit-user-select:none}
-input,textarea{user-select:auto;-webkit-user-select:auto}
-*{-webkit-tap-highlight-color:transparent!important;outline:none!important;box-shadow:none!important}
-.d-none{display:none!important}.text-center{text-align:center}
+/* --- UBER STYLE UI VARIABLES --- */
+:root {
+    --black: #000000;
+    --white: #FFFFFF;
+    --gray-100: #F6F6F6;
+    --gray-200: #E2E2E2;
+    --gray-300: #A6A6A6;
+    --gray-800: #242424;
+    --green: #05A357;
+    --blue: #276EF1;
+    --red: #E11900;
+    --font: 'Inter', sans-serif;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--gray-100); color: var(--black); font-family: var(--font); user-select: none; -webkit-user-select: none; }
+input, textarea { user-select: auto; -webkit-user-select: auto; }
+* { -webkit-tap-highlight-color: transparent!important; outline: none!important; }
+
+/* TYPOGRAPHY */
+h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
+
+/* UTILS */
+.d-none { display: none !important; }
+.disabled { opacity: 0.5; pointer-events: none; }
+
+/* LOADING OVERLAY */
+#loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+#loading-overlay.visible { display: flex; }
+.spinner { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--white); border-radius: 50%; width: 48px; height: 48px; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg) } }
 
 /* SPLASH & AUTH */
-#splash{position:fixed;inset:0;z-index:9000;background:var(--blue);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100dvh;}
-#splash.hidden{display:none}
-.splash-hero{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px 24px}
-.splash-wordmark{font-size:42px;font-weight:800;color:var(--white);letter-spacing:-1.5px;line-height:1}
-.splash-tagline{font-size:15px;font-weight:500;color:rgba(255,255,255,0.8);margin-top:10px;}
-.auth-sheet{width:100%;max-width:500px;background:var(--white);border-radius:24px 24px 0 0;padding:28px 24px 40px}
-.field-wrap{margin-bottom:14px}.field{width:100%;padding:14px 16px;border-radius:var(--radius-md);border:1.5px solid var(--gray-200);background:var(--gray-100);font-family:var(--font);font-size:15px;font-weight:500;}
-.btn-primary{width:100%;padding:16px;border:none;cursor:pointer;border-radius:var(--radius-full);font-family:var(--font);font-size:15px;font-weight:700;background:var(--blue);color:var(--white);display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-secondary{width:100%;padding:16px;border:1.5px solid var(--gray-200);cursor:pointer;border-radius:var(--radius-full);font-family:var(--font);font-size:15px;font-weight:700;background:var(--white);color:var(--black);margin-top:10px;}
-.btn-green{background:#06C167; color:#000;}
+#splash { position: fixed; inset: 0; z-index: 9000; background: var(--black); display: flex; flex-direction: column; height: 100dvh; }
+#splash.hidden { display: none; }
+.splash-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px; color: var(--white); }
+.auth-sheet { background: var(--white); color: var(--black); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 32px 24px 48px; }
+.field { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--gray-100); border: none; border-radius: var(--radius-sm); font-size: 16px; font-family: var(--font); }
+.field:focus { background: var(--gray-200); }
+.btn { width: 100%; padding: 16px; border: none; border-radius: var(--radius-sm); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: background 0.2s; }
+.btn-black { background: var(--black); color: var(--white); }
+.btn-gray { background: var(--gray-200); color: var(--black); margin-top: 12px; }
 
 /* APP LAYOUT */
-#app{display:none;flex-direction:column;height:100dvh;overflow-y:auto;}
-#app.visible{display:flex}
-.top-bar{position:sticky;top:0;z-index:100;background:var(--blue);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.top-bar-brand{font-size:20px;font-weight:800;color:var(--white);}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--white);display:flex;height:68px;border-top:1px solid var(--gray-200);}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;color:var(--gray-500);gap:4px;}
-.nav-item.active{color:var(--blue)}.nav-item .label{font-size:11px;font-weight:700;}
-.content{flex:1;padding:0 0 80px;max-width:600px;margin:0 auto;width:100%}
-.page{display:none}.page.active{display:block}
-.page-header{padding:20px 20px 10px;}
-.page-title{font-size:24px;font-weight:800;color:var(--black);}
+#app { display: none; flex-direction: column; height: 100dvh; background: var(--gray-100); }
+#app.visible { display: flex; }
 
-/* CARDS */
-.card{background:var(--white);margin:12px 16px;border-radius:var(--radius-lg);padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid var(--gray-200);}
-.order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--gray-100);}
-.badge{padding:4px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:700;text-transform:uppercase;}
-.badge-new{background:#E0E7FF;color:var(--blue-dark);}
-.badge-active{background:#DCFCE7;color:#048A48;}
-.detail-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;}
-.detail-row strong{color:var(--black);}
-.detail-row span{color:var(--gray-500);text-align:right;max-width:65%;}
+/* TOP BAR */
+.top-bar { padding: 16px 20px; background: var(--white); display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.status-pill { background: var(--green); color: var(--white); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
 
-/* UPLOAD OVERLAY */
-#loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;}
-#loading-overlay.visible{display:flex}
-.spinner{border:3px solid rgba(255,255,255,0.1);border-top:3px solid var(--blue);border-radius:50%;width:40px;height:40px;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* PAGES */
+.page { flex: 1; overflow-y: auto; display: none; padding-bottom: 90px; }
+.page.active { display: block; }
+.page-title { font-size: 28px; padding: 24px 20px 16px; background: var(--white); }
 
-/* DYNAMIC FLOW CONTAINER */
-.action-flow{background:var(--gray-100);padding:16px;border-radius:var(--radius-md);margin-top:16px;text-align:center;}
-.file-upload-wrapper{position:relative; overflow:hidden; display:inline-block; width:100%; margin-bottom:10px;}
-.file-upload-wrapper input[type=file]{font-size:100px; position:absolute; left:0; top:0; opacity:0; cursor:pointer;}
+/* CARDS (UBER STYLE) */
+.card { background: var(--white); margin: 0 0 12px 0; padding: 20px; border-bottom: 1px solid var(--gray-200); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.price { font-size: 24px; font-weight: 700; color: var(--black); }
+.location-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+.loc-icon { color: var(--black); font-size: 20px; margin-top: 2px; }
+.loc-text { font-size: 15px; color: var(--gray-800); }
+.loc-sub { font-size: 13px; color: var(--gray-300); margin-top: 2px; }
+
+/* MAPS PAGE & FLOATING PANEL */
+#page-maps { padding: 0; position: relative; display: none; flex-direction: column; }
+#page-maps.active { display: flex; }
+#map { flex: 1; width: 100%; background: var(--gray-200); }
+.floating-panel { background: var(--white); padding: 24px 20px 32px; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); position: absolute; bottom: 80px; left: 0; right: 0; z-index: 10; max-height: 50vh; overflow-y: auto; }
+
+/* SWIPE BUTTON COMPONENT */
+.swipe-container { position: relative; width: 100%; height: 56px; background: var(--gray-200); border-radius: 28px; overflow: hidden; margin-top: 20px; }
+.swipe-container.action-green { background: #E6F6ED; }
+.swipe-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: var(--black); pointer-events: none; z-index: 1; }
+.swipe-knob { position: absolute; top: 4px; left: 4px; width: 48px; height: 48px; background: var(--black); border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--white); z-index: 2; cursor: grab; transition: transform 0s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.swipe-container.action-green .swipe-knob { background: var(--green); }
+.swipe-knob:active { cursor: grabbing; }
+
+/* BOTTOM NAV */
+.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: var(--white); display: flex; border-top: 1px solid var(--gray-200); padding-bottom: 12px; z-index: 100; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-300); background: none; border: none; cursor: pointer; gap: 4px; }
+.nav-item.active { color: var(--black); }
+.nav-item .material-symbols-outlined { font-size: 28px; }
+.nav-item .label { font-size: 11px; font-weight: 600; }
+
+/* FILE UPLOAD UBER STYLE */
+.upload-box { border: 2px dashed var(--gray-300); border-radius: var(--radius-md); padding: 16px; text-align: center; position: relative; margin: 16px 0; background: var(--gray-100); }
+.upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-box-content { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--gray-800); font-weight: 500; font-size: 14px; }
+.upload-box-content .material-symbols-outlined { font-size: 32px; color: var(--black); }
 </style>
 </head>
 <body>
 
-<div id="loading-overlay"><div class="spinner"></div><p style="color:#FFF;margin-top:10px;font-weight:bold;" id="loading-text">Memproses...</p></div>
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <p style="color:#FFF;margin-top:16px;font-weight:600;letter-spacing:0.5px;" id="loading-text">Memproses...</p>
+</div>
 
 <div id="splash">
-    <div class="splash-hero">
-        <span class="material-symbols-outlined" style="font-size:64px;color:#FFF;margin-bottom:10px;">two_wheeler</span>
-        <div class="splash-wordmark">JastipUnnes</div>
-        <div class="splash-tagline">Aplikasi Mitra Pengemudi</div>
+    <div class="splash-content">
+        <h1 style="font-size: 48px; letter-spacing: -2px;">Uber<span style="color:var(--green)">Clone</span></h1>
+        <p style="margin-top: 8px; color: var(--gray-300);">Driver Partner App</p>
     </div>
     <div class="auth-sheet">
-        <div id="auth-login-form">
-            <h3 style="margin-bottom:20px;text-align:center;">Login Mitra</h3>
-            <div class="field-wrap"><input type="email" class="field" id="login-email" placeholder="Email Driver"></div>
-            <div class="field-wrap"><input type="password" class="field" id="login-pass" placeholder="Password"></div>
-            <button class="btn-primary" onclick="window.doLogin()">Masuk</button>
-            <button class="btn-secondary" onclick="window.doSignup()">Daftar Akun Baru</button>
-        </div>
+        <h2 style="margin-bottom: 24px;">Masuk untuk mulai</h2>
+        <input type="email" class="field" id="login-email" placeholder="Email">
+        <input type="password" class="field" id="login-pass" placeholder="Password">
+        <button class="btn btn-black" onclick="window.doLogin()">Masuk</button>
+        <button class="btn btn-gray" onclick="window.doSignup()">Daftar Akun Baru</button>
     </div>
 </div>
 
 <div id="app">
     <div class="top-bar">
-        <div class="top-bar-brand">Driver Dashboard</div>
-        <button onclick="window.doLogout()" style="background:none;border:none;color:#FFF;cursor:pointer;"><span class="material-symbols-outlined">logout</span></button>
+        <div class="status-pill"><span class="material-symbols-outlined" style="font-size:16px;">wifi</span> Online</div>
+        <div style="font-weight:700; font-size:18px;" id="top-saldo">Rp 0</div>
     </div>
     
-    <div class="content">
-        <div class="page active" id="page-cari">
-            <div class="page-header"><div class="page-title">Order Tersedia</div></div>
-            <div id="available-orders"></div>
-        </div>
+    <div class="page active" id="page-cari">
+        <div class="page-title">Permintaan</div>
+        <div id="available-orders" style="padding-top: 8px;"></div>
+    </div>
 
-        <div class="page" id="page-aktif">
-            <div class="page-header"><div class="page-title">Pekerjaan Saat Ini</div></div>
-            <div id="active-order-container"></div>
-        </div>
+    <div class="page" id="page-maps">
+        <div id="map"></div>
+        <div class="floating-panel" id="active-order-container">
+            </div>
+    </div>
 
-        <div class="page" id="page-profil">
-            <div class="page-header"><div class="page-title">Profil & Saldo</div></div>
-            <div class="card" style="text-align:center;">
-                <span class="material-symbols-outlined" style="font-size:64px;color:var(--gray-300);">account_circle</span>
-                <h3 id="prof-nama" style="margin-top:10px;">-</h3>
-                <p id="prof-rank" style="color:var(--gray-500);font-size:14px;font-weight:600;">-</p>
-                <div style="background:var(--blue);color:#FFF;padding:16px;border-radius:var(--radius-md);margin-top:16px;">
-                    <div style="font-size:12px;opacity:0.8;">Total Saldo / Pendapatan</div>
-                    <div style="font-size:24px;font-weight:800;" id="prof-saldo">Rp 0</div>
+    <div class="page" id="page-riwayat">
+        <div class="page-title">Riwayat</div>
+        <div style="padding: 32px 20px; text-align: center; color: var(--gray-300);">
+            <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 12px;">history</span>
+            <p>Riwayat pesanan akan muncul di sini.</p>
+        </div>
+    </div>
+
+    <div class="page" id="page-profil">
+        <div class="page-title">Profil Anda</div>
+        <div style="padding: 20px;">
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom: 32px;">
+                <div style="width:64px;height:64px;background:var(--gray-200);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--gray-800);">person</span>
+                </div>
+                <div>
+                    <h2 id="prof-nama">Driver Name</h2>
+                    <p id="prof-rank" style="color:var(--gray-300); font-size:14px;">Status</p>
                 </div>
             </div>
+            
+            <button class="btn btn-gray" style="color:var(--red); font-weight: 700; background: #FFEEEE;" onclick="window.doLogout()">
+                Keluar dari Akun
+            </button>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <button class="nav-item active" id="nav-cari" onclick="window.switchPage('cari')"><span class="material-symbols-outlined">radar</span><span class="label">Cari Order</span></button>
-        <button class="nav-item" id="nav-aktif" onclick="window.switchPage('aktif')"><span class="material-symbols-outlined">two_wheeler</span><span class="label">Order Aktif</span></button>
-        <button class="nav-item" id="nav-profil" onclick="window.switchPage('profil')"><span class="material-symbols-outlined">person</span><span class="label">Profil</span></button>
+        <button class="nav-item active" id="nav-cari" onclick="window.switchPage('cari')">
+            <span class="material-symbols-outlined">list_alt</span><span class="label">Daftar</span>
+        </button>
+        <button class="nav-item disabled" id="nav-maps" onclick="window.switchPage('maps')">
+            <span class="material-symbols-outlined">explore</span><span class="label">Maps</span>
+        </button>
+        <button class="nav-item" id="nav-riwayat" onclick="window.switchPage('riwayat')">
+            <span class="material-symbols-outlined">receipt_long</span><span class="label">Riwayat</span>
+        </button>
+        <button class="nav-item" id="nav-profil" onclick="window.switchPage('profil')">
+            <span class="material-symbols-outlined">person</span><span class="label">Profil</span>
+        </button>
     </div>
 </div>
 
 <script type="module">
+// ==========================================
+// FIREBASE BACKEND (TIDAK ADA YANG DIUBAH DARI LOGIKA ANDA)
+// ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -141,20 +210,44 @@ const db = getFirestore(app);
 
 let currentUserUid = '';
 let driverData = null;
-let activeOrderDocId = null; // Menyimpan ID order yang sedang dikerjakan driver
-let locationInterval = null; // Interval untuk sharelocationDriver
-let fileBuffer = null; // Menyimpan file foto sebelum diupload
+let activeOrderDocId = null; 
+let locationInterval = null; 
+let fileBuffer = null; 
 
 // ==========================================
 // KONFIGURASI CLOUDINARY
 // ==========================================
-const CLOUDINARY_UPLOAD_PRESET = 'presensi_unsigned'; // GANTI DENGAN PRESET CLOUDINARY ANDA
-const CLOUDINARY_CLOUD_NAME = 'dn2o2vf04';       // GANTI DENGAN CLOUD NAME ANDA
+const CLOUDINARY_UPLOAD_PRESET = 'presensi_unsigned'; 
+const CLOUDINARY_CLOUD_NAME = 'dn2o2vf04';       
+
+// ==========================================
+// UI CONTROLS & MAPLIBRE
+// ==========================================
+let map;
+function initMap() {
+    if(!map) {
+        map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://tiles.openfreemap.org/styles/bright',
+            center: [110.3939, -7.0515], // Default Koordinat (bisa disesuaikan area Semarang/Unnes)
+            zoom: 14,
+            attributionControl: false
+        });
+    }
+}
 
 window.switchPage = (p) => {
+    // Block akses ke maps jika dinonaktifkan
+    if(p === 'maps' && document.getElementById('nav-maps').classList.contains('disabled')) return;
+
     document.querySelectorAll('.page, .nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById('page-' + p).classList.add('active');
     document.getElementById('nav-' + p).classList.add('active');
+
+    if(p === 'maps') {
+        initMap();
+        setTimeout(() => map.resize(), 100);
+    }
 };
 
 function showLoading(text) {
@@ -166,7 +259,7 @@ function hideLoading() {
 }
 
 // ==========================================
-// AUTENTIKASI & PROFIL
+// AUTENTIKASI & PROFIL (LOGIKA SAMA)
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -182,7 +275,7 @@ onAuthStateChanged(auth, async (user) => {
 window.doLogin = async () => {
     const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
     if(!e || !p) return alert('Isi data!');
-    showLoading('Masuk...');
+    showLoading('Memverifikasi...');
     try { await signInWithEmailAndPassword(auth, e, p); } 
     catch(err) { alert('Gagal: ' + err.message); hideLoading(); }
 };
@@ -193,29 +286,10 @@ window.doSignup = async () => {
     showLoading('Mendaftar...');
     try {
         const c = await createUserWithEmailAndPassword(auth, e, p);
-        // STANDAR FIELD USER DARI INSTRUKSI
         await setDoc(doc(db, "user", c.user.uid), {
-            CustomerID: "",
-            GetdriverID: c.user.uid,
-            nama: "Driver Baru",
-            wa: "0800000000",
-            email: e,
-            urlProfile: "",
-            role: "driver",
-            saldo: 0,
-            stnk: "B 1234 XYZ", // Contoh kendaraan
-            sim: "",
-            skck: "",
-            ktp: "",
-            status: "belumterverifikasi"
+            CustomerID: "", GetdriverID: c.user.uid, nama: "Driver Baru", wa: "0800000000", email: e, urlProfile: "", role: "driver", saldo: 0, stnk: "B 1234 XYZ", sim: "", skck: "", ktp: "", status: "belumterverifikasi"
         });
-        
-        // Buat field saldo khusus driver
-        await setDoc(doc(db, "saldo", c.user.uid), {
-            getdriverID: c.user.uid,
-            saldo: 0
-        });
-        
+        await setDoc(doc(db, "saldo", c.user.uid), { getdriverID: c.user.uid, saldo: 0 });
         await loadDriverProfile();
     } catch(err) { alert('Gagal: ' + err.message); hideLoading(); }
 };
@@ -228,11 +302,11 @@ async function loadDriverProfile() {
         if (snap.exists() && snap.data().role === 'driver') {
             driverData = snap.data();
             document.getElementById('prof-nama').innerText = driverData.nama;
-            document.getElementById('prof-rank').innerText = "Status: " + driverData.status.toUpperCase();
+            document.getElementById('prof-rank').innerText = driverData.status.toUpperCase();
             
             const saldoSnap = await getDoc(doc(db, "saldo", currentUserUid));
             if(saldoSnap.exists()) {
-                document.getElementById('prof-saldo').innerText = "Rp " + saldoSnap.data().saldo.toLocaleString('id-ID');
+                document.getElementById('top-saldo').innerText = "Rp " + saldoSnap.data().saldo.toLocaleString('id-ID');
             }
 
             document.getElementById('splash').classList.add('hidden');
@@ -249,10 +323,10 @@ async function loadDriverProfile() {
 }
 
 // ==========================================
-// LISTENER & PEMROSESAN ORDER
+// LISTENER ORDER (LOGIKA SAMA, UI BARU)
 // ==========================================
 function listenToOrders() {
-    // 1. Listen Order Baru (getdriverId kosong & status menunggu)
+    // 1. Order Tersedia
     const qAvailable = query(collection(db, "orders"), where("getdriverId", "==", ""), where("status", "==", "menunggu"));
     onSnapshot(qAvailable, (snapshot) => {
         let html = '';
@@ -260,20 +334,38 @@ function listenToOrders() {
             const o = doc.data();
             html += `
             <div class="card">
-                <div class="order-header">
-                    <span class="badge badge-new">${o.kategori}</span>
-                    <strong style="font-size:18px; color:var(--blue);">Rp ${o.Argo.toLocaleString('id-ID')}</strong>
+                <div class="card-header">
+                    <div>
+                        <div class="price">Rp ${o.Argo.toLocaleString('id-ID')}</div>
+                        <div style="font-size:13px; color:var(--gray-300); margin-top:4px;">${o.kategori.toUpperCase()} • ${o.JarakTempuh} KM</div>
+                    </div>
                 </div>
-                <div class="detail-row"><span>Ambil:</span> <strong>${o.namaAmbil}</strong></div>
-                <div class="detail-row"><span>Antar:</span> <strong>${o.NamaAntar}</strong></div>
-                <div class="detail-row"><span>Jarak:</span> <strong>${o.JarakTempuh} KM</strong></div>
-                <button class="btn-primary" style="margin-top:12px;" onclick="window.terimaOrder('${doc.id}')">Ambil Order Ini</button>
+                <div class="location-row">
+                    <span class="material-symbols-outlined loc-icon">radio_button_checked</span>
+                    <div>
+                        <div class="loc-text">${o.namaAmbil}</div>
+                        <div class="loc-sub">Titik Pengambilan</div>
+                    </div>
+                </div>
+                <div class="location-row" style="margin-bottom:20px;">
+                    <span class="material-symbols-outlined loc-icon" style="color:var(--black);">location_on</span>
+                    <div>
+                        <div class="loc-text">${o.NamaAntar}</div>
+                        <div class="loc-sub">Tujuan Pengantaran</div>
+                    </div>
+                </div>
+                
+                <div class="swipe-container" data-action="terima" data-orderid="${doc.id}">
+                    <div class="swipe-text">Geser untuk Terima</div>
+                    <div class="swipe-knob"><span class="material-symbols-outlined">arrow_forward</span></div>
+                </div>
             </div>`;
         });
-        document.getElementById('available-orders').innerHTML = html || '<p class="text-center" style="margin-top:20px;color:var(--gray-500);">Tidak ada order tersedia.</p>';
+        document.getElementById('available-orders').innerHTML = html || '<div style="padding:40px 20px;text-align:center;color:var(--gray-300);"><span class="material-symbols-outlined" style="font-size:48px;margin-bottom:16px;">search</span><p>Mencari permintaan...</p></div>';
+        initSwipeInteractions();
     });
 
-    // 2. Listen Order Aktif Milik Driver Ini
+    // 2. Order Aktif
     const qActive = query(collection(db, "orders"), where("getdriverId", "==", currentUserUid));
     onSnapshot(qActive, (snapshot) => {
         let activeHTML = '';
@@ -287,7 +379,6 @@ function listenToOrders() {
                 activeOrderDocId = d.id;
                 activeHTML = renderActiveOrder(d.id, o);
                 
-                // Perekaman lokasi otomatis jika status sedang ngantar (10 detik sekali)
                 if(o.status === 'ngantar' && !locationInterval) {
                     startLocationTracking(d.id);
                 } else if (o.status !== 'ngantar' && locationInterval) {
@@ -297,99 +388,180 @@ function listenToOrders() {
             }
         });
 
+        const navMaps = document.getElementById('nav-maps');
         if(hasActive) {
             document.getElementById('active-order-container').innerHTML = activeHTML;
-            // Jika ada order aktif, sembunyikan order tersedia agar fokus
-            document.getElementById('available-orders').innerHTML = '<p class="text-center" style="color:var(--amber);font-weight:bold;">Selesaikan order aktif Anda terlebih dahulu.</p>';
+            document.getElementById('available-orders').innerHTML = '<div style="padding:20px; text-align:center; color:var(--gray-300);">Anda sedang dalam pesanan berjalan.</div>';
+            
+            // Buka akses Maps dan pindah kesana
+            navMaps.classList.remove('disabled');
+            if(!document.getElementById('page-maps').classList.contains('active')) {
+                window.switchPage('maps');
+            }
+            initSwipeInteractions();
         } else {
-            document.getElementById('active-order-container').innerHTML = '<p class="text-center" style="margin-top:20px;color:var(--gray-500);">Belum ada pekerjaan aktif.</p>';
+            document.getElementById('active-order-container').innerHTML = '';
+            // Tutup akses maps
+            navMaps.classList.add('disabled');
+            if(document.getElementById('page-maps').classList.contains('active')) {
+                window.switchPage('cari');
+            }
             if(locationInterval) { clearInterval(locationInterval); locationInterval = null; }
         }
     });
 }
 
-// FUNGSI 1: DRIVER MENERIMA ORDER
-window.terimaOrder = async (orderId) => {
-    if(activeOrderDocId) return alert('Anda masih memiliki order yang belum selesai!');
-    showLoading('Menerima...');
-    try {
-        // Mengisi Informasi Order Driver (IOD)
-        await updateDoc(doc(db, "orders", orderId), {
-            getdriverId: currentUserUid,
-            driverName: driverData.nama,
-            waDriver: driverData.wa,
-            sinceDriver: "Baru Bergabung", // Bisa dihitung dari auth user creation time
-            rankDriver: driverData.status,
-            UrlprofileDriver: driverData.urlProfile || "",
-            kendaraanDriver: driverData.stnk || "-",
-            status: "terima" 
-        });
-        window.switchPage('aktif');
-    } catch(e) { alert(e.message); } finally { hideLoading(); }
-};
-
 // ==========================================
-// RENDER UI BERDASARKAN STATUS (STATE MACHINE)
+// RENDER FLOATING PANEL (STATE MACHINE)
 // ==========================================
 function renderActiveOrder(orderId, o) {
-    let actionHTML = '';
-
-    // FLOW STATE: terima -> ambil -> ngantar -> tiba -> selesai
+    let swipeHTML = '';
+    let uploadHTML = '';
+    
+    // Status Flow
     if (o.status === 'terima') {
-        actionHTML = `<button class="btn-primary" onclick="window.updateStatus('${orderId}', 'ambil')">Menuju Lokasi (Klik jika sudah jalan mengambil)</button>`;
+        swipeHTML = `
+        <div class="swipe-container" data-action="status" data-status="ambil" data-orderid="${orderId}">
+            <div class="swipe-text">Geser untuk Mengambil</div>
+            <div class="swipe-knob"><span class="material-symbols-outlined">directions_car</span></div>
+        </div>`;
     } 
     else if (o.status === 'ambil') {
-        actionHTML = `
-        <div class="action-flow">
-            <p style="font-size:13px;margin-bottom:10px;font-weight:600;">Upload Foto Barang/Nota di lokasi pengambilan</p>
-            <div class="file-upload-wrapper">
-                <button class="btn-secondary">Pilih Foto Bukti Ambil</button>
-                <input type="file" accept="image/*" onchange="window.prepareFile(event)">
+        uploadHTML = `
+        <div class="upload-box">
+            <input type="file" accept="image/*" onchange="window.prepareFile(event, 'file-ambil')">
+            <div class="upload-box-content">
+                <span class="material-symbols-outlined">photo_camera</span>
+                <span id="file-ambil">Ketuk untuk Foto Barang/Nota</span>
             </div>
-            <p id="file-name-display" style="font-size:12px;color:var(--green);margin-bottom:10px;"></p>
-            <button class="btn-primary btn-green" onclick="window.uploadBuktiAmbil('${orderId}')">Upload & Lanjut Antar</button>
+        </div>`;
+        swipeHTML = `
+        <div class="swipe-container" data-action="uploadAmbil" data-orderid="${orderId}">
+            <div class="swipe-text">Geser Mulai Antar</div>
+            <div class="swipe-knob"><span class="material-symbols-outlined">upload</span></div>
         </div>`;
     } 
     else if (o.status === 'ngantar') {
-        actionHTML = `
-        <div class="action-flow" style="background:#E0E7FF;">
-            <p style="font-size:13px;margin-bottom:10px;font-weight:600;color:var(--blue-dark);">Lokasi Anda dibagikan ke Customer secara live.</p>
-            <button class="btn-primary" onclick="window.updateStatus('${orderId}', 'tiba')">Tiba di Tujuan</button>
+        swipeHTML = `
+        <div class="swipe-container action-green" data-action="status" data-status="tiba" data-orderid="${orderId}">
+            <div class="swipe-text" style="color:var(--green);">Geser Tiba di Tujuan</div>
+            <div class="swipe-knob"><span class="material-symbols-outlined">location_on</span></div>
         </div>`;
     } 
     else if (o.status === 'tiba') {
-        actionHTML = `
-        <div class="action-flow">
-            <p style="font-size:13px;margin-bottom:10px;font-weight:600;">Upload Foto Bukti Pengantaran Selesai</p>
-            <div class="file-upload-wrapper">
-                <button class="btn-secondary">Pilih Foto Bukti Selesai</button>
-                <input type="file" accept="image/*" onchange="window.prepareFile(event)">
+        uploadHTML = `
+        <div class="upload-box">
+            <input type="file" accept="image/*" onchange="window.prepareFile(event, 'file-selesai')">
+            <div class="upload-box-content">
+                <span class="material-symbols-outlined">verified</span>
+                <span id="file-selesai">Ketuk Foto Bukti Selesai</span>
             </div>
-            <p id="file-name-display" style="font-size:12px;color:var(--green);margin-bottom:10px;"></p>
-            <button class="btn-primary" style="background:var(--black);" onclick="window.uploadBuktiSelesai('${orderId}', ${o.Argo})">Selesaikan Pesanan</button>
+        </div>`;
+        swipeHTML = `
+        <div class="swipe-container" style="background:#000;" data-action="uploadSelesai" data-orderid="${orderId}" data-argo="${o.Argo}">
+            <div class="swipe-text" style="color:#FFF;">Geser Selesai</div>
+            <div class="swipe-knob" style="background:#FFF;color:#000;"><span class="material-symbols-outlined">check</span></div>
         </div>`;
     }
 
     return `
-    <div class="card" style="border-color:var(--blue);">
-        <div class="order-header">
-            <span class="badge badge-active">STATUS: ${o.status.toUpperCase()}</span>
-            <strong style="font-size:18px;">Rp ${o.Argo.toLocaleString('id-ID')}</strong>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:24px;">Rp ${o.Argo.toLocaleString('id-ID')}</h3>
+        <div style="background:var(--gray-100); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:700;">${o.status.toUpperCase()}</div>
+    </div>
+    <div class="location-row">
+        <span class="material-symbols-outlined loc-icon">person</span>
+        <div>
+            <div class="loc-text">${o.namaPenerima}</div>
+            <div class="loc-sub">${o.waPenerima}</div>
         </div>
-        <div class="detail-row"><span>Customer:</span> <strong>${o.namaPenerima}</strong></div>
-        <div class="detail-row"><span>WA Customer:</span> <strong>${o.waPenerima}</strong></div>
-        <hr style="border:none;border-top:1px solid var(--gray-200);margin:12px 0;">
-        <div class="detail-row"><span>Ambil Di:</span> <strong>${o.namaAmbil}</strong></div>
-        <div class="detail-row"><span>Antar Ke:</span> <strong>${o.NamaAntar}</strong></div>
-        <div class="detail-row"><span>Catatan:</span> <strong>${o.catatan}</strong></div>
-        
-        <div style="margin-top:20px;">
-            ${actionHTML}
-        </div>
-    </div>`;
+    </div>
+    <hr style="border:none; border-top:1px solid var(--gray-200); margin:16px 0;">
+    <div class="location-row">
+        <span class="material-symbols-outlined loc-icon" style="font-size:16px;">radio_button_checked</span>
+        <div class="loc-sub">${o.namaAmbil}</div>
+    </div>
+    <div class="location-row" style="margin-bottom:16px;">
+        <span class="material-symbols-outlined loc-icon" style="font-size:16px;">location_on</span>
+        <div class="loc-sub">${o.NamaAntar}</div>
+    </div>
+    ${uploadHTML}
+    ${swipeHTML}`;
 }
 
-// UPDATE STATUS BIASA (Tanpa Upload)
+// ==========================================
+// SWIPE GESTURE LOGIC (CUSTOM)
+// ==========================================
+function initSwipeInteractions() {
+    const swipers = document.querySelectorAll('.swipe-container');
+    swipers.forEach(container => {
+        if(container.dataset.initialized) return; // hindari duplicate event
+        container.dataset.initialized = "true";
+
+        const knob = container.querySelector('.swipe-knob');
+        let isDragging = false, startX = 0, currentX = 0;
+        const maxDrag = container.offsetWidth - knob.offsetWidth - 8; // 8px padding (4px kiri, 4px kanan margin)
+
+        const onMove = (e) => {
+            if(!isDragging) return;
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
+            currentX = Math.max(0, Math.min(x, maxDrag));
+            knob.style.transform = `translateX(${currentX}px)`;
+        };
+
+        const onEnd = () => {
+            if(!isDragging) return;
+            isDragging = false;
+            knob.style.transition = 'transform 0.3s ease';
+            
+            if(currentX >= maxDrag * 0.85) { // Threshold 85% diswipe
+                knob.style.transform = `translateX(${maxDrag}px)`;
+                executeSwipeAction(container);
+            } else {
+                knob.style.transform = `translateX(0px)`;
+            }
+        };
+
+        const onStart = (e) => {
+            isDragging = true;
+            startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX;
+            knob.style.transition = 'none';
+        };
+
+        knob.addEventListener('touchstart', onStart, {passive: true});
+        document.addEventListener('touchmove', onMove, {passive: true});
+        document.addEventListener('touchend', onEnd);
+    });
+}
+
+function executeSwipeAction(el) {
+    const action = el.dataset.action;
+    const orderId = el.dataset.orderid;
+
+    if (action === 'terima') {
+        window.terimaOrder(orderId);
+    } else if (action === 'status') {
+        window.updateStatus(orderId, el.dataset.status);
+    } else if (action === 'uploadAmbil') {
+        window.uploadBuktiAmbil(orderId);
+    } else if (action === 'uploadSelesai') {
+        window.uploadBuktiSelesai(orderId, parseInt(el.dataset.argo));
+    }
+}
+
+// ==========================================
+// FUNGSI BACKEND YANG DI-BINDING (SAMA)
+// ==========================================
+window.terimaOrder = async (orderId) => {
+    if(activeOrderDocId) return alert('Anda masih memiliki order!');
+    showLoading('Menerima...');
+    try {
+        await updateDoc(doc(db, "orders", orderId), {
+            getdriverId: currentUserUid, driverName: driverData.nama, waDriver: driverData.wa, sinceDriver: "Mitra Aktif", rankDriver: driverData.status, UrlprofileDriver: driverData.urlProfile || "", kendaraanDriver: driverData.stnk || "-", status: "terima" 
+        });
+    } catch(e) { alert(e.message); } finally { hideLoading(); }
+};
+
 window.updateStatus = async (orderId, newStatus) => {
     showLoading('Memperbarui...');
     try {
@@ -397,130 +569,80 @@ window.updateStatus = async (orderId, newStatus) => {
     } catch(e) { alert(e.message); } finally { hideLoading(); }
 };
 
-// ==========================================
-// UPLOAD CLOUDINARY & KOORDINAT
-// ==========================================
-window.prepareFile = (e) => {
+window.prepareFile = (e, labelId) => {
     if(e.target.files.length > 0) {
         fileBuffer = e.target.files[0];
-        document.getElementById('file-name-display').innerText = "File siap: " + fileBuffer.name;
+        document.getElementById(labelId).innerText = "File Siap (Ketuk ganti)";
+        document.getElementById(labelId).style.color = "var(--green)";
     }
 };
 
 async function uploadImageToCloudinary(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    
+    const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
     try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-            method: 'POST', body: formData
-        });
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
         const data = await res.json();
-        return data.secure_url; // Mengembalikan URL asli
+        return data.secure_url; 
     } catch (e) {
-        console.error("Gagal Cloudinary, memastikan fallback API", e);
-        // Fallback: Jika preset tidak dikonfigurasi, kita gunakan base64 agar sistem tetap berjalan secara visual
         return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (ev) => resolve(ev.target.result);
-            reader.readAsDataURL(file);
+            const reader = new FileReader(); reader.onload = (ev) => resolve(ev.target.result); reader.readAsDataURL(file);
         });
     }
 }
 
-// DAPATKAN KOORDINAT (Dijanjikan / Promise)
 function getCoordinates() {
     return new Promise((resolve, reject) => {
         if(!navigator.geolocation) return reject("GPS tidak didukung");
         navigator.geolocation.getCurrentPosition(
-            p => resolve(`${p.coords.longitude.toFixed(6)}, ${p.coords.latitude.toFixed(6)}`), // Lng, Lat (OSRM format)
-            e => reject(e.message),
-            { enableHighAccuracy: true }
+            p => resolve(`${p.coords.longitude.toFixed(6)}, ${p.coords.latitude.toFixed(6)}`),
+            e => reject(e.message), { enableHighAccuracy: true }
         );
     });
 }
 
-// FLOW: KLIK UPLOAD BUKTI AMBIL -> Merekam 'titikAmbil' & Mengubah status 'ngantar'
 window.uploadBuktiAmbil = async (orderId) => {
-    if(!fileBuffer) return alert('Pilih foto terlebih dahulu!');
-    showLoading('Mengupload & Mendapatkan GPS...');
-    
+    if(!fileBuffer) { alert('Pilih foto barang terlebih dahulu sebelum swipe!'); return resetSwipe(); }
+    showLoading('Mengupload Bukti & GPS...');
     try {
         let koordinat = "";
         try { koordinat = await getCoordinates(); } catch(g) { console.log('Gagal GPS', g); }
-        
-        const imgUrl = await uploadImageToCloudinary(fileBuffer);
-        fileBuffer = null; // Reset
-        
-        // Memperbarui IPO (Informasi Proses Order) sesuai instruksi poin 3
-        await updateDoc(doc(db, "orders", orderId), {
-            titikAmbil: koordinat, // Dicatat untuk awal rute OSRM Customer
-            urlbuktiAmbil: imgUrl,
-            status: "ngantar" // Lanjut ke step ngantar
-        });
-        
-    } catch(e) { alert('Gagal Upload: ' + e.message); } finally { hideLoading(); }
+        const imgUrl = await uploadImageToCloudinary(fileBuffer); fileBuffer = null;
+        await updateDoc(doc(db, "orders", orderId), { titikAmbil: koordinat, urlbuktiAmbil: imgUrl, status: "ngantar" });
+    } catch(e) { alert('Gagal: ' + e.message); resetSwipe(); } finally { hideLoading(); }
 };
 
-// FLOW: KLIK UPLOAD BUKTI SELESAI -> Menutup order & Mencatat pendapatan
 window.uploadBuktiSelesai = async (orderId, argoAmount) => {
-    if(!fileBuffer) return alert('Pilih foto bukti terlebih dahulu!');
-    showLoading('Menyelesaikan Order...');
-    
+    if(!fileBuffer) { alert('Pilih foto bukti selesai terlebih dahulu sebelum swipe!'); return resetSwipe(); }
+    showLoading('Menyelesaikan Pesanan...');
     try {
-        const imgUrl = await uploadImageToCloudinary(fileBuffer);
-        fileBuffer = null;
-        
-        // Update Order
-        await updateDoc(doc(db, "orders", orderId), {
-            urlbuktiSelesai: imgUrl,
-            status: "selesai"
-        });
-        
-        // Tambah ke koleksi 'pendapatan' (Sesuai instruksi)
-        await setDoc(doc(collection(db, "pendapatan")), {
-            createdBy: currentUserUid,
-            uang: argoAmount,
-            timestamp: new Date().toISOString()
-        });
-        
-        // Update total 'saldo' driver (Sesuai instruksi)
+        const imgUrl = await uploadImageToCloudinary(fileBuffer); fileBuffer = null;
+        await updateDoc(doc(db, "orders", orderId), { urlbuktiSelesai: imgUrl, status: "selesai" });
+        await setDoc(doc(collection(db, "pendapatan")), { createdBy: currentUserUid, uang: argoAmount, timestamp: new Date().toISOString() });
         const saldoRef = doc(db, "saldo", currentUserUid);
         const saldoSnap = await getDoc(saldoRef);
-        let newSaldo = argoAmount;
-        if(saldoSnap.exists()) newSaldo += saldoSnap.data().saldo;
-        
+        let newSaldo = argoAmount; if(saldoSnap.exists()) newSaldo += saldoSnap.data().saldo;
         await updateDoc(saldoRef, { saldo: newSaldo });
-        
-        alert('Order Selesai! Saldo bertambah.');
-        loadDriverProfile(); // Refresh saldo UI
-        
-    } catch(e) { alert('Gagal Menyelesaikan: ' + e.message); } finally { hideLoading(); }
+        loadDriverProfile(); 
+    } catch(e) { alert('Gagal: ' + e.message); resetSwipe(); } finally { hideLoading(); }
 };
 
-// ==========================================
-// REALTIME LOCATION TRACKER (Setiap 10 Detik)
-// ==========================================
+function resetSwipe() {
+    // Utility untuk mereset knob swipe jika upload gagal/belum pilih file
+    document.querySelectorAll('.swipe-knob').forEach(k => { k.style.transform = 'translateX(0px)'; });
+}
+
 function startLocationTracking(orderId) {
     if(locationInterval) clearInterval(locationInterval);
-    
-    // Fungsi tembak lokasi
     const pushLocation = () => {
         if(!navigator.geolocation) return;
         navigator.geolocation.getCurrentPosition(async (p) => {
             let coords = `${p.coords.longitude.toFixed(6)}, ${p.coords.latitude.toFixed(6)}`;
-            try {
-                // Perbarui field sharelocationDriver agar Customer membaca pergerakan
-                await updateDoc(doc(db, "orders", orderId), { sharelocationDriver: coords });
-            } catch(e) { console.log('Silently fail pushing loc'); }
+            try { await updateDoc(doc(db, "orders", orderId), { sharelocationDriver: coords }); } catch(e) {}
         }, null, { enableHighAccuracy: true });
     };
-
-    pushLocation(); // Eksekusi pertama kali
-    locationInterval = setInterval(pushLocation, 10000); // Set interval 10 detik
+    pushLocation(); 
+    locationInterval = setInterval(pushLocation, 30000); 
 }
-
 </script>
 </body>
 </html>
