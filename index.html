@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Driver App - Uber Style</title>
+<title>MitraJastipGo - Driver App</title>
 <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
@@ -11,21 +11,12 @@
 <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
 
 <style>
-/* --- UBER STYLE UI VARIABLES --- */
 :root {
-    --black: #000000;
-    --white: #FFFFFF;
-    --gray-100: #F6F6F6;
-    --gray-200: #E2E2E2;
-    --gray-300: #A6A6A6;
-    --gray-800: #242424;
-    --green: #05A357;
-    --blue: #276EF1;
-    --red: #E11900;
+    --black: #000000; --white: #FFFFFF;
+    --gray-100: #F6F6F6; --gray-200: #E2E2E2; --gray-300: #A6A6A6; --gray-800: #242424;
+    --green: #05A357; --blue: #276EF1; --red: #E11900; --amber: #F5A524;
     --font: 'Inter', sans-serif;
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 24px;
+    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 24px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,20 +24,15 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--gray
 input, textarea { user-select: auto; -webkit-user-select: auto; }
 * { -webkit-tap-highlight-color: transparent!important; outline: none!important; }
 
-/* TYPOGRAPHY */
 h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
-
-/* UTILS */
 .d-none { display: none !important; }
 .disabled { opacity: 0.5; pointer-events: none; }
 
-/* LOADING OVERLAY */
 #loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 #loading-overlay.visible { display: flex; }
 .spinner { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--white); border-radius: 50%; width: 48px; height: 48px; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
 
-/* SPLASH & AUTH */
 #splash { position: fixed; inset: 0; z-index: 9000; background: var(--black); display: flex; flex-direction: column; height: 100dvh; }
 #splash.hidden { display: none; }
 .splash-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px; color: var(--white); }
@@ -57,20 +43,16 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
 .btn-black { background: var(--black); color: var(--white); }
 .btn-gray { background: var(--gray-200); color: var(--black); margin-top: 12px; }
 
-/* APP LAYOUT */
 #app { display: none; flex-direction: column; height: 100dvh; background: var(--gray-100); }
 #app.visible { display: flex; }
 
-/* TOP BAR */
 .top-bar { padding: 16px 20px; background: var(--white); display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .status-pill { background: var(--green); color: var(--white); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
 
-/* PAGES */
 .page { flex: 1; overflow-y: auto; display: none; padding-bottom: 90px; }
 .page.active { display: block; }
-.page-title { font-size: 28px; padding: 24px 20px 16px; background: var(--white); }
+.page-title { font-size: 28px; padding: 24px 20px 16px; background: var(--white); display:flex; justify-content:space-between; align-items:center; }
 
-/* CARDS (UBER STYLE) */
 .card { background: var(--white); margin: 0 0 12px 0; padding: 20px; border-bottom: 1px solid var(--gray-200); }
 .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .price { font-size: 24px; font-weight: 700; color: var(--black); }
@@ -78,14 +60,13 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
 .loc-icon { color: var(--black); font-size: 20px; margin-top: 2px; }
 .loc-text { font-size: 15px; color: var(--gray-800); }
 .loc-sub { font-size: 13px; color: var(--gray-300); margin-top: 2px; }
+.badge-order { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: var(--gray-200); color: var(--black); text-transform: uppercase; }
 
-/* MAPS PAGE & FLOATING PANEL */
 #page-maps { padding: 0; position: relative; display: none; flex-direction: column; }
 #page-maps.active { display: flex; }
 #map { flex: 1; width: 100%; background: var(--gray-200); }
-.floating-panel { background: var(--white); padding: 24px 20px 32px; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); position: absolute; bottom: 80px; left: 0; right: 0; z-index: 10; max-height: 50vh; overflow-y: auto; }
+.floating-panel { background: var(--white); padding: 24px 20px 32px; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); position: absolute; bottom: 80px; left: 0; right: 0; z-index: 10; max-height: 55vh; overflow-y: auto; }
 
-/* SWIPE BUTTON COMPONENT */
 .swipe-container { position: relative; width: 100%; height: 56px; background: var(--gray-200); border-radius: 28px; overflow: hidden; margin-top: 20px; }
 .swipe-container.action-green { background: #E6F6ED; }
 .swipe-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: var(--black); pointer-events: none; z-index: 1; }
@@ -93,18 +74,19 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
 .swipe-container.action-green .swipe-knob { background: var(--green); }
 .swipe-knob:active { cursor: grabbing; }
 
-/* BOTTOM NAV */
 .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: var(--white); display: flex; border-top: 1px solid var(--gray-200); padding-bottom: 12px; z-index: 100; }
 .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-300); background: none; border: none; cursor: pointer; gap: 4px; }
 .nav-item.active { color: var(--black); }
 .nav-item .material-symbols-outlined { font-size: 28px; }
 .nav-item .label { font-size: 11px; font-weight: 600; }
 
-/* FILE UPLOAD UBER STYLE */
-.upload-box { border: 2px dashed var(--gray-300); border-radius: var(--radius-md); padding: 16px; text-align: center; position: relative; margin: 16px 0; background: var(--gray-100); }
+.upload-box { border: 2px dashed var(--gray-300); border-radius: var(--radius-md); padding: 12px; text-align: center; position: relative; margin: 8px 0; background: var(--gray-100); }
 .upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-box-content { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--gray-800); font-weight: 500; font-size: 14px; }
-.upload-box-content .material-symbols-outlined { font-size: 32px; color: var(--black); }
+.upload-box-content { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--gray-800); font-weight: 500; font-size: 13px; }
+.upload-box-content .material-symbols-outlined { font-size: 24px; color: var(--black); }
+
+/* Marker Pin OSRM */
+.pin-marker { width: 30px; height: 30px; background: var(--black); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; border: 2px solid var(--white); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 </style>
 </head>
 <body>
@@ -116,7 +98,7 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
 
 <div id="splash">
     <div class="splash-content">
-        <h1 style="font-size: 48px; letter-spacing: -2px;">Uber<span style="color:var(--green)">Clone</span></h1>
+        <h1 style="font-size: 42px; letter-spacing: -2px;">Mitra<span style="color:var(--green)">JastipGo</span></h1>
         <p style="margin-top: 8px; color: var(--gray-300);">Driver Partner App</p>
     </div>
     <div class="auth-sheet">
@@ -135,14 +117,22 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
     </div>
     
     <div class="page active" id="page-cari">
-        <div class="page-title">Permintaan</div>
+        <div class="page-title">
+            Permintaan
+            <button class="btn btn-gray" style="width:auto; padding:8px 12px; margin:0;" onclick="window.refreshOrders()">
+                <span class="material-symbols-outlined" style="font-size:20px;">refresh</span>
+            </button>
+        </div>
         <div id="available-orders" style="padding-top: 8px;"></div>
     </div>
 
     <div class="page" id="page-maps">
-        <div id="map"></div>
-        <div class="floating-panel" id="active-order-container">
-            </div>
+        <div id="map-placeholder" style="height:40vh; background:var(--gray-200); display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--gray-300);">
+            <span class="material-symbols-outlined" style="font-size:48px;">map</span>
+            <p>Peta aktif saat pesanan diambil</p>
+        </div>
+        <div id="map" class="d-none"></div>
+        <div class="floating-panel" id="active-order-container"></div>
     </div>
 
     <div class="page" id="page-riwayat">
@@ -165,7 +155,6 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
                     <p id="prof-rank" style="color:var(--gray-300); font-size:14px;">Status</p>
                 </div>
             </div>
-            
             <button class="btn btn-gray" style="color:var(--red); font-weight: 700; background: #FFEEEE;" onclick="window.doLogout()">
                 Keluar dari Akun
             </button>
@@ -173,25 +162,14 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
     </div>
 
     <div class="bottom-nav">
-        <button class="nav-item active" id="nav-cari" onclick="window.switchPage('cari')">
-            <span class="material-symbols-outlined">list_alt</span><span class="label">Daftar</span>
-        </button>
-        <button class="nav-item disabled" id="nav-maps" onclick="window.switchPage('maps')">
-            <span class="material-symbols-outlined">explore</span><span class="label">Maps</span>
-        </button>
-        <button class="nav-item" id="nav-riwayat" onclick="window.switchPage('riwayat')">
-            <span class="material-symbols-outlined">receipt_long</span><span class="label">Riwayat</span>
-        </button>
-        <button class="nav-item" id="nav-profil" onclick="window.switchPage('profil')">
-            <span class="material-symbols-outlined">person</span><span class="label">Profil</span>
-        </button>
+        <button class="nav-item active" id="nav-cari" onclick="window.switchPage('cari')"><span class="material-symbols-outlined">list_alt</span><span class="label">Daftar</span></button>
+        <button class="nav-item disabled" id="nav-maps" onclick="window.switchPage('maps')"><span class="material-symbols-outlined">explore</span><span class="label">Maps</span></button>
+        <button class="nav-item" id="nav-riwayat" onclick="window.switchPage('riwayat')"><span class="material-symbols-outlined">receipt_long</span><span class="label">Riwayat</span></button>
+        <button class="nav-item" id="nav-profil" onclick="window.switchPage('profil')"><span class="material-symbols-outlined">person</span><span class="label">Profil</span></button>
     </div>
 </div>
-
+</body>
 <script type="module">
-// ==========================================
-// FIREBASE BACKEND (TIDAK ADA YANG DIUBAH DARI LOGIKA ANDA)
-// ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -204,70 +182,52 @@ const app = initializeApp({
     messagingSenderId: "789371282298",
     appId: "1:789371282298:web:edc61d7bc00935fc22ecc3"
 });
-
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// STATE & CACHE
 let currentUserUid = '';
 let driverData = null;
-let activeOrderDocId = null; 
+let activeOrders = []; // Array of active orders for batching
 let locationInterval = null; 
-let fileBuffer = null; 
+window.filesBuffer = {}; // Format: { "orderId_ambil": file, "orderId_selesai": file }
+let map = null;
+let currentDeviceCoords = null; // Update via GPS
+let currentDeliveryPin = null;  // Object for current destination in 'ngantar' phase
 
-// ==========================================
-// KONFIGURASI CLOUDINARY
-// ==========================================
 const CLOUDINARY_UPLOAD_PRESET = 'presensi_unsigned'; 
 const CLOUDINARY_CLOUD_NAME = 'dn2o2vf04';       
 
-// ==========================================
-// UI CONTROLS & MAPLIBRE
-// ==========================================
-let map;
-function initMap() {
-    if(!map) {
-        map = new maplibregl.Map({
-            container: 'map',
-            style: 'https://tiles.openfreemap.org/styles/bright',
-            center: [110.3939, -7.0515], // Default Koordinat (bisa disesuaikan area Semarang/Unnes)
-            zoom: 14,
-            attributionControl: false
-        });
-    }
+// LOAD CACHED INCOME
+function loadCachedIncome() {
+    let cached = parseInt(localStorage.getItem('mitraJastipIncome') || '0');
+    document.getElementById('top-saldo').innerText = "Rp " + cached.toLocaleString('id-ID');
+}
+function addIncome(amount) {
+    let cached = parseInt(localStorage.getItem('mitraJastipIncome') || '0');
+    cached += amount;
+    localStorage.setItem('mitraJastipIncome', cached);
+    loadCachedIncome();
 }
 
+// UI HELPERS
 window.switchPage = (p) => {
-    // Block akses ke maps jika dinonaktifkan
     if(p === 'maps' && document.getElementById('nav-maps').classList.contains('disabled')) return;
-
     document.querySelectorAll('.page, .nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById('page-' + p).classList.add('active');
     document.getElementById('nav-' + p).classList.add('active');
-
-    if(p === 'maps') {
-        initMap();
-        setTimeout(() => map.resize(), 100);
-    }
+    if(p === 'maps' && map) setTimeout(() => map.resize(), 100);
 };
+function showLoading(text) { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').classList.add('visible'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('visible'); }
+window.refreshOrders = () => { showLoading('Memperbarui...'); setTimeout(() => { hideLoading(); }, 800); }; // Listener otomatis, ini hanya UX refresh.
 
-function showLoading(text) {
-    document.getElementById('loading-text').innerText = text;
-    document.getElementById('loading-overlay').classList.add('visible');
-}
-function hideLoading() {
-    document.getElementById('loading-overlay').classList.remove('visible');
-}
-
-// ==========================================
-// AUTENTIKASI & PROFIL (LOGIKA SAMA)
-// ==========================================
+// AUTH
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        currentUserUid = user.uid;
-        await loadDriverProfile();
+        currentUserUid = user.uid; await loadDriverProfile();
     } else {
-        document.getElementById('app').classList.remove('visible');
-        document.getElementById('splash').classList.remove('hidden');
+        document.getElementById('app').classList.remove('visible'); document.getElementById('splash').classList.remove('hidden');
         if(locationInterval) clearInterval(locationInterval);
     }
 });
@@ -276,8 +236,7 @@ window.doLogin = async () => {
     const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
     if(!e || !p) return alert('Isi data!');
     showLoading('Memverifikasi...');
-    try { await signInWithEmailAndPassword(auth, e, p); } 
-    catch(err) { alert('Gagal: ' + err.message); hideLoading(); }
+    try { await signInWithEmailAndPassword(auth, e, p); } catch(err) { alert('Gagal: ' + err.message); hideLoading(); }
 };
 
 window.doSignup = async () => {
@@ -286,14 +245,10 @@ window.doSignup = async () => {
     showLoading('Mendaftar...');
     try {
         const c = await createUserWithEmailAndPassword(auth, e, p);
-        await setDoc(doc(db, "user", c.user.uid), {
-            CustomerID: "", GetdriverID: c.user.uid, nama: "Driver Baru", wa: "0800000000", email: e, urlProfile: "", role: "driver", saldo: 0, stnk: "B 1234 XYZ", sim: "", skck: "", ktp: "", status: "belumterverifikasi"
-        });
-        await setDoc(doc(db, "saldo", c.user.uid), { getdriverID: c.user.uid, saldo: 0 });
+        await setDoc(doc(db, "user", c.user.uid), { CustomerID: "", GetdriverID: c.user.uid, nama: "Driver Baru", wa: "0800000000", email: e, urlProfile: "", role: "driver", saldo: 0, stnk: "B 1234 XYZ", sim: "", skck: "", ktp: "", status: "belumterverifikasi" });
         await loadDriverProfile();
     } catch(err) { alert('Gagal: ' + err.message); hideLoading(); }
 };
-
 window.doLogout = () => signOut(auth);
 
 async function loadDriverProfile() {
@@ -303,204 +258,307 @@ async function loadDriverProfile() {
             driverData = snap.data();
             document.getElementById('prof-nama').innerText = driverData.nama;
             document.getElementById('prof-rank').innerText = driverData.status.toUpperCase();
-            
-            const saldoSnap = await getDoc(doc(db, "saldo", currentUserUid));
-            if(saldoSnap.exists()) {
-                document.getElementById('top-saldo').innerText = "Rp " + saldoSnap.data().saldo.toLocaleString('id-ID');
-            }
-
+            loadCachedIncome();
             document.getElementById('splash').classList.add('hidden');
             document.getElementById('app').classList.add('visible');
-            
+            trackDeviceLocation(); // Track GPS continuously
             listenToOrders();
             hideLoading();
-        } else {
-            alert("Akun ini bukan Driver!");
-            signOut(auth);
-            hideLoading();
-        }
+        } else { alert("Akun bukan Driver!"); signOut(auth); hideLoading(); }
     } catch(e) { console.error(e); hideLoading(); }
 }
 
-// ==========================================
-// LISTENER ORDER (LOGIKA SAMA, UI BARU)
-// ==========================================
+// GPS TRACKER
+function trackDeviceLocation() {
+    if(!navigator.geolocation) return;
+    navigator.geolocation.watchPosition(p => {
+        currentDeviceCoords = [p.coords.longitude, p.coords.latitude];
+        if(map && map.getSource('driver-loc')) {
+            map.getSource('driver-loc').setData({ type: 'Point', coordinates: currentDeviceCoords });
+        }
+    }, null, { enableHighAccuracy: true });
+}
+
+function parseCoords(str) {
+    if(!str) return null;
+    let m = str.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+    if(!m) return null;
+    let v1 = parseFloat(m[1]), v2 = parseFloat(m[2]);
+    let lng = (Math.abs(v1) > 90) ? v1 : v2;
+    let lat = (Math.abs(v1) > 90) ? v2 : v1;
+    return [lng, lat];
+}
+
+// HAVERSINE DISTANCE
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+// LISTENERS
 function listenToOrders() {
-    // 1. Order Tersedia
+    // 1. ACTIVE ORDERS (Driver's Orders)
+    const qActive = query(collection(db, "orders"), where("getdriverId", "==", currentUserUid));
+    onSnapshot(qActive, (snapshot) => {
+        let tempActive = [];
+        snapshot.forEach(d => {
+            const o = d.data();
+            if(o.status !== 'selesai' && o.status !== 'dibatalkan') tempActive.push({ id: d.id, ...o });
+        });
+        activeOrders = tempActive;
+        renderActiveOrdersPhase();
+    });
+
+    // 2. AVAILABLE ORDERS
     const qAvailable = query(collection(db, "orders"), where("getdriverId", "==", ""), where("status", "==", "menunggu"));
     onSnapshot(qAvailable, (snapshot) => {
         let html = '';
+        const now = new Date().getTime();
+        
+        // Pengecekan Batching (Jika sedang bawa Normal, atau Gabungan sudah 4)
+        let isCarryingNormal = activeOrders.some(o => o.jenisOrder === 'normal');
+        let gabunganCount = activeOrders.filter(o => o.jenisOrder === 'gabungan').length;
+        if(isCarryingNormal || gabunganCount >= 4) {
+            document.getElementById('available-orders').innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--gray-300);">Anda sudah mencapai batas pesanan aktif.</div>';
+            return;
+        }
+
         snapshot.forEach(doc => {
             const o = doc.data();
-            html += `
-            <div class="card">
-                <div class="card-header">
-                    <div>
-                        <div class="price">Rp ${o.Argo.toLocaleString('id-ID')}</div>
-                        <div style="font-size:13px; color:var(--gray-300); margin-top:4px;">${o.kategori.toUpperCase()} • ${o.JarakTempuh} KM</div>
+            // FILTER WAKTU: Tampilkan yang <= 60 menit dari jadwal, atau Langsung.
+            let showOrder = false;
+            if (o.waktuAmbil === 'Langsung') {
+                showOrder = true; 
+            } else {
+                let sched = new Date(o.waktuAmbil).getTime();
+                let diffMins = (sched - now) / (1000 * 60);
+                if (diffMins <= 60 && diffMins >= -120) showOrder = true; // Batas toleransi jadwal
+            }
+
+            // FILTER BATCHING GABUNGAN: Hanya tampilkan gabungan jika driver sedang bawa gabungan.
+            if(gabunganCount > 0 && o.jenisOrder !== 'gabungan') showOrder = false;
+
+            if (showOrder) {
+                html += `
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="price">Rp ${o.Argo.toLocaleString('id-ID')}</div>
+                            <div style="font-size:13px; color:var(--gray-300); margin-top:4px;">
+                                <span class="badge-order" style="background:${o.jenisOrder==='gabungan'?'#E6F6ED':'var(--gray-200)'}; color:${o.jenisOrder==='gabungan'?'var(--green)':'var(--black)'};">${o.jenisOrder}</span> • ${o.kategori} • ${o.JarakTempuh} KM
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="location-row">
-                    <span class="material-symbols-outlined loc-icon">radio_button_checked</span>
-                    <div>
-                        <div class="loc-text">${o.namaAmbil}</div>
-                        <div class="loc-sub">Titik Pengambilan</div>
+                    <div class="location-row"><span class="material-symbols-outlined loc-icon">radio_button_checked</span><div><div class="loc-text">${o.namaAmbil}</div><div class="loc-sub">Ambil</div></div></div>
+                    <div class="location-row" style="margin-bottom:20px;"><span class="material-symbols-outlined loc-icon" style="color:var(--black);">location_on</span><div><div class="loc-text">${o.NamaAntar}</div><div class="loc-sub">Antar</div></div></div>
+                    <div class="swipe-container" data-action="terima" data-orderid="${doc.id}">
+                        <div class="swipe-text">Geser untuk Terima</div>
+                        <div class="swipe-knob"><span class="material-symbols-outlined">arrow_forward</span></div>
                     </div>
-                </div>
-                <div class="location-row" style="margin-bottom:20px;">
-                    <span class="material-symbols-outlined loc-icon" style="color:var(--black);">location_on</span>
-                    <div>
-                        <div class="loc-text">${o.NamaAntar}</div>
-                        <div class="loc-sub">Tujuan Pengantaran</div>
-                    </div>
-                </div>
-                
-                <div class="swipe-container" data-action="terima" data-orderid="${doc.id}">
-                    <div class="swipe-text">Geser untuk Terima</div>
-                    <div class="swipe-knob"><span class="material-symbols-outlined">arrow_forward</span></div>
-                </div>
-            </div>`;
+                </div>`;
+            }
         });
-        document.getElementById('available-orders').innerHTML = html || '<div style="padding:40px 20px;text-align:center;color:var(--gray-300);"><span class="material-symbols-outlined" style="font-size:48px;margin-bottom:16px;">search</span><p>Mencari permintaan...</p></div>';
+        if(!html) html = '<div style="padding:40px 20px;text-align:center;color:var(--gray-300);"><span class="material-symbols-outlined" style="font-size:48px;margin-bottom:16px;">search</span><p>Mencari permintaan...</p></div>';
+        document.getElementById('available-orders').innerHTML = html;
         initSwipeInteractions();
-    });
-
-    // 2. Order Aktif
-    const qActive = query(collection(db, "orders"), where("getdriverId", "==", currentUserUid));
-    onSnapshot(qActive, (snapshot) => {
-        let activeHTML = '';
-        let hasActive = false;
-        activeOrderDocId = null;
-
-        snapshot.forEach(d => {
-            const o = d.data();
-            if (o.status !== 'selesai' && o.status !== 'dibatalkan') {
-                hasActive = true;
-                activeOrderDocId = d.id;
-                activeHTML = renderActiveOrder(d.id, o);
-                
-                if(o.status === 'ngantar' && !locationInterval) {
-                    startLocationTracking(d.id);
-                } else if (o.status !== 'ngantar' && locationInterval) {
-                    clearInterval(locationInterval);
-                    locationInterval = null;
-                }
-            }
-        });
-
-        const navMaps = document.getElementById('nav-maps');
-        if(hasActive) {
-            document.getElementById('active-order-container').innerHTML = activeHTML;
-            document.getElementById('available-orders').innerHTML = '<div style="padding:20px; text-align:center; color:var(--gray-300);">Anda sedang dalam pesanan berjalan.</div>';
-            
-            // Buka akses Maps dan pindah kesana
-            navMaps.classList.remove('disabled');
-            if(!document.getElementById('page-maps').classList.contains('active')) {
-                window.switchPage('maps');
-            }
-            initSwipeInteractions();
-        } else {
-            document.getElementById('active-order-container').innerHTML = '';
-            // Tutup akses maps
-            navMaps.classList.add('disabled');
-            if(document.getElementById('page-maps').classList.contains('active')) {
-                window.switchPage('cari');
-            }
-            if(locationInterval) { clearInterval(locationInterval); locationInterval = null; }
-        }
     });
 }
 
-// ==========================================
-// RENDER FLOATING PANEL (STATE MACHINE)
-// ==========================================
-function renderActiveOrder(orderId, o) {
-    let swipeHTML = '';
-    let uploadHTML = '';
+// RENDER ACTIVE ORDERS STATE MACHINE
+function renderActiveOrdersPhase() {
+    const navMaps = document.getElementById('nav-maps');
+    const container = document.getElementById('active-order-container');
     
-    // Status Flow
-    if (o.status === 'terima') {
-        swipeHTML = `
-        <div class="swipe-container" data-action="status" data-status="ambil" data-orderid="${orderId}">
-            <div class="swipe-text">Geser untuk Mengambil</div>
-            <div class="swipe-knob"><span class="material-symbols-outlined">directions_car</span></div>
-        </div>`;
-    } 
-    else if (o.status === 'ambil') {
-        uploadHTML = `
-        <div class="upload-box">
-            <input type="file" accept="image/*" onchange="window.prepareFile(event, 'file-ambil')">
-            <div class="upload-box-content">
-                <span class="material-symbols-outlined">photo_camera</span>
-                <span id="file-ambil">Ketuk untuk Foto Barang/Nota</span>
-            </div>
-        </div>`;
-        swipeHTML = `
-        <div class="swipe-container" data-action="uploadAmbil" data-orderid="${orderId}">
-            <div class="swipe-text">Geser Mulai Antar</div>
-            <div class="swipe-knob"><span class="material-symbols-outlined">upload</span></div>
-        </div>`;
-    } 
-    else if (o.status === 'ngantar') {
-        swipeHTML = `
-        <div class="swipe-container action-green" data-action="status" data-status="tiba" data-orderid="${orderId}">
+    if (activeOrders.length === 0) {
+        container.innerHTML = '';
+        navMaps.classList.add('disabled');
+        if(document.getElementById('page-maps').classList.contains('active')) window.switchPage('cari');
+        disableMap();
+        return;
+    }
+
+    navMaps.classList.remove('disabled');
+    document.getElementById('available-orders').innerHTML = '<div style="padding:20px; text-align:center; color:var(--gray-300);">Anda memiliki pesanan berjalan (Maks 4 Gabungan).</div>';
+    if(!document.getElementById('page-maps').classList.contains('active')) window.switchPage('maps');
+
+    // PHASE 1: PICKUP (Apakah ada order yang 'terima' atau 'ambil'?)
+    let pickups = activeOrders.filter(o => o.status === 'terima' || o.status === 'ambil');
+    
+    if (pickups.length > 0) {
+        disableMap(); // Peta hanya aktif setelah ngantar
+        // Ambil grup lokasi pertama
+        let targetMapsAmbil = pickups[0].mapsAmbil;
+        let group = pickups.filter(o => o.mapsAmbil === targetMapsAmbil);
+        
+        let isTerima = group.some(o => o.status === 'terima');
+        let orderIds = group.map(o => o.id).join(',');
+
+        let html = `<div style="margin-bottom:16px;"><h3 style="font-size:20px;">Menuju Lokasi Pengambilan</h3><p style="color:var(--gray-300); font-size:14px;">${group[0].namaAmbil}</p></div>`;
+        
+        if (isTerima) {
+            // SWIPE TIBA DI RESTO (1x Swipe untuk semua grup lokasi ini)
+            html += group.map(o => `<div class="location-row" style="margin-bottom:8px;"><span class="material-symbols-outlined loc-icon">receipt</span><div class="loc-text">${o.namaPenerima} <span style="color:var(--gray-300); font-size:12px;">(Rp ${o.Argo.toLocaleString()})</span></div></div>`).join('');
+            html += `
+            <div class="swipe-container action-green" data-action="batch_ambil" data-orderids="${orderIds}">
+                <div class="swipe-text" style="color:var(--green);">Geser Tiba di Lokasi</div>
+                <div class="swipe-knob"><span class="material-symbols-outlined">storefront</span></div>
+            </div>`;
+        } else {
+            // UPLOAD FOTO UNTUK SETIAP PESANAN, LALU 1 SWIPE NGANTAR
+            group.forEach((o, i) => {
+                html += `
+                <div style="background:var(--gray-100); padding:12px; border-radius:12px; margin-bottom:12px;">
+                    <div style="font-weight:600; margin-bottom:4px;">${i+1}. Penerima: ${o.namaPenerima}</div>
+                    <div style="font-size:12px; color:var(--gray-800); margin-bottom:8px;">Catatan: ${o.catatan || '-'}</div>
+                    <div class="upload-box" style="background:#FFF;">
+                        <input type="file" accept="image/*" onchange="window.prepareBatchFile(event, '${o.id}', 'ambil')">
+                        <div class="upload-box-content">
+                            <span class="material-symbols-outlined" style="font-size:20px;">photo_camera</span>
+                            <span id="label-${o.id}-ambil">Ketuk Foto Barang/Nota</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += `
+            <div class="swipe-container" data-action="batch_ngantar" data-orderids="${orderIds}">
+                <div class="swipe-text">Geser Mulai Antar Semua</div>
+                <div class="swipe-knob"><span class="material-symbols-outlined">two_wheeler</span></div>
+            </div>`;
+        }
+        container.innerHTML = html;
+        initSwipeInteractions();
+        return;
+    }
+
+    // PHASE 2: DELIVERY (Semua order sudah ngantar/tiba)
+    enableMap();
+    let deliveries = activeOrders.filter(o => o.status === 'ngantar' || o.status === 'tiba');
+    
+    // SORT BERDASARKAN JARAK TERDEKAT DARI LOKASI SAAT INI (Jika ada GPS)
+    let refCoords = currentDeviceCoords;
+    if(!refCoords) refCoords = parseCoords(deliveries[0].titikAmbil); // fallback
+
+    if(refCoords) {
+        deliveries.sort((a, b) => {
+            let cA = parseCoords(a.mpasAntar); let cB = parseCoords(b.mpasAntar);
+            if(!cA) return 1; if(!cB) return -1;
+            return getDistance(refCoords[1], refCoords[0], cA[1], cA[0]) - getDistance(refCoords[1], refCoords[0], cB[1], cB[0]);
+        });
+    }
+
+    // Ambil PIN 1 (Yang paling dekat & belum selesai)
+    currentDeliveryPin = deliveries[0];
+    drawRouteOSRM(); // Gambar rute ke Pin 1
+
+    let o = currentDeliveryPin;
+    let html = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:20px;">Pengantaran Saat Ini (Pin 1)</h3>
+        <div style="background:var(--gray-200); padding:4px 8px; border-radius:4px; font-size:12px; font-weight:700;">${o.jenisOrder.toUpperCase()}</div>
+    </div>
+    <div class="location-row" style="margin-bottom:16px;">
+        <span class="material-symbols-outlined loc-icon">location_on</span>
+        <div><div class="loc-text">${o.NamaAntar}</div><div class="loc-sub">Penerima: ${o.namaPenerima} (${o.waPenerima})</div></div>
+    </div>`;
+
+    if(o.status === 'ngantar') {
+        html += `
+        <div class="swipe-container action-green" data-action="tiba_tujuan" data-orderid="${o.id}">
             <div class="swipe-text" style="color:var(--green);">Geser Tiba di Tujuan</div>
-            <div class="swipe-knob"><span class="material-symbols-outlined">location_on</span></div>
+            <div class="swipe-knob"><span class="material-symbols-outlined">flag</span></div>
         </div>`;
-    } 
-    else if (o.status === 'tiba') {
-        uploadHTML = `
+    } else if (o.status === 'tiba') {
+        html += `
         <div class="upload-box">
-            <input type="file" accept="image/*" onchange="window.prepareFile(event, 'file-selesai')">
+            <input type="file" accept="image/*" onchange="window.prepareBatchFile(event, '${o.id}', 'selesai')">
             <div class="upload-box-content">
                 <span class="material-symbols-outlined">verified</span>
-                <span id="file-selesai">Ketuk Foto Bukti Selesai</span>
+                <span id="label-${o.id}-selesai">Ketuk Foto Bukti Selesai</span>
             </div>
-        </div>`;
-        swipeHTML = `
-        <div class="swipe-container" style="background:#000;" data-action="uploadSelesai" data-orderid="${orderId}" data-argo="${o.Argo}">
-            <div class="swipe-text" style="color:#FFF;">Geser Selesai</div>
+        </div>
+        <div class="swipe-container" style="background:#000;" data-action="selesai_pesanan" data-orderid="${o.id}" data-argo="${o.Argo}">
+            <div class="swipe-text" style="color:#FFF;">Geser Selesai & Terima Rp${o.Argo.toLocaleString()}</div>
             <div class="swipe-knob" style="background:#FFF;color:#000;"><span class="material-symbols-outlined">check</span></div>
         </div>`;
     }
-
-    return `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h3 style="font-size:24px;">Rp ${o.Argo.toLocaleString('id-ID')}</h3>
-        <div style="background:var(--gray-100); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:700;">${o.status.toUpperCase()}</div>
-    </div>
-    <div class="location-row">
-        <span class="material-symbols-outlined loc-icon">person</span>
-        <div>
-            <div class="loc-text">${o.namaPenerima}</div>
-            <div class="loc-sub">${o.waPenerima}</div>
-        </div>
-    </div>
-    <hr style="border:none; border-top:1px solid var(--gray-200); margin:16px 0;">
-    <div class="location-row">
-        <span class="material-symbols-outlined loc-icon" style="font-size:16px;">radio_button_checked</span>
-        <div class="loc-sub">${o.namaAmbil}</div>
-    </div>
-    <div class="location-row" style="margin-bottom:16px;">
-        <span class="material-symbols-outlined loc-icon" style="font-size:16px;">location_on</span>
-        <div class="loc-sub">${o.NamaAntar}</div>
-    </div>
-    ${uploadHTML}
-    ${swipeHTML}`;
+    
+    // Tampilkan order selanjutnya sebagai antrean
+    if(deliveries.length > 1) {
+        html += `<hr style="border:none; border-top:1px solid var(--gray-200); margin:16px 0;"><h4 style="font-size:14px; color:var(--gray-300); margin-bottom:8px;">Antrean Selanjutnya:</h4>`;
+        for(let i=1; i<deliveries.length; i++) {
+            html += `<div style="font-size:13px; color:var(--gray-800); margin-bottom:4px;">Pin ${i+1}: ${deliveries[i].namaPenerima} - ${deliveries[i].NamaAntar}</div>`;
+        }
+    }
+    container.innerHTML = html;
+    initSwipeInteractions();
 }
 
-// ==========================================
-// SWIPE GESTURE LOGIC (CUSTOM)
-// ==========================================
-function initSwipeInteractions() {
-    const swipers = document.querySelectorAll('.swipe-container');
-    swipers.forEach(container => {
-        if(container.dataset.initialized) return; // hindari duplicate event
-        container.dataset.initialized = "true";
 
+// MAPS LOGIC (OSRM)
+function disableMap() {
+    document.getElementById('map').classList.add('d-none');
+    document.getElementById('map-placeholder').style.display = 'flex';
+}
+function enableMap() {
+    if(!activeOrders.some(o => o.kategori !== 'Kirim Instan')) return; // Map hanya untuk jastip/ambil instan
+    document.getElementById('map').classList.remove('d-none');
+    document.getElementById('map-placeholder').style.display = 'none';
+    if(!map) {
+        map = new maplibregl.Map({ container: 'map', style: 'https://tiles.openfreemap.org/styles/bright', center: currentDeviceCoords || [110.3939, -7.0515], zoom: 15, attributionControl: false });
+        map.on('load', () => {
+            // Add Motor Icon Source
+            map.addSource('driver-loc', { type: 'geojson', data: { type: 'Point', coordinates: currentDeviceCoords || [0,0] } });
+            map.addLayer({ id: 'driver-layer', type: 'circle', source: 'driver-loc', paint: { 'circle-radius': 8, 'circle-color': '#000', 'circle-stroke-width': 2, 'circle-stroke-color': '#FFF' } });
+        });
+    }
+}
+async function drawRouteOSRM() {
+    if(!map || !currentDeliveryPin) return;
+    let start = currentDeviceCoords || parseCoords(currentDeliveryPin.titikAmbil);
+    let end = parseCoords(currentDeliveryPin.mpasAntar);
+    if(!start || !end) return;
+
+    try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if(data.routes && data.routes[0]) {
+            const geojson = data.routes[0].geometry;
+            if(map.getSource('route')) map.getSource('route').setData(geojson);
+            else {
+                map.addSource('route', { type: 'geojson', data: geojson });
+                map.addLayer({ id: 'route-layer', type: 'line', source: 'route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#05A357', 'line-width': 5 } });
+            }
+            
+            // Add End Pin
+            if(map.getSource('pin-end')) map.getSource('pin-end').setData({ type: 'Point', coordinates: end });
+            else {
+                map.addSource('pin-end', { type: 'geojson', data: { type: 'Point', coordinates: end } });
+                map.addLayer({ id: 'pin-end-layer', type: 'circle', source: 'pin-end', paint: { 'circle-radius': 10, 'circle-color': '#E11900', 'circle-stroke-width': 3, 'circle-stroke-color': '#FFF' } });
+            }
+            map.fitBounds([start, end], { padding: 50 });
+        }
+    } catch(e) { console.error("OSRM Error", e); }
+}
+
+
+// SWIPE GESTURES
+window.prepareBatchFile = (e, orderId, type) => {
+    if(e.target.files.length > 0) {
+        window.filesBuffer[orderId + '_' + type] = e.target.files[0];
+        document.getElementById(`label-${orderId}-${type}`).innerText = "File Siap";
+        document.getElementById(`label-${orderId}-${type}`).style.color = "var(--green)";
+    }
+};
+
+function initSwipeInteractions() {
+    document.querySelectorAll('.swipe-container').forEach(container => {
+        if(container.dataset.initialized) return;
+        container.dataset.initialized = "true";
         const knob = container.querySelector('.swipe-knob');
         let isDragging = false, startX = 0, currentX = 0;
-        const maxDrag = container.offsetWidth - knob.offsetWidth - 8; // 8px padding (4px kiri, 4px kanan margin)
+        const maxDrag = container.offsetWidth - knob.offsetWidth - 8;
 
         const onMove = (e) => {
             if(!isDragging) return;
@@ -508,141 +566,83 @@ function initSwipeInteractions() {
             currentX = Math.max(0, Math.min(x, maxDrag));
             knob.style.transform = `translateX(${currentX}px)`;
         };
-
         const onEnd = () => {
             if(!isDragging) return;
             isDragging = false;
             knob.style.transition = 'transform 0.3s ease';
-            
-            if(currentX >= maxDrag * 0.85) { // Threshold 85% diswipe
+            if(currentX >= maxDrag * 0.85) {
                 knob.style.transform = `translateX(${maxDrag}px)`;
                 executeSwipeAction(container);
-            } else {
-                knob.style.transform = `translateX(0px)`;
-            }
+            } else { knob.style.transform = `translateX(0px)`; }
         };
-
         const onStart = (e) => {
-            isDragging = true;
-            startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX;
-            knob.style.transition = 'none';
+            isDragging = true; startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX; knob.style.transition = 'none';
         };
-
         knob.addEventListener('touchstart', onStart, {passive: true});
         document.addEventListener('touchmove', onMove, {passive: true});
         document.addEventListener('touchend', onEnd);
     });
 }
+function resetSwipe() { document.querySelectorAll('.swipe-knob').forEach(k => { k.style.transform = 'translateX(0px)'; }); }
 
-function executeSwipeAction(el) {
+async function uploadImage(file) {
+    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+        const data = await res.json(); return data.secure_url; 
+    } catch (e) {
+        return new Promise(r => { const rd = new FileReader(); rd.onload = ev => r(ev.target.result); rd.readAsDataURL(file); });
+    }
+}
+
+// BACKEND ACTIONS
+async function executeSwipeAction(el) {
     const action = el.dataset.action;
+    const orderIds = el.dataset.orderids ? el.dataset.orderids.split(',') : [];
     const orderId = el.dataset.orderid;
 
-    if (action === 'terima') {
-        window.terimaOrder(orderId);
-    } else if (action === 'status') {
-        window.updateStatus(orderId, el.dataset.status);
-    } else if (action === 'uploadAmbil') {
-        window.uploadBuktiAmbil(orderId);
-    } else if (action === 'uploadSelesai') {
-        window.uploadBuktiSelesai(orderId, parseInt(el.dataset.argo));
+    try {
+        showLoading('Memproses...');
+        if (action === 'terima') {
+            await updateDoc(doc(db, "orders", orderId), { getdriverId: currentUserUid, driverName: driverData.nama, waDriver: driverData.wa, sinceDriver: "Mitra Aktif", rankDriver: driverData.status, UrlprofileDriver: driverData.urlProfile || "", kendaraanDriver: driverData.stnk || "-", status: "terima" });
+        } 
+        else if (action === 'batch_ambil') {
+            await Promise.all(orderIds.map(id => updateDoc(doc(db, "orders", id), { status: "ambil" })));
+        } 
+        else if (action === 'batch_ngantar') {
+            // Validasi file
+            for(let id of orderIds) {
+                if(!window.filesBuffer[id + '_ambil']) { alert('Lengkapi semua foto pesanan!'); hideLoading(); resetSwipe(); return; }
+            }
+            let koordinat = currentDeviceCoords ? `${currentDeviceCoords[0]},${currentDeviceCoords[1]}` : "";
+            // Upload & Update concurrent
+            await Promise.all(orderIds.map(async (id) => {
+                let imgUrl = await uploadImage(window.filesBuffer[id + '_ambil']);
+                return updateDoc(doc(db, "orders", id), { titikAmbil: koordinat, urlbuktiAmbil: imgUrl, status: "ngantar" });
+            }));
+            // Bersihkan buffer
+            orderIds.forEach(id => delete window.filesBuffer[id + '_ambil']);
+        }
+        else if (action === 'tiba_tujuan') {
+            await updateDoc(doc(db, "orders", orderId), { status: "tiba" });
+        }
+        else if (action === 'selesai_pesanan') {
+            if(!window.filesBuffer[orderId + '_selesai']) { alert('Pilih foto bukti selesai!'); hideLoading(); resetSwipe(); return; }
+            let imgUrl = await uploadImage(window.filesBuffer[orderId + '_selesai']);
+            await updateDoc(doc(db, "orders", orderId), { urlbuktiSelesai: imgUrl, status: "selesai" });
+            
+            // Tambah Pendapatan Cache
+            addIncome(parseInt(el.dataset.argo));
+            delete window.filesBuffer[orderId + '_selesai'];
+        }
+        hideLoading();
+    } catch(e) {
+        console.error(e);
+        alert('Terjadi kesalahan: ' + e.message);
+        hideLoading();
+        resetSwipe();
     }
-}
-
-// ==========================================
-// FUNGSI BACKEND YANG DI-BINDING (SAMA)
-// ==========================================
-window.terimaOrder = async (orderId) => {
-    if(activeOrderDocId) return alert('Anda masih memiliki order!');
-    showLoading('Menerima...');
-    try {
-        await updateDoc(doc(db, "orders", orderId), {
-            getdriverId: currentUserUid, driverName: driverData.nama, waDriver: driverData.wa, sinceDriver: "Mitra Aktif", rankDriver: driverData.status, UrlprofileDriver: driverData.urlProfile || "", kendaraanDriver: driverData.stnk || "-", status: "terima" 
-        });
-    } catch(e) { alert(e.message); } finally { hideLoading(); }
-};
-
-window.updateStatus = async (orderId, newStatus) => {
-    showLoading('Memperbarui...');
-    try {
-        await updateDoc(doc(db, "orders", orderId), { status: newStatus });
-    } catch(e) { alert(e.message); } finally { hideLoading(); }
-};
-
-window.prepareFile = (e, labelId) => {
-    if(e.target.files.length > 0) {
-        fileBuffer = e.target.files[0];
-        document.getElementById(labelId).innerText = "File Siap (Ketuk ganti)";
-        document.getElementById(labelId).style.color = "var(--green)";
-    }
-};
-
-async function uploadImageToCloudinary(file) {
-    const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
-        const data = await res.json();
-        return data.secure_url; 
-    } catch (e) {
-        return new Promise((resolve) => {
-            const reader = new FileReader(); reader.onload = (ev) => resolve(ev.target.result); reader.readAsDataURL(file);
-        });
-    }
-}
-
-function getCoordinates() {
-    return new Promise((resolve, reject) => {
-        if(!navigator.geolocation) return reject("GPS tidak didukung");
-        navigator.geolocation.getCurrentPosition(
-            p => resolve(`${p.coords.longitude.toFixed(6)}, ${p.coords.latitude.toFixed(6)}`),
-            e => reject(e.message), { enableHighAccuracy: true }
-        );
-    });
-}
-
-window.uploadBuktiAmbil = async (orderId) => {
-    if(!fileBuffer) { alert('Pilih foto barang terlebih dahulu sebelum swipe!'); return resetSwipe(); }
-    showLoading('Mengupload Bukti & GPS...');
-    try {
-        let koordinat = "";
-        try { koordinat = await getCoordinates(); } catch(g) { console.log('Gagal GPS', g); }
-        const imgUrl = await uploadImageToCloudinary(fileBuffer); fileBuffer = null;
-        await updateDoc(doc(db, "orders", orderId), { titikAmbil: koordinat, urlbuktiAmbil: imgUrl, status: "ngantar" });
-    } catch(e) { alert('Gagal: ' + e.message); resetSwipe(); } finally { hideLoading(); }
-};
-
-window.uploadBuktiSelesai = async (orderId, argoAmount) => {
-    if(!fileBuffer) { alert('Pilih foto bukti selesai terlebih dahulu sebelum swipe!'); return resetSwipe(); }
-    showLoading('Menyelesaikan Pesanan...');
-    try {
-        const imgUrl = await uploadImageToCloudinary(fileBuffer); fileBuffer = null;
-        await updateDoc(doc(db, "orders", orderId), { urlbuktiSelesai: imgUrl, status: "selesai" });
-        await setDoc(doc(collection(db, "pendapatan")), { createdBy: currentUserUid, uang: argoAmount, timestamp: new Date().toISOString() });
-        const saldoRef = doc(db, "saldo", currentUserUid);
-        const saldoSnap = await getDoc(saldoRef);
-        let newSaldo = argoAmount; if(saldoSnap.exists()) newSaldo += saldoSnap.data().saldo;
-        await updateDoc(saldoRef, { saldo: newSaldo });
-        loadDriverProfile(); 
-    } catch(e) { alert('Gagal: ' + e.message); resetSwipe(); } finally { hideLoading(); }
-};
-
-function resetSwipe() {
-    // Utility untuk mereset knob swipe jika upload gagal/belum pilih file
-    document.querySelectorAll('.swipe-knob').forEach(k => { k.style.transform = 'translateX(0px)'; });
-}
-
-function startLocationTracking(orderId) {
-    if(locationInterval) clearInterval(locationInterval);
-    const pushLocation = () => {
-        if(!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(async (p) => {
-            let coords = `${p.coords.longitude.toFixed(6)}, ${p.coords.latitude.toFixed(6)}`;
-            try { await updateDoc(doc(db, "orders", orderId), { sharelocationDriver: coords }); } catch(e) {}
-        }, null, { enableHighAccuracy: true });
-    };
-    pushLocation(); 
-    locationInterval = setInterval(pushLocation, 30000); 
 }
 </script>
-</body>
+
 </html>
