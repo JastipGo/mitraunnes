@@ -961,7 +961,16 @@ function updateDepositDisplay() {
   const dep = driverData?.deposit || 0;
   document.getElementById('top-deposit-val').textContent = 'Rp ' + dep.toLocaleString('id-ID');
   document.getElementById('prof-deposit').textContent = 'Rp ' + dep.toLocaleString('id-ID');
-  document.getElementById('prof-tabungan').textContent = 'Rp ' + (driverData?.tabungan||0).toLocaleString('id-ID');
+  
+  // Hitung tabungan hari ini dari localStorage
+  const today = new Date().toLocaleDateString('id-ID');
+  let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
+  
+  let tabunganHariIni = dailyHistory
+    .filter(r => r.tanggal === today)
+    .reduce((sum, r) => sum + r.argo, 0);
+
+  document.getElementById('prof-tabungan').textContent = 'Rp ' + tabunganHariIni.toLocaleString('id-ID');
 }
 
 // ========================= RENDER PROFILE =========================
@@ -1030,14 +1039,15 @@ window.centerDriverOnMap = () => {
 };
 
 // ========================= ARGO WITH RANK BONUS =========================
+
 function calcNetArgo(rawArgo) {
   const rank = driverData?.status || 'belumterverifikasi';
   let bonus = 0;
   if (rank === 'terverifikasi') bonus = 0.05;
   else if (rank === 'terpercaya') bonus = 0.15;
-  const withBonus = Math.round(rawArgo * (1 + bonus));
-  const platformCut = Math.round(withBonus * 0.20);
-  return withBonus - platformCut;
+  
+  // Hanya tambah bonus rank, tidak ada pemotongan platform di tampilan
+  return Math.round(rawArgo * (1 + bonus)); 
 }
 
 // ========================= SOUNDS =========================
@@ -1629,26 +1639,40 @@ async function executeSwipe(container) {
     else if (action === 'tiba_tujuan') {
       await updateDoc(doc(db,"orders",orderId), { status:'tiba' });
     }
-    else if (action === 'selesai_pesanan') {
+        else if (action === 'selesai_pesanan') {
       if(!window.filesBuffer[orderId+'_selesai']) { showToast('Pilih foto bukti selesai!'); hideLoading(); resetAllSwipes(); return; }
       const url = await uploadToCloudinary(window.filesBuffer[orderId+'_selesai'], 30);
       delete window.filesBuffer[orderId+'_selesai'];
-      const netArgo = parseInt(container.dataset.argo) || 0;
+      
+      const netArgo = parseInt(container.dataset.argo) || 0; // Ini sekarang bernilai 100% (Argo Utuh)
 
       await updateDoc(doc(db,"orders",orderId), { urlbuktiSelesai:url, status:'selesai' });
 
-      // Update deposit & tabungan
-      const platformCut = Math.round(netArgo * 0.20 / 0.80); // reverse to get original 20%
+      // Pemotongan deposit 20% langsung dari argo utuh
+      const platformCut = Math.round(netArgo * 0.20); 
       const newDeposit = Math.max(0, (driverData.deposit||0) - platformCut);
-      const newTabungan = (driverData.tabungan||0) + netArgo;
-      await updateDoc(doc(db,"user",currentUid), { deposit:newDeposit, tabungan:newTabungan });
+      
+      // Update hanya deposit di Firestore (Tabungan tidak disimpan di Firestore)
+      await updateDoc(doc(db,"user",currentUid), { deposit:newDeposit });
 
-      // Add to history
-      await addDoc(collection(db,"riwayat"), {
-        driverId: currentUid, orderId, argo: netArgo, platformCut,
+      // Simpan riwayat harian ke LocalStorage
+      const today = new Date().toLocaleDateString('id-ID');
+      let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
+      
+      // Bersihkan riwayat hari sebelumnya agar tidak menumpuk
+      dailyHistory = dailyHistory.filter(r => r.tanggal === today);
+      
+      dailyHistory.push({
+        orderId, 
+        argo: netArgo, 
         namaAntar: currentDeliveryPin?.NamaAntar||'-',
-        selesaiAt: serverTimestamp()
+        selesaiAt: Date.now(),
+        tanggal: today
       });
+      localStorage.setItem('riwayat_harian_' + currentUid, JSON.stringify(dailyHistory));
+
+      // Panggil fungsi display untuk langsung update angka tabungan
+      updateDepositDisplay();
 
       tripTotalArgo += netArgo;
 
@@ -1659,6 +1683,7 @@ async function executeSwipe(container) {
         tripTotalArgo = 0;
       }
     }
+    
     hideLoading();
   } catch(e) {
     showToast('Error: ' + e.message);
@@ -1685,25 +1710,32 @@ window.closeTopupModal = () => document.getElementById('topup-modal').classList.
 
 // ========================= RIWAYAT =========================
 function loadRiwayat() {
-  const qRiwayat = query(collection(db,"riwayat"), where("driverId","==",currentUid));
-  onSnapshot(qRiwayat, snap => {
-    if(snap.empty) {
-      document.getElementById('riwayat-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">history</span><p>Belum ada riwayat</p></div>`;
-      return;
-    }
-    let items = [];
-    snap.forEach(d => items.push({id:d.id,...d.data()}));
-    items.sort((a,b)=>((b.selesaiAt?.toDate()||0)-(a.selesaiAt?.toDate()||0)));
-    document.getElementById('riwayat-list').innerHTML = items.map(r => `
+  const today = new Date().toLocaleDateString('id-ID');
+  let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
+  
+  // Filter khusus riwayat hari ini
+  dailyHistory = dailyHistory.filter(r => r.tanggal === today);
+
+  if (dailyHistory.length === 0) {
+    document.getElementById('riwayat-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">history</span><p>Belum ada riwayat hari ini</p></div>`;
+    return;
+  }
+
+  // Urutkan dari yang paling baru
+  dailyHistory.sort((a,b) => b.selesaiAt - a.selesaiAt);
+
+  document.getElementById('riwayat-list').innerHTML = dailyHistory.map(r => {
+    const timeStr = new Date(r.selesaiAt).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+    return `
       <div class="riwayat-item">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div style="font-size:14px;font-weight:600;">${r.namaAntar||'-'}</div>
           <div style="font-size:16px;font-weight:700;color:var(--oneui-green);">+Rp ${(r.argo||0).toLocaleString('id-ID')}</div>
         </div>
-        <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px;">${r.selesaiAt?.toDate()?.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})||'-'}</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px;">Hari ini, ${timeStr}</div>
       </div>
-    `).join('');
-  });
+    `;
+  }).join('');
 }
 
 // Override switchPage to load riwayat lazily
