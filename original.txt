@@ -3,647 +3,1748 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DriverJastipGo - Driver App</title>
+<title>JastipUnnes - Driver</title>
 <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" type="image/png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
-<script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
-<link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
-
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <style>
+/* ============================================================
+   ONE UI SAMSUNG DESIGN SYSTEM
+   ============================================================ */
 :root {
-    --black: #000000; --white: #FFFFFF;
-    --gray-100: #F6F6F6; --gray-200: #E2E2E2; --gray-300: #A6A6A6; --gray-800: #242424;
-    --green: #05A357; --blue: #276EF1; --red: #E11900; --amber: #F5A524;
-    --font: 'Inter', sans-serif;
-    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 24px;
+  --oneui-blue: #1259C3;
+  --oneui-blue-light: #3478F6;
+  --oneui-blue-bg: #EBF1FD;
+  --oneui-blue-dark: #0A3D8F;
+  --oneui-red: #C9373C;
+  --oneui-red-bg: #FDECEA;
+  --oneui-green: #0E7A45;
+  --oneui-green-bg: #E6F5ED;
+  --oneui-orange: #E07B00;
+  --oneui-orange-bg: #FEF3E2;
+  --oneui-purple: #6E3DC0;
+  --oneui-purple-bg: #F0EAFB;
+  --surface-bg: #F2F2F7;
+  --surface-card: #FFFFFF;
+  --surface-input: #F1F3F5;
+  --text-primary: #1A1A1A;
+  --text-secondary: #5A5A5A;
+  --text-tertiary: #8A8A8A;
+  --text-disabled: #BBBBBB;
+  --border-light: #E8E8E8;
+  --border-medium: #D0D0D0;
+  --r-xs: 6px; --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-xl: 28px; --r-2xl: 36px; --r-full: 100px;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --font: 'Noto Sans KR', -apple-system, sans-serif;
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: var(--gray-100); color: var(--black); font-family: var(--font); user-select: none; -webkit-user-select: none; }
-input, textarea { user-select: auto; -webkit-user-select: auto; }
-* { -webkit-tap-highlight-color: transparent!important; outline: none!important; }
+html, body { width:100%; height:100%; overflow:hidden; overscroll-behavior:none; background:var(--surface-bg); color:var(--text-primary); font-family:var(--font); -webkit-font-smoothing:antialiased; user-select:none; -webkit-user-select:none; }
+input, textarea, select { user-select:auto; -webkit-user-select:auto; }
+* { -webkit-tap-highlight-color:transparent!important; outline:none!important; }
+.d-none { display:none!important; }
 
-h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
-.d-none { display: none !important; }
-.disabled { opacity: 0.5; pointer-events: none; }
+/* LOADING */
+#loading-overlay { position:fixed; inset:0; background:rgba(255,255,255,0.88); backdrop-filter:blur(8px); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+#loading-overlay.visible { display:flex; }
+.oneui-spinner { width:44px; height:44px; border:3px solid var(--border-light); border-top:3px solid var(--oneui-blue); border-radius:50%; animation:spin 0.75s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+#loading-text { font-size:14px; font-weight:600; color:var(--text-secondary); }
 
-#loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-#loading-overlay.visible { display: flex; }
-.spinner { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--white); border-radius: 50%; width: 48px; height: 48px; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg) } }
+/* TOAST */
+#toast { position:fixed; top:60px; left:50%; transform:translateX(-50%) translateY(-20px); background:rgba(30,30,30,0.78); backdrop-filter:blur(16px); color:rgba(255,255,255,0.95); padding:12px 22px; border-radius:var(--r-full); font-size:13px; font-weight:600; z-index:10001; display:none; align-items:center; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.12); opacity:0; transition:opacity 0.3s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1); max-width:calc(100vw - 40px); }
+#toast.show { display:flex; opacity:1; transform:translateX(-50%) translateY(0); }
 
-#splash { position: fixed; inset: 0; z-index: 9000; background: var(--black); display: flex; flex-direction: column; height: 100dvh; }
-#splash.hidden { display: none; }
-.splash-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px; color: var(--white); }
-.auth-sheet { background: var(--white); color: var(--black); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 32px 24px 48px; }
-.field { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--gray-100); border: none; border-radius: var(--radius-sm); font-size: 16px; font-family: var(--font); }
-.field:focus { background: var(--gray-200); }
-.btn { width: 100%; padding: 16px; border: none; border-radius: var(--radius-sm); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: background 0.2s; }
-.btn-black { background: var(--black); color: var(--white); }
-.btn-gray { background: var(--gray-200); color: var(--black); margin-top: 12px; }
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; z-index:9500; background:rgba(0,0,0,0.45); display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px); }
+.modal-overlay.open { display:flex; animation:fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal-sheet { background:var(--surface-card); border-radius:var(--r-2xl) var(--r-2xl) 0 0; padding:8px 20px 40px; width:100%; max-width:520px; max-height:92vh; overflow-y:auto; overscroll-behavior-y:none; animation:slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+@keyframes slideUp { from{transform:translateY(100%);opacity:0.6} to{transform:translateY(0);opacity:1} }
+.modal-handle { width:40px; height:4px; background:var(--border-medium); border-radius:var(--r-full); margin:10px auto 20px; }
+.modal-title { font-size:20px; font-weight:700; color:var(--text-primary); margin-bottom:6px; letter-spacing:-0.4px; }
+.modal-sub { font-size:13px; color:var(--text-secondary); margin-bottom:20px; line-height:1.6; }
 
-#app { display: none; flex-direction: column; height: 100dvh; background: var(--gray-100); }
-#app.visible { display: flex; }
+/* SPLASH / AUTH */
+#splash { position:fixed; inset:0; z-index:9000; background:var(--surface-card); display:flex; flex-direction:column; height:100dvh; overflow-y:auto; overscroll-behavior-y:none; }
+#splash.hidden { display:none; }
+.splash-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px 24px; background:linear-gradient(160deg, var(--oneui-blue-bg) 0%, var(--surface-card) 100%); min-height:200px; }
+.splash-logo { width:72px; height:72px; background:var(--oneui-blue); border-radius:var(--r-xl); display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 8px 24px rgba(18,89,195,0.3); }
+.splash-sheet { background:var(--surface-card); border-radius:var(--r-2xl) var(--r-2xl) 0 0; padding:28px 24px 0; box-shadow:0 -4px 24px rgba(0,0,0,0.08); }
+.auth-tab-bar { display:flex; background:var(--surface-input); border-radius:var(--r-lg); padding:4px; margin-bottom:24px; }
+.auth-tab { flex:1; padding:10px; border:none; background:transparent; border-radius:var(--r-md); font-size:14px; font-weight:600; color:var(--text-tertiary); cursor:pointer; transition:all 0.2s; }
+.auth-tab.active { background:var(--surface-card); color:var(--text-primary); box-shadow:var(--shadow-sm); }
 
-.top-bar { padding: 16px 20px; background: var(--white); display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.status-pill { background: var(--green); color: var(--white); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+/* FORM FIELDS */
+.field-group { margin-bottom:16px; }
+.field-label { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:4px; }
+.field-required { color:var(--oneui-red); }
+.oneui-input { width:100%; padding:14px 16px; background:var(--surface-input); border:1.5px solid transparent; border-radius:var(--r-md); font-size:15px; font-family:var(--font); color:var(--text-primary); transition:all 0.2s; }
+.oneui-input:focus { background:#FFF; border-color:var(--oneui-blue); box-shadow:0 0 0 3px rgba(18,89,195,0.1); }
+.oneui-input::placeholder { color:var(--text-disabled); }
+.oneui-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%238A8A8A' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:40px; }
 
-.page { flex: 1; overflow-y: auto; display: none; padding-bottom: 90px; }
-.page.active { display: block; }
-.page-title { font-size: 28px; padding: 24px 20px 16px; background: var(--white); display:flex; justify-content:space-between; align-items:center; }
+/* UPLOAD BOX */
+.upload-box { border:2px dashed var(--border-medium); border-radius:var(--r-md); padding:14px; text-align:center; position:relative; background:var(--surface-input); transition:all 0.2s; }
+.upload-box.uploaded { border-color:var(--oneui-green); background:var(--oneui-green-bg); }
+.upload-box input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-box-content { display:flex; flex-direction:column; align-items:center; gap:4px; pointer-events:none; }
+.upload-box-content .material-symbols-outlined { font-size:24px; color:var(--oneui-blue); }
+.upload-label { font-size:12px; font-weight:600; color:var(--text-secondary); }
+.upload-sub { font-size:10px; color:var(--text-tertiary); }
 
-.card { background: var(--white); margin: 0 0 12px 0; padding: 20px; border-bottom: 1px solid var(--gray-200); }
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-.price { font-size: 24px; font-weight: 700; color: var(--black); }
-.location-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
-.loc-icon { color: var(--black); font-size: 20px; margin-top: 2px; }
-.loc-text { font-size: 15px; color: var(--gray-800); }
-.loc-sub { font-size: 13px; color: var(--gray-300); margin-top: 2px; }
-.badge-order { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: var(--gray-200); color: var(--black); text-transform: uppercase; }
+/* BUTTONS */
+.btn-oneui { width:100%; padding:16px; border:none; border-radius:var(--r-lg); font-size:16px; font-weight:700; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; transition:all 0.2s; font-family:var(--font); letter-spacing:-0.2px; }
+.btn-primary { background:var(--oneui-blue); color:#FFF; box-shadow:0 4px 16px rgba(18,89,195,0.3); }
+.btn-primary:active { background:var(--oneui-blue-dark); transform:scale(0.98); }
+.btn-secondary { background:var(--surface-input); color:var(--text-primary); }
+.btn-danger { background:var(--oneui-red-bg); color:var(--oneui-red); }
+.btn-sm { padding:10px 16px; font-size:13px; border-radius:var(--r-md); width:auto; }
 
-#page-maps { padding: 0; position: relative; display: none; flex-direction: column; }
-#page-maps.active { display: flex; }
-#map { flex: 1; width: 100%; background: var(--gray-200); }
-.floating-panel { background: var(--white); padding: 24px 20px 32px; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); position: absolute; bottom: 80px; left: 0; right: 0; z-index: 10; max-height: 55vh; overflow-y: auto; }
+/* APP */
+#app { display:none; flex-direction:column; height:100dvh; background:var(--surface-bg); }
+#app.visible { display:flex; }
 
-.swipe-container { position: relative; width: 100%; height: 56px; background: var(--gray-200); border-radius: 28px; overflow: hidden; margin-top: 20px; }
-.swipe-container.action-green { background: #E6F6ED; }
-.swipe-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: var(--black); pointer-events: none; z-index: 1; }
-.swipe-knob { position: absolute; top: 4px; left: 4px; width: 48px; height: 48px; background: var(--black); border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--white); z-index: 2; cursor: grab; transition: transform 0s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-.swipe-container.action-green .swipe-knob { background: var(--green); }
-.swipe-knob:active { cursor: grabbing; }
+/* TOP BAR */
+.top-bar { padding:12px 20px; background:var(--surface-card); display:flex; justify-content:space-between; align-items:center; z-index:100; box-shadow:var(--shadow-sm); flex-shrink:0; }
+.driver-status-pill { padding:7px 14px; border-radius:var(--r-full); font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; transition:all 0.2s; }
+.driver-status-pill.online { background:var(--oneui-green-bg); color:var(--oneui-green); }
+.driver-status-pill.offline { background:var(--surface-input); color:var(--text-tertiary); }
+.status-dot { width:7px; height:7px; border-radius:50%; }
+.dot-online { background:var(--oneui-green); }
+.dot-offline { background:var(--text-disabled); }
+.top-deposit { display:flex; flex-direction:column; align-items:flex-end; }
+.top-deposit-label { font-size:10px; color:var(--text-tertiary); font-weight:600; }
+.top-deposit-val { font-size:16px; font-weight:700; color:var(--text-primary); }
 
-.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: var(--white); display: flex; border-top: 1px solid var(--gray-200); padding-bottom: 12px; z-index: 100; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-300); background: none; border: none; cursor: pointer; gap: 4px; }
-.nav-item.active { color: var(--black); }
-.nav-item .material-symbols-outlined { font-size: 28px; }
-.nav-item .label { font-size: 11px; font-weight: 600; }
+/* PAGES */
+.page { flex:1; overflow-y:auto; display:none; padding-bottom:100px; -webkit-overflow-scrolling:touch; }
+.page.active { display:block; }
+.page-header { padding:20px 20px 12px; background:var(--surface-card); }
+.page-header h1 { font-size:26px; font-weight:700; letter-spacing:-0.5px; }
+.page-header p { font-size:13px; color:var(--text-tertiary); margin-top:2px; }
 
-.upload-box { border: 2px dashed var(--gray-300); border-radius: var(--radius-md); padding: 12px; text-align: center; position: relative; margin: 8px 0; background: var(--gray-100); }
-.upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-box-content { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--gray-800); font-weight: 500; font-size: 13px; }
-.upload-box-content .material-symbols-outlined { font-size: 24px; color: var(--black); }
+/* CARDS */
+.order-card { background:var(--surface-card); margin:0 0 10px 0; padding:18px 20px; border-radius:0; border-bottom:1px solid var(--border-light); }
+.order-card:first-child { border-top:1px solid var(--border-light); }
+.argo-display { font-size:22px; font-weight:700; color:var(--text-primary); }
+.argo-net { font-size:14px; color:var(--oneui-green); font-weight:600; }
+.badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:var(--r-xs); font-size:11px; font-weight:700; }
+.badge-gabungan { background:var(--oneui-green-bg); color:var(--oneui-green); }
+.badge-normal { background:var(--oneui-blue-bg); color:var(--oneui-blue); }
+.badge-kategori { background:var(--surface-input); color:var(--text-secondary); }
+.loc-row { display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+.loc-icon { font-size:20px; margin-top:1px; color:var(--text-secondary); flex-shrink:0; }
+.loc-info .loc-name { font-size:14px; font-weight:600; color:var(--text-primary); }
+.loc-info .loc-sub { font-size:12px; color:var(--text-tertiary); margin-top:1px; }
 
-/* Marker Pin OSRM */
-.pin-marker { width: 30px; height: 30px; background: var(--black); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; border: 2px solid var(--white); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+/* SWIPE */
+.swipe-wrap { position:relative; width:100%; height:58px; background:var(--surface-input); border-radius:var(--r-full); overflow:hidden; margin-top:14px; }
+.swipe-wrap.sw-green { background:var(--oneui-green-bg); }
+.swipe-wrap.sw-blue { background:var(--oneui-blue-bg); }
+.swipe-wrap.sw-red { background:var(--oneui-red-bg); }
+.swipe-text { position:absolute; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; pointer-events:none; z-index:1; letter-spacing:-0.2px; }
+.swipe-text.txt-green { color:var(--oneui-green); }
+.swipe-text.txt-blue { color:var(--oneui-blue); }
+.swipe-text.txt-red { color:var(--oneui-red); }
+.swipe-knob { position:absolute; top:5px; left:5px; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:2; cursor:grab; box-shadow:var(--shadow-md); }
+.swipe-knob:active { cursor:grabbing; }
+.knob-green { background:var(--oneui-green); color:#FFF; }
+.knob-blue { background:var(--oneui-blue); color:#FFF; }
+.knob-dark { background:var(--text-primary); color:#FFF; }
+.knob-red { background:var(--oneui-red); color:#FFF; }
+
+/* COUNTDOWN */
+.countdown-bar { background:var(--oneui-orange-bg); border-radius:var(--r-md); padding:10px 14px; display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.countdown-text { font-size:13px; font-weight:700; color:var(--oneui-orange); }
+.countdown-num { font-size:20px; font-weight:700; color:var(--oneui-orange); min-width:28px; }
+.cancel-small { background:var(--oneui-red-bg); color:var(--oneui-red); border:none; border-radius:var(--r-md); padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; margin-left:auto; flex-shrink:0; }
+
+/* MAPS PAGE */
+#page-maps { padding:0; position:relative; display:none; flex-direction:column; }
+#page-maps.active { display:flex; }
+#map { width:100%; background:var(--surface-input); flex:1; min-height:0; }
+.map-placeholder { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text-tertiary); background:var(--surface-input); }
+.map-placeholder .material-symbols-outlined { font-size:48px; }
+.floating-panel { background:var(--surface-card); padding:20px 20px 16px; border-radius:var(--r-2xl) var(--r-2xl) 0 0; box-shadow:0 -4px 24px rgba(0,0,0,0.1); position:absolute; bottom:80px; left:0; right:0; z-index:10; max-height:56vh; overflow-y:auto; }
+.center-btn { position:absolute; top:16px; right:16px; z-index:20; background:var(--surface-card); border:none; border-radius:var(--r-md); width:44px; height:44px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md); cursor:pointer; color:var(--text-primary); }
+
+/* PIN ROUTE LIST */
+.pin-list { display:flex; flex-direction:column; gap:0; }
+.pin-item { display:flex; align-items:center; gap:12px; padding:8px 0; }
+.pin-item:not(:last-child) { border-bottom:1px dashed var(--border-light); }
+.pin-badge { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.pin-active { background:var(--oneui-blue); color:#FFF; }
+.pin-next { background:var(--surface-input); color:var(--text-secondary); }
+.pin-done { background:var(--oneui-green-bg); color:var(--oneui-green); }
+
+/* BOTTOM NAV */
+.bottom-nav { position:fixed; bottom:0; width:100%; background:var(--surface-card); display:flex; border-top:1px solid var(--border-light); padding-bottom:env(safe-area-inset-bottom,12px); z-index:100; flex-shrink:0; }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-disabled); background:none; border:none; cursor:pointer; gap:2px; padding:10px 0 4px; transition:color 0.15s; }
+.nav-item.active { color:var(--oneui-blue); }
+.nav-item .material-symbols-outlined { font-size:26px; }
+.nav-item .nav-label { font-size:10px; font-weight:700; }
+.nav-badge { position:relative; }
+.nav-badge::after { content:attr(data-count); position:absolute; top:-2px; right:-8px; background:var(--oneui-red); color:#FFF; font-size:9px; font-weight:700; padding:2px 5px; border-radius:var(--r-full); min-width:16px; text-align:center; display:none; }
+.nav-badge[data-count]:not([data-count="0"])::after { display:block; }
+
+/* PROFIL */
+.profile-avatar { width:80px; height:80px; border-radius:var(--r-xl); background:var(--oneui-blue-bg); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
+.profile-avatar img { width:100%; height:100%; object-fit:cover; }
+.rank-badge { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:var(--r-full); font-size:12px; font-weight:700; margin-top:6px; }
+.rank-belum { background:var(--surface-input); color:var(--text-secondary); }
+.rank-verified { background:var(--oneui-blue-bg); color:var(--oneui-blue); }
+.rank-trusted { background:var(--oneui-purple-bg); color:var(--oneui-purple); }
+.info-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--border-light); }
+.info-row:last-child { border-bottom:none; }
+.info-label { font-size:13px; color:var(--text-tertiary); }
+.info-value { font-size:14px; font-weight:600; color:var(--text-primary); }
+.section-card { background:var(--surface-card); border-radius:var(--r-lg); padding:16px 20px; margin-bottom:12px; }
+.section-title { font-size:13px; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; }
+
+/* DEPOSIT */
+.deposit-card { background:linear-gradient(135deg, var(--oneui-blue) 0%, var(--oneui-blue-dark) 100%); border-radius:var(--r-xl); padding:20px; color:#FFF; margin-bottom:12px; }
+.deposit-label { font-size:12px; font-weight:600; opacity:0.75; }
+.deposit-val { font-size:28px; font-weight:700; letter-spacing:-1px; margin-top:4px; }
+.tabungan-card { background:var(--oneui-green-bg); border-radius:var(--r-xl); padding:18px 20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+
+/* RIWAYAT */
+.riwayat-item { background:var(--surface-card); padding:16px 20px; border-bottom:1px solid var(--border-light); }
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px; gap:12px; color:var(--text-tertiary); text-align:center; }
+.empty-state .material-symbols-outlined { font-size:52px; }
+
+/* POPUP AWAL */
+#welcome-popup .modal-sheet { padding-bottom:32px; }
+.warning-box { background:var(--oneui-red-bg); border-radius:var(--r-md); border-left:4px solid var(--oneui-red); padding:14px 16px; margin-bottom:16px; }
+.warning-box p { font-size:13px; color:var(--oneui-red); line-height:1.6; font-weight:600; }
+.spirit-box { background:var(--oneui-blue-bg); border-radius:var(--r-md); padding:14px 16px; margin-bottom:16px; }
+.spirit-box p { font-size:13px; color:var(--oneui-blue-dark); line-height:1.7; }
+
+/* ORDER TIMER ACCEPT */
+.accept-timer-modal .modal-sheet { text-align:center; }
+.big-countdown { font-size:56px; font-weight:700; color:var(--oneui-blue); letter-spacing:-2px; line-height:1; margin:16px 0; }
+.accept-order-info { background:var(--surface-input); border-radius:var(--r-md); padding:14px; margin-bottom:16px; text-align:left; }
+
+/* DIVIDER */
+.divider { height:8px; background:var(--surface-bg); }
+
+/* SIGNUP STEPS */
+.signup-step { display:none; }
+.signup-step.active { display:block; }
+.step-indicator { display:flex; gap:6px; margin-bottom:20px; }
+.step-dot { height:4px; flex:1; border-radius:var(--r-full); background:var(--border-light); transition:background 0.2s; }
+.step-dot.done { background:var(--oneui-blue); }
+
+/* PROMO NOTE */
+.note-box { display:flex; align-items:flex-start; gap:8px; padding:10px 12px; background:var(--oneui-orange-bg); border-radius:var(--r-md); margin-bottom:12px; }
+.note-box .material-symbols-outlined { font-size:18px; color:var(--oneui-orange); flex-shrink:0; margin-top:1px; }
+.note-box p { font-size:12px; color:var(--oneui-orange); font-weight:600; line-height:1.5; }
+
+/* SECTION */
+.section-label { font-size:11px; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.6px; padding:16px 20px 6px; }
+
+/* ANIMATE */
+.order-card { animation:cardIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+@keyframes cardIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* PIN MARKERS */
+.map-pin { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; border:2.5px solid #FFF; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
 </style>
 </head>
 <body>
 
+<!-- AUDIO ELEMENTS -->
+<audio id="snd-order" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+<audio id="snd-accept" src="https://assets.mixkit.co/active_storage/sfx/2872/2872-preview.mp3" preload="auto"></audio>
+
+<!-- LOADING -->
 <div id="loading-overlay">
-    <div class="spinner"></div>
-    <p style="color:#FFF;margin-top:16px;font-weight:600;letter-spacing:0.5px;" id="loading-text">Memproses...</p>
+  <div class="oneui-spinner"></div>
+  <div id="loading-text" style="font-size:14px;font-weight:600;color:var(--text-secondary);">Memproses...</div>
 </div>
 
+<!-- TOAST -->
+<div id="toast"><span id="toast-msg"></span></div>
+
+<!-- ============================================================
+     SPLASH / AUTH
+     ============================================================ -->
 <div id="splash">
-    <div class="splash-content">
-        <h1 style="font-size: 42px; letter-spacing: -2px;">Driver<span style="color:var(--green)">JastipGo</span></h1>
-        <p style="margin-top: 8px; color: var(--gray-300);">Driver Partner App</p>
+  <div class="splash-hero">
+    <div class="splash-logo">
+      <span class="material-symbols-outlined" style="color:#FFF;font-size:36px;">two_wheeler</span>
     </div>
-    <div class="auth-sheet">
-        <h2 style="margin-bottom: 24px;">Masuk untuk mulai</h2>
-        <input type="email" class="field" id="login-email" placeholder="Email">
-        <input type="password" class="field" id="login-pass" placeholder="Password">
-        <button class="btn btn-black" onclick="window.doLogin()">Masuk</button>
-        <button class="btn btn-gray" onclick="window.doSignup()">Daftar Akun Baru</button>
+    <h1 style="font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--text-primary);">Driver <span style="color:var(--oneui-blue);">JastipUnnes</span></h1>
+    <p style="font-size:14px;color:var(--text-tertiary);margin-top:6px;text-align:center;">Mitra Pengiriman Mahasiswa UNNES</p>
+  </div>
+  
+  <!-- AUTH SHEET -->
+  <div class="splash-sheet" id="auth-sheet">
+    <div class="auth-tab-bar">
+      <button class="auth-tab active" id="tab-login" onclick="showTab('login')">Masuk</button>
+      <button class="auth-tab" id="tab-signup" onclick="showTab('signup')">Daftar</button>
     </div>
-</div>
 
-<div id="app">
-    <div class="top-bar">
-        <div class="status-pill"><span class="material-symbols-outlined" style="font-size:16px;">wifi</span> Online</div>
-        <div style="font-weight:700; font-size:18px;" id="top-saldo">Rp 0</div>
+    <!-- LOGIN FORM -->
+    <div id="form-login">
+      <div class="field-group">
+        <div class="field-label">Email <span class="field-required">*</span></div>
+        <input type="email" class="oneui-input" id="login-email" placeholder="email@mahasiswa.unnes.ac.id">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Password <span class="field-required">*</span></div>
+        <input type="password" class="oneui-input" id="login-pass" placeholder="Minimal 6 karakter">
+      </div>
+      <button class="btn-oneui btn-primary" onclick="window.doLogin()" style="margin-top:4px;">
+        <span class="material-symbols-outlined" style="font-size:20px;">login</span> Masuk
+      </button>
+      <div style="height:32px;"></div>
     </div>
-    
-    <div class="page active" id="page-cari">
-        <div class="page-title">
-            Permintaan
-            <button class="btn btn-gray" style="width:auto; padding:8px 12px; margin:0;" onclick="window.refreshOrders()">
-                <span class="material-symbols-outlined" style="font-size:20px;">refresh</span>
-            </button>
+
+    <!-- SIGNUP FORM -->
+    <div id="form-signup" class="d-none">
+      <div class="step-indicator" id="step-indicator">
+        <div class="step-dot done" id="sdot-0"></div>
+        <div class="step-dot" id="sdot-1"></div>
+        <div class="step-dot" id="sdot-2"></div>
+        <div class="step-dot" id="sdot-3"></div>
+      </div>
+
+      <!-- STEP 0: AKUN -->
+      <div class="signup-step active" id="step-0">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">Informasi Akun</div>
+        <div class="field-group">
+          <div class="field-label">Email <span class="field-required">*</span></div>
+          <input type="email" class="oneui-input" id="reg-email" placeholder="email@mahasiswa.unnes.ac.id">
         </div>
-        <div id="available-orders" style="padding-top: 8px;"></div>
-    </div>
-
-    <div class="page" id="page-maps">
-        <div id="map-placeholder" style="height:40vh; background:var(--gray-200); display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--gray-300);">
-            <span class="material-symbols-outlined" style="font-size:48px;">map</span>
-            <p>Peta aktif saat pesanan diambil</p>
+        <div class="field-group">
+          <div class="field-label">Password <span class="field-required">*</span></div>
+          <input type="password" class="oneui-input" id="reg-pass" placeholder="Minimal 6 karakter">
         </div>
-        <div id="map" class="d-none"></div>
-        <div class="floating-panel" id="active-order-container"></div>
-    </div>
-
-    <div class="page" id="page-riwayat">
-        <div class="page-title">Riwayat</div>
-        <div style="padding: 32px 20px; text-align: center; color: var(--gray-300);">
-            <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 12px;">history</span>
-            <p>Riwayat pesanan akan muncul di sini.</p>
+        <div class="field-group">
+          <div class="field-label">Nama Lengkap <span class="field-required">*</span></div>
+          <input type="text" class="oneui-input" id="reg-nama" placeholder="Sesuai KTP">
         </div>
-    </div>
+        <div class="field-group">
+          <div class="field-label">Nomor HP (WhatsApp) <span class="field-required">*</span></div>
+          <input type="tel" class="oneui-input" id="reg-hp" placeholder="08xxxxxxxxxx">
+        </div>
+        <div class="field-group">
+          <div class="field-label">NIM / ID Mahasiswa <span class="field-required">*</span></div>
+          <input type="text" class="oneui-input" id="reg-nim" placeholder="Nomor Induk Mahasiswa">
+        </div>
+        <button class="btn-oneui btn-primary" onclick="nextStep(1)">Lanjut →</button>
+      </div>
 
-    <div class="page" id="page-profil">
-        <div class="page-title">Profil Anda</div>
-        <div style="padding: 20px;">
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom: 32px;">
-                <div style="width:64px;height:64px;background:var(--gray-200);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--gray-800);">person</span>
-                </div>
-                <div>
-                    <h2 id="prof-nama">Driver Name</h2>
-                    <p id="prof-rank" style="color:var(--gray-300); font-size:14px;">Status</p>
-                </div>
+      <!-- STEP 1: DOKUMEN WAJIB -->
+      <div class="signup-step" id="step-1">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Dokumen Wajib</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Upload foto dokumen yang jelas & terbaca</div>
+        
+        <div class="field-group">
+          <div class="field-label">Foto Kartu Mahasiswa <span class="field-required">*</span></div>
+          <div class="upload-box" id="ub-km">
+            <input type="file" accept="image/*" onchange="handleDocUpload(event,'km')">
+            <div class="upload-box-content">
+              <span class="material-symbols-outlined">badge</span>
+              <span class="upload-label" id="lbl-km">Ketuk untuk Upload</span>
+              <span class="upload-sub">Kartu Mahasiswa UNNES</span>
             </div>
-            <button class="btn btn-gray" style="color:var(--red); font-weight: 700; background: #FFEEEE;" onclick="window.doLogout()">
-                Keluar dari Akun
-            </button>
+          </div>
         </div>
-    </div>
+        <div class="field-group">
+          <div class="field-label">Foto KTP <span class="field-required">*</span></div>
+          <div class="upload-box" id="ub-ktp">
+            <input type="file" accept="image/*" onchange="handleDocUpload(event,'ktp')">
+            <div class="upload-box-content">
+              <span class="material-symbols-outlined">id_card</span>
+              <span class="upload-label" id="lbl-ktp">Ketuk untuk Upload</span>
+              <span class="upload-sub">KTP/Identitas Nasional</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Foto STNK <span class="field-required">*</span></div>
+          <div class="upload-box" id="ub-stnk">
+            <input type="file" accept="image/*" onchange="handleDocUpload(event,'stnk')">
+            <div class="upload-box-content">
+              <span class="material-symbols-outlined">directions_bike</span>
+              <span class="upload-label" id="lbl-stnk">Ketuk untuk Upload</span>
+              <span class="upload-sub">STNK Kendaraan</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-oneui btn-secondary" onclick="nextStep(0)" style="flex:0.5;">← Kembali</button>
+          <button class="btn-oneui btn-primary" onclick="nextStep(2)" style="flex:1;">Lanjut →</button>
+        </div>
+      </div>
 
-    <div class="bottom-nav">
-        <button class="nav-item active" id="nav-cari" onclick="window.switchPage('cari')"><span class="material-symbols-outlined">list_alt</span><span class="label">Daftar</span></button>
-        <button class="nav-item disabled" id="nav-maps" onclick="window.switchPage('maps')"><span class="material-symbols-outlined">explore</span><span class="label">Maps</span></button>
-        <button class="nav-item" id="nav-riwayat" onclick="window.switchPage('riwayat')"><span class="material-symbols-outlined">receipt_long</span><span class="label">Riwayat</span></button>
-        <button class="nav-item" id="nav-profil" onclick="window.switchPage('profil')"><span class="material-symbols-outlined">person</span><span class="label">Profil</span></button>
+      <!-- STEP 2: DOKUMEN OPSIONAL -->
+      <div class="signup-step" id="step-2">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Dokumen Tambahan</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Opsional — namun diperlukan untuk verifikasi gelar</div>
+        
+        <div class="field-group">
+          <div class="field-label">Foto SIM (Opsional)</div>
+          <div class="upload-box" id="ub-sim">
+            <input type="file" accept="image/*" onchange="handleDocUpload(event,'sim')">
+            <div class="upload-box-content">
+              <span class="material-symbols-outlined">drive_eta</span>
+              <span class="upload-label" id="lbl-sim">Ketuk untuk Upload</span>
+              <span class="upload-sub">SIM A/C — untuk gelar Terverifikasi</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Foto Profil <span class="field-required">*</span></div>
+          <div class="upload-box" id="ub-profile">
+            <input type="file" accept="image/*" onchange="handleDocUpload(event,'profile')">
+            <div class="upload-box-content">
+              <span class="material-symbols-outlined">person</span>
+              <span class="upload-label" id="lbl-profile">Foto Profil</span>
+              <span class="upload-sub">Foto wajah yang jelas</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-oneui btn-secondary" onclick="nextStep(1)" style="flex:0.5;">← Kembali</button>
+          <button class="btn-oneui btn-primary" onclick="nextStep(3)" style="flex:1;">Lanjut →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: PERSETUJUAN -->
+      <div class="signup-step" id="step-3">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">Persetujuan & Perjanjian</div>
+        <div class="warning-box" style="margin-bottom:12px;">
+          <p>⚠️ <strong>PERINGATAN KERAS:</strong> Tindak pencurian, pelecehan, atau kejahatan lain akan ditindak tegas secara hukum, dilaporkan ke pihak berwajib, dan dituntut pencabutan status mahasiswa serta ganti rugi.</p>
+        </div>
+        <div style="background:var(--surface-input);border-radius:var(--r-md);padding:14px;font-size:12px;color:var(--text-secondary);line-height:1.7;max-height:140px;overflow-y:auto;margin-bottom:16px;">
+          Dengan mendaftar sebagai driver JastipUnnes, saya menyatakan bahwa semua data yang saya berikan adalah benar dan valid. Saya setuju untuk mematuhi semua aturan dan ketentuan yang berlaku. Saya memahami bahwa pelanggaran terhadap peraturan akan mengakibatkan penangguhan atau penghentian akun secara permanen.
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-bottom:20px;">
+          <input type="checkbox" id="chk-agree" style="width:20px;height:20px;margin-top:1px;accent-color:var(--oneui-blue);cursor:pointer;">
+          <span style="font-size:13px;color:var(--text-primary);font-weight:600;line-height:1.5;">Saya telah membaca, memahami, dan menyetujui seluruh syarat, ketentuan, serta perjanjian Driver JastipUnnes.</span>
+        </label>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-oneui btn-secondary" onclick="nextStep(2)" style="flex:0.5;">← Kembali</button>
+          <button class="btn-oneui btn-primary" id="btn-daftar" onclick="window.doSignup()" style="flex:1;">
+            <span class="material-symbols-outlined" style="font-size:18px;">how_to_reg</span> Daftar Sekarang
+          </button>
+        </div>
+        <div style="height:32px;"></div>
+      </div>
     </div>
+  </div>
 </div>
-</body>
+
+<!-- ============================================================
+     WELCOME POPUP (setelah login)
+     ============================================================ -->
+<div class="modal-overlay" id="welcome-popup">
+  <div class="modal-sheet" style="max-height:85vh;">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:36px;margin-bottom:8px;">🌙</div>
+      <div class="modal-title" style="font-size:22px;">Selamat Datang, Mitra!</div>
+      <div class="modal-sub">Semangat mencari rezeki yang halal & berkah 💪</div>
+    </div>
+    <div class="spirit-box">
+      <p>✨ <strong>Setiap pesanan adalah kepercayaan.</strong> Jaga amanah, layani dengan hati, dan jadilah kebanggaan mahasiswa UNNES. Rezeki yang halal membawa keberkahan untuk kita semua!</p>
+    </div>
+    <div class="warning-box">
+      <p>🚨 <strong>PERINGATAN KERAS:</strong> Segala bentuk pencurian, pelecehan seksual, penipuan, atau tindak kriminal lainnya akan <strong>ditindak tegas secara hukum</strong>, dilaporkan ke kepolisian, dan dituntut <strong>pencabutan status mahasiswa</strong> serta ganti rugi penuh. JastipUnnes ZERO TOLERANCE terhadap kejahatan.</p>
+    </div>
+    <div class="section-card" style="background:var(--oneui-blue-bg);margin-bottom:16px;">
+      <div class="section-title" style="color:var(--oneui-blue);">📋 Panduan Cepat</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+        1. Pastikan status <strong>Online</strong> untuk menerima pesanan<br>
+        2. Anda dapat menerima <strong>1 order normal + 1 order gabungan</strong> (maks. 5 pesanan)<br>
+        3. Selesaikan sesuai urutan PIN yang ditentukan<br>
+        4. Upload bukti foto di setiap tahapan<br>
+        5. Argo yang diterima sudah dipotong 20% komisi platform
+      </div>
+    </div>
+    <button class="btn-oneui btn-primary" onclick="closeWelcomePopup()">
+      <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span> Saya Mengerti, Siap Bekerja!
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     ACCEPT ORDER MODAL (10 detik countdown)
+     ============================================================ -->
+<div class="modal-overlay accept-timer-modal" id="accept-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;">
+      <div style="font-size:14px;color:var(--text-tertiary);font-weight:600;margin-bottom:4px;">Pesanan Masuk!</div>
+      <div class="big-countdown" id="accept-countdown">10</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">detik tersisa untuk memutuskan</div>
+    </div>
+    <div class="accept-order-info" id="accept-order-info">
+      <!-- Dynamic order info -->
+    </div>
+    <button class="btn-oneui btn-primary" id="btn-terima-modal" onclick="confirmAcceptOrder()">
+      <span class="material-symbols-outlined" style="font-size:20px;">check</span> Terima Pesanan
+    </button>
+    <button class="btn-oneui btn-secondary" onclick="rejectOrder()" style="margin-top:10px;">Lewati</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     EARNING POPUP (selesai semua order)
+     ============================================================ -->
+<div class="modal-overlay" id="earning-popup">
+  <div class="modal-sheet" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+    <div class="modal-title">Semua Pesanan Selesai!</div>
+    <div class="modal-sub">Kerja keras Anda membuahkan hasil</div>
+    <div style="background:var(--oneui-green-bg);border-radius:var(--r-xl);padding:20px;margin:16px 0;">
+      <div style="font-size:13px;color:var(--oneui-green);font-weight:600;">Total Pendapatan Trip Ini</div>
+      <div style="font-size:36px;font-weight:700;color:var(--oneui-green);letter-spacing:-1px;" id="earning-total">Rp 0</div>
+    </div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Sudah ditambahkan ke tabungan Anda</div>
+    <button class="btn-oneui btn-primary" onclick="closeEarningPopup()">
+      <span class="material-symbols-outlined" style="font-size:20px;">done</span> Lanjutkan
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOPUP DEPOSIT MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="topup-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💰 Topup Deposit</div>
+    <div class="modal-sub">Deposit digunakan sebagai jaminan modal operasional. Biaya platform akan dipotong dari deposit setiap pesanan selesai.</div>
+    <div style="background:var(--oneui-orange-bg);border-radius:var(--r-md);padding:14px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:var(--oneui-orange);">Cara Topup Deposit:</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.7;">
+        1. Transfer ke <strong>ShopeePay: 08xxxx (Admin JastipUnnes)</strong><br>
+        2. Screenshot bukti transfer<br>
+        3. Hubungi Admin via WhatsApp dengan menyertakan screenshot & nominal topup<br>
+        4. Deposit akan diproses dalam 1x24 jam
+      </div>
+    </div>
+    <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20topup%20deposit%20JastipUnnes." target="_blank" class="btn-oneui btn-primary" style="text-decoration:none;display:flex;">
+      <span class="material-symbols-outlined" style="font-size:20px;">chat</span> Hubungi Admin via WhatsApp
+    </a>
+    <button class="btn-oneui btn-secondary" onclick="closeTopupModal()" style="margin-top:10px;">Tutup</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP MAIN
+     ============================================================ -->
+<div id="app">
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <button class="driver-status-pill online" id="status-pill" onclick="toggleOnlineStatus()">
+      <span class="status-dot dot-online" id="status-dot"></span>
+      <span id="status-text">Online</span>
+    </button>
+    <div class="top-deposit" onclick="openTopupModal()" style="cursor:pointer;">
+      <span class="top-deposit-label">DEPOSIT 💳</span>
+      <span class="top-deposit-val" id="top-deposit-val">Rp 0</span>
+    </div>
+  </div>
+
+  <!-- PAGE: DAFTAR PESANAN -->
+  <div class="page active" id="page-daftar">
+    <div class="page-header">
+      <h1>Daftar Pesanan</h1>
+      <p id="daftar-sub">Mencari pesanan tersedia...</p>
+    </div>
+    <div class="divider"></div>
+    <div id="available-orders-list" style="padding-top:4px;"></div>
+  </div>
+
+  <!-- PAGE: MAPS / AKTIF -->
+  <div class="page" id="page-maps" style="padding:0;position:relative;flex-direction:column;">
+    <div id="map-placeholder-div" class="map-placeholder" style="flex:1;min-height:200px;">
+      <span class="material-symbols-outlined">map</span>
+      <p style="font-size:14px;font-weight:600;">Peta aktif saat pengantaran</p>
+    </div>
+    <div id="map" class="d-none" style="flex:1;min-height:0;"></div>
+    <button class="center-btn d-none" id="center-map-btn" onclick="centerDriverOnMap()">
+      <span class="material-symbols-outlined">my_location</span>
+    </button>
+    <div class="floating-panel" id="active-order-panel"></div>
+  </div>
+
+  <!-- PAGE: RIWAYAT -->
+  <div class="page" id="page-riwayat">
+    <div class="page-header">
+      <h1>Riwayat</h1>
+      <p>Rekam jejak perjalanan Anda</p>
+    </div>
+    <div class="divider"></div>
+    <div id="riwayat-list"></div>
+  </div>
+
+  <!-- PAGE: PROFIL -->
+  <div class="page" id="page-profil">
+    <div class="page-header">
+      <h1>Profil Saya</h1>
+    </div>
+    <div class="divider"></div>
+    <div style="padding:20px;">
+      <!-- PROFILE HEADER -->
+      <div class="section-card">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+          <div class="profile-avatar" id="prof-avatar">
+            <span class="material-symbols-outlined" style="font-size:36px;color:var(--oneui-blue);">person</span>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:700;" id="prof-nama">Driver</div>
+            <div id="prof-nim" style="font-size:13px;color:var(--text-tertiary);">NIM: -</div>
+            <div id="prof-rank-badge"></div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-value" id="prof-email">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">No. HP</span>
+          <span class="info-value" id="prof-hp">-</span>
+        </div>
+      </div>
+
+      <!-- DEPOSIT & TABUNGAN -->
+      <div class="deposit-card">
+        <div class="deposit-label">SALDO DEPOSIT</div>
+        <div class="deposit-val" id="prof-deposit">Rp 0</div>
+        <div style="font-size:11px;opacity:0.65;margin-top:4px;">Dipotong 20% dari setiap pesanan selesai</div>
+        <button onclick="openTopupModal()" style="margin-top:12px;background:rgba(255,255,255,0.2);color:#FFF;border:1px solid rgba(255,255,255,0.3);border-radius:var(--r-md);padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">+ Topup Deposit</button>
+      </div>
+      <div class="tabungan-card">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--oneui-green);">TABUNGAN PENDAPATAN</div>
+          <div style="font-size:22px;font-weight:700;color:var(--oneui-green);" id="prof-tabungan">Rp 0</div>
+        </div>
+        <span class="material-symbols-outlined" style="font-size:32px;color:var(--oneui-green);opacity:0.5;">savings</span>
+      </div>
+
+      <!-- GELAR -->
+      <div class="section-card">
+        <div class="section-title">Gelar & Verifikasi</div>
+        <div id="rank-info-block" style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+          <!-- Dynamic -->
+        </div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">Untuk perubahan gelar, hubungi admin.</div>
+        <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20mengajukan%20verifikasi%20gelar." target="_blank" class="btn-oneui btn-secondary btn-sm" style="margin-top:12px;display:inline-flex;width:auto;">
+          <span class="material-symbols-outlined" style="font-size:16px;">verified</span> Ajukan Verifikasi
+        </a>
+      </div>
+
+      <!-- DOKUMEN -->
+      <div class="section-card">
+        <div class="section-title">Dokumen Saya</div>
+        <div id="doc-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <div class="note-box" style="margin-top:12px;margin-bottom:0;">
+          <span class="material-symbols-outlined">info</span>
+          <p>Dokumen yang sudah diupload tidak dapat diubah. Untuk perubahan, hubungi admin.</p>
+        </div>
+      </div>
+
+      <!-- LOGOUT -->
+      <button class="btn-oneui btn-danger" onclick="window.doLogout()" style="margin-top:4px;">
+        <span class="material-symbols-outlined" style="font-size:20px;">logout</span> Keluar dari Akun
+      </button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-daftar" onclick="window.switchPage('daftar')">
+      <div class="nav-badge" id="nb-daftar" data-count="0">
+        <span class="material-symbols-outlined">list_alt</span>
+      </div>
+      <span class="nav-label">Daftar</span>
+    </button>
+    <button class="nav-item" id="nav-maps" onclick="window.switchPage('maps')">
+      <span class="material-symbols-outlined">explore</span>
+      <span class="nav-label">Antar</span>
+    </button>
+    <button class="nav-item" id="nav-riwayat" onclick="window.switchPage('riwayat')">
+      <span class="material-symbols-outlined">receipt_long</span>
+      <span class="nav-label">Riwayat</span>
+    </button>
+    <button class="nav-item" id="nav-profil" onclick="window.switchPage('profil')">
+      <span class="material-symbols-outlined">person</span>
+      <span class="nav-label">Profil</span>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     FIREBASE + APP LOGIC
+     ============================================================ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where, addDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const app = initializeApp({ 
-    apiKey: "AIzaSyDv-jfV1lFxEbvQn9TcgLMz6dyeyaK0OMc", 
-    authDomain: "jastipunnes-3c2da.firebaseapp.com", 
-    projectId: "jastipunnes-3c2da", 
-    storageBucket: "jastipunnes-3c2da.firebasestorage.app", 
-    messagingSenderId: "859733685114", 
-    appId: "1:859733685114:web:d2ed8819b09b6b24939cc3" 
+const firebaseApp = initializeApp({
+  apiKey: "AIzaSyDv-jfV1lFxEbvQn9TcgLMz6dyeyaK0OMc",
+  authDomain: "jastipunnes-3c2da.firebaseapp.com",
+  projectId: "jastipunnes-3c2da",
+  storageBucket: "jastipunnes-3c2da.firebasestorage.app",
+  messagingSenderId: "859733685114",
+  appId: "1:859733685114:web:d2ed8819b09b6b24939cc3"
 });
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
-// STATE & CACHE
-let currentUserUid = '';
+const CLOUDINARY_PRESET = 'jastipunnes';
+const CLOUDINARY_CLOUD = 'dcukdvei8';
+
+// ========================= STATE =========================
+let currentUid = '';
 let driverData = null;
-let activeOrders = []; // Array of active orders for batching
-let locationInterval = null; 
-window.filesBuffer = {}; // Format: { "orderId_ambil": file, "orderId_selesai": file }
+let activeOrders = [];
 let map = null;
-let currentDeviceCoords = null; // Update via GPS
-let currentDeliveryPin = null;  // Object for current destination in 'ngantar' phase
+let currentDeviceCoords = null;
+let isOnline = true;
+let docFiles = {};         
+let tripTotalArgo = 0;     
+let pendingAcceptOrder = null;
+let acceptCountdownTimer = null;
+let previousOrderIds = new Set();
+let currentDeliveryPin = null;
+window.filesBuffer = {};
 
-const CLOUDINARY_UPLOAD_PRESET = 'jastipunnes'; 
-const CLOUDINARY_CLOUD_NAME = 'dcukdvei8';       
+let isSigningUp = false; // <--- TAMBAHKAN INI
 
-// LOAD CACHED INCOME
-function loadCachedIncome() {
-    let cached = parseInt(localStorage.getItem('mitraJastipIncome') || '0');
-    document.getElementById('top-saldo').innerText = "Rp " + cached.toLocaleString('id-ID');
-}
-function addIncome(amount) {
-    let cached = parseInt(localStorage.getItem('mitraJastipIncome') || '0');
-    cached += amount;
-    localStorage.setItem('mitraJastipIncome', cached);
-    loadCachedIncome();
-}
 
-// UI HELPERS
-window.switchPage = (p) => {
-    if(p === 'maps' && document.getElementById('nav-maps').classList.contains('disabled')) return;
-    document.querySelectorAll('.page, .nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('page-' + p).classList.add('active');
-    document.getElementById('nav-' + p).classList.add('active');
-    if(p === 'maps' && map) setTimeout(() => map.resize(), 100);
-};
-function showLoading(text) { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').classList.add('visible'); }
-function hideLoading() { document.getElementById('loading-overlay').classList.remove('visible'); }
-window.refreshOrders = () => { showLoading('Memperbarui...'); setTimeout(() => { hideLoading(); }, 800); }; // Listener otomatis, ini hanya UX refresh.
-
-// AUTH
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUserUid = user.uid; await loadDriverProfile();
-    } else {
-        document.getElementById('app').classList.remove('visible'); document.getElementById('splash').classList.remove('hidden');
-        if(locationInterval) clearInterval(locationInterval);
-    }
-});
-
-window.doLogin = async () => {
-    const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
-    if(!e || !p) return alert('Isi data!');
-    showLoading('Memverifikasi...');
-    try { await signInWithEmailAndPassword(auth, e, p); } catch(err) { alert('Gagal: ' + err.message); hideLoading(); }
-};
-
-window.doSignup = async () => {
-    const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
-    if(!e || p.length < 6) return alert('Email & Pass(min 6) wajib!');
-    showLoading('Mendaftar...');
-    try {
-        const c = await createUserWithEmailAndPassword(auth, e, p);
-        await setDoc(doc(db, "user", c.user.uid), { CustomerID: "", GetdriverID: c.user.uid, nama: "Driver Baru", wa: "0800000000", email: e, urlProfile: "", role: "driver", saldo: 0, stnk: "B 1234 XYZ", sim: "", skck: "", ktp: "", status: "belumterverifikasi" });
-        await loadDriverProfile();
-    } catch(err) { alert('Gagal: ' + err.message); hideLoading(); }
-};
-window.doLogout = () => signOut(auth);
-
-async function loadDriverProfile() {
-    try {
-        const snap = await getDoc(doc(db, "user", currentUserUid));
-        if (snap.exists() && snap.data().role === 'driver') {
-            driverData = snap.data();
-            document.getElementById('prof-nama').innerText = driverData.nama;
-            document.getElementById('prof-rank').innerText = driverData.status.toUpperCase();
-            loadCachedIncome();
-            document.getElementById('splash').classList.add('hidden');
-            document.getElementById('app').classList.add('visible');
-            trackDeviceLocation(); // Track GPS continuously
-            listenToOrders();
-            hideLoading();
-        } else { alert("Akun bukan Driver!"); signOut(auth); hideLoading(); }
-    } catch(e) { console.error(e); hideLoading(); }
+// ========================= CLOUDINARY UPLOAD =========================
+async function uploadToCloudinary(file, maxKB) {
+  // Compress image
+  const compressed = await compressImage(file, maxKB);
+  const fd = new FormData();
+  fd.append('file', compressed);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  try {
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd });
+    const d = await res.json();
+    return d.secure_url;
+  } catch(e) {
+    return new Promise(r => { const rd = new FileReader(); rd.onload = ev => r(ev.target.result); rd.readAsDataURL(compressed); });
+  }
 }
 
-// GPS TRACKER
-function trackDeviceLocation() {
-    if(!navigator.geolocation) return;
-    navigator.geolocation.watchPosition(p => {
-        currentDeviceCoords = [p.coords.longitude, p.coords.latitude];
-        if(map && map.getSource('driver-loc')) {
-            map.getSource('driver-loc').setData({ type: 'Point', coordinates: currentDeviceCoords });
-        }
-    }, null, { enableHighAccuracy: true });
+function compressImage(file, maxKB) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      let canvas = document.createElement('canvas');
+      let [w, h] = [img.width, img.height];
+      const maxPx = 800;
+      if (w > maxPx || h > maxPx) {
+        const ratio = Math.min(maxPx/w, maxPx/h);
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      let q = 0.8;
+      const tryCompress = () => {
+        canvas.toBlob(blob => {
+          if (blob.size <= maxKB * 1024 || q <= 0.1) {
+            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+          } else { q -= 0.1; tryCompress(); }
+        }, 'image/jpeg', q);
+      };
+      tryCompress();
+    };
+    img.src = url;
+  });
+}
+
+// ========================= HAVERSINE =========================
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function parseCoords(str) {
-    if(!str) return null;
-    let m = str.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
-    if(!m) return null;
-    let v1 = parseFloat(m[1]), v2 = parseFloat(m[2]);
-    let lng = (Math.abs(v1) > 90) ? v1 : v2;
-    let lat = (Math.abs(v1) > 90) ? v2 : v1;
-    return [lng, lat];
+  if (!str) return null;
+  const m = str.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+  if (!m) return null;
+  const v1 = parseFloat(m[1]), v2 = parseFloat(m[2]);
+  const lng = Math.abs(v1) > 90 ? v1 : v2;
+  const lat = Math.abs(v1) > 90 ? v2 : v1;
+  return [lng, lat];
 }
 
-// HAVERSINE DISTANCE
-function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+// ========================= UI HELPERS =========================
+function showLoading(t='Memproses...') { document.getElementById('loading-text').innerText=t; document.getElementById('loading-overlay').classList.add('visible'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('visible'); }
+let _tt;
+function showToast(m) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = m;
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// LISTENERS
-function listenToOrders() {
-    // 1. ACTIVE ORDERS (Driver's Orders)
-    const qActive = query(collection(db, "orders"), where("getdriverId", "==", currentUserUid));
-    onSnapshot(qActive, (snapshot) => {
-        let tempActive = [];
-        snapshot.forEach(d => {
-            const o = d.data();
-            if(o.status !== 'selesai' && o.status !== 'dibatalkan') tempActive.push({ id: d.id, ...o });
-        });
-        activeOrders = tempActive;
-        renderActiveOrdersPhase();
-    });
-
-    // 2. AVAILABLE ORDERS
-    const qAvailable = query(collection(db, "orders"), where("getdriverId", "==", ""), where("status", "==", "menunggu"));
-    onSnapshot(qAvailable, (snapshot) => {
-        let html = '';
-        const now = new Date().getTime();
-        
-        // Pengecekan Batching (Jika sedang bawa Normal, atau Gabungan sudah 4)
-        let isCarryingNormal = activeOrders.some(o => o.jenisOrder === 'normal');
-        let gabunganCount = activeOrders.filter(o => o.jenisOrder === 'gabungan').length;
-        if(isCarryingNormal || gabunganCount >= 4) {
-            document.getElementById('available-orders').innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--gray-300);">Anda sudah mencapai batas pesanan aktif.</div>';
-            return;
-        }
-
-        snapshot.forEach(doc => {
-            const o = doc.data();
-            // FILTER WAKTU: Tampilkan yang <= 60 menit dari jadwal, atau Langsung.
-            let showOrder = false;
-            if (o.waktuAmbil === 'Langsung') {
-                showOrder = true; 
-            } else {
-                let sched = new Date(o.waktuAmbil).getTime();
-                let diffMins = (sched - now) / (1000 * 60);
-                if (diffMins <= 60 && diffMins >= -120) showOrder = true; // Batas toleransi jadwal
-            }
-
-            // FILTER BATCHING GABUNGAN: Hanya tampilkan gabungan jika driver sedang bawa gabungan.
-            if(gabunganCount > 0 && o.jenisOrder !== 'gabungan') showOrder = false;
-
-            if (showOrder) {
-                html += `
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="price">Rp ${o.Argo.toLocaleString('id-ID')}</div>
-                            <div style="font-size:13px; color:var(--gray-300); margin-top:4px;">
-                                <span class="badge-order" style="background:${o.jenisOrder==='gabungan'?'#E6F6ED':'var(--gray-200)'}; color:${o.jenisOrder==='gabungan'?'var(--green)':'var(--black)'};">${o.jenisOrder}</span> • ${o.kategori} • ${o.JarakTempuh} KM
-                            </div>
-                        </div>
-                    </div>
-                    <div class="location-row"><span class="material-symbols-outlined loc-icon">radio_button_checked</span><div><div class="loc-text">${o.namaAmbil}</div><div class="loc-sub">Ambil</div></div></div>
-                    <div class="location-row" style="margin-bottom:20px;"><span class="material-symbols-outlined loc-icon" style="color:var(--black);">location_on</span><div><div class="loc-text">${o.NamaAntar}</div><div class="loc-sub">Antar</div></div></div>
-                    <div class="swipe-container" data-action="terima" data-orderid="${doc.id}">
-                        <div class="swipe-text">Geser untuk Terima</div>
-                        <div class="swipe-knob"><span class="material-symbols-outlined">arrow_forward</span></div>
-                    </div>
-                </div>`;
-            }
-        });
-        if(!html) html = '<div style="padding:40px 20px;text-align:center;color:var(--gray-300);"><span class="material-symbols-outlined" style="font-size:48px;margin-bottom:16px;">search</span><p>Mencari permintaan...</p></div>';
-        document.getElementById('available-orders').innerHTML = html;
-        initSwipeInteractions();
-    });
-}
-
-// RENDER ACTIVE ORDERS STATE MACHINE
-function renderActiveOrdersPhase() {
-    const navMaps = document.getElementById('nav-maps');
-    const container = document.getElementById('active-order-container');
-    
-    if (activeOrders.length === 0) {
-        container.innerHTML = '';
-        navMaps.classList.add('disabled');
-        if(document.getElementById('page-maps').classList.contains('active')) window.switchPage('cari');
-        disableMap();
-        return;
-    }
-
-    navMaps.classList.remove('disabled');
-    document.getElementById('available-orders').innerHTML = '<div style="padding:20px; text-align:center; color:var(--gray-300);">Anda memiliki pesanan berjalan (Maks 4 Gabungan).</div>';
-    if(!document.getElementById('page-maps').classList.contains('active')) window.switchPage('maps');
-
-    // PHASE 1: PICKUP (Apakah ada order yang 'terima' atau 'ambil'?)
-    let pickups = activeOrders.filter(o => o.status === 'terima' || o.status === 'ambil');
-    
-    if (pickups.length > 0) {
-        disableMap(); // Peta hanya aktif setelah ngantar
-        // Ambil grup lokasi pertama
-        let targetMapsAmbil = pickups[0].mapsAmbil;
-        let group = pickups.filter(o => o.mapsAmbil === targetMapsAmbil);
-        
-        let isTerima = group.some(o => o.status === 'terima');
-        let orderIds = group.map(o => o.id).join(',');
-
-        let html = `<div style="margin-bottom:16px;"><h3 style="font-size:20px;">Menuju Lokasi Pengambilan</h3><p style="color:var(--gray-300); font-size:14px;">${group[0].namaAmbil}</p></div>`;
-        
-        if (isTerima) {
-            // SWIPE TIBA DI RESTO (1x Swipe untuk semua grup lokasi ini)
-            html += group.map(o => `<div class="location-row" style="margin-bottom:8px;"><span class="material-symbols-outlined loc-icon">receipt</span><div class="loc-text">${o.namaPenerima} <span style="color:var(--gray-300); font-size:12px;">(Rp ${o.Argo.toLocaleString()})</span></div></div>`).join('');
-            html += `
-            <div class="swipe-container action-green" data-action="batch_ambil" data-orderids="${orderIds}">
-                <div class="swipe-text" style="color:var(--green);">Geser Tiba di Lokasi</div>
-                <div class="swipe-knob"><span class="material-symbols-outlined">storefront</span></div>
-            </div>`;
-        } else {
-            // UPLOAD FOTO UNTUK SETIAP PESANAN, LALU 1 SWIPE NGANTAR
-            group.forEach((o, i) => {
-                html += `
-                <div style="background:var(--gray-100); padding:12px; border-radius:12px; margin-bottom:12px;">
-                    <div style="font-weight:600; margin-bottom:4px;">${i+1}. Penerima: ${o.namaPenerima}</div>
-                    <div style="font-size:12px; color:var(--gray-800); margin-bottom:8px;">Catatan: ${o.catatan || '-'}</div>
-                    <div class="upload-box" style="background:#FFF;">
-                        <input type="file" accept="image/*" onchange="window.prepareBatchFile(event, '${o.id}', 'ambil')">
-                        <div class="upload-box-content">
-                            <span class="material-symbols-outlined" style="font-size:20px;">photo_camera</span>
-                            <span id="label-${o.id}-ambil">Ketuk Foto Barang/Nota</span>
-                        </div>
-                    </div>
-                </div>`;
-            });
-            html += `
-            <div class="swipe-container" data-action="batch_ngantar" data-orderids="${orderIds}">
-                <div class="swipe-text">Geser Mulai Antar Semua</div>
-                <div class="swipe-knob"><span class="material-symbols-outlined">two_wheeler</span></div>
-            </div>`;
-        }
-        container.innerHTML = html;
-        initSwipeInteractions();
-        return;
-    }
-
-    // PHASE 2: DELIVERY (Semua order sudah ngantar/tiba)
-    enableMap();
-    let deliveries = activeOrders.filter(o => o.status === 'ngantar' || o.status === 'tiba');
-    
-    // SORT BERDASARKAN JARAK TERDEKAT DARI LOKASI SAAT INI (Jika ada GPS)
-    let refCoords = currentDeviceCoords;
-    if(!refCoords) refCoords = parseCoords(deliveries[0].titikAmbil); // fallback
-
-    if(refCoords) {
-        deliveries.sort((a, b) => {
-            let cA = parseCoords(a.mpasAntar); let cB = parseCoords(b.mpasAntar);
-            if(!cA) return 1; if(!cB) return -1;
-            return getDistance(refCoords[1], refCoords[0], cA[1], cA[0]) - getDistance(refCoords[1], refCoords[0], cB[1], cB[0]);
-        });
-    }
-
-    // Ambil PIN 1 (Yang paling dekat & belum selesai)
-    currentDeliveryPin = deliveries[0];
-    drawRouteOSRM(); // Gambar rute ke Pin 1
-
-    let o = currentDeliveryPin;
-    let html = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h3 style="font-size:20px;">Pengantaran Saat Ini (Pin 1)</h3>
-        <div style="background:var(--gray-200); padding:4px 8px; border-radius:4px; font-size:12px; font-weight:700;">${o.jenisOrder.toUpperCase()}</div>
-    </div>
-    <div class="location-row" style="margin-bottom:16px;">
-        <span class="material-symbols-outlined loc-icon">location_on</span>
-        <div><div class="loc-text">${o.NamaAntar}</div><div class="loc-sub">Penerima: ${o.namaPenerima} (${o.waPenerima})</div></div>
-    </div>`;
-
-    if(o.status === 'ngantar') {
-        html += `
-        <div class="swipe-container action-green" data-action="tiba_tujuan" data-orderid="${o.id}">
-            <div class="swipe-text" style="color:var(--green);">Geser Tiba di Tujuan</div>
-            <div class="swipe-knob"><span class="material-symbols-outlined">flag</span></div>
-        </div>`;
-    } else if (o.status === 'tiba') {
-        html += `
-        <div class="upload-box">
-            <input type="file" accept="image/*" onchange="window.prepareBatchFile(event, '${o.id}', 'selesai')">
-            <div class="upload-box-content">
-                <span class="material-symbols-outlined">verified</span>
-                <span id="label-${o.id}-selesai">Ketuk Foto Bukti Selesai</span>
-            </div>
-        </div>
-        <div class="swipe-container" style="background:#000;" data-action="selesai_pesanan" data-orderid="${o.id}" data-argo="${o.Argo}">
-            <div class="swipe-text" style="color:#FFF;">Geser Selesai & Terima Rp${o.Argo.toLocaleString()}</div>
-            <div class="swipe-knob" style="background:#FFF;color:#000;"><span class="material-symbols-outlined">check</span></div>
-        </div>`;
-    }
-    
-    // Tampilkan order selanjutnya sebagai antrean
-    if(deliveries.length > 1) {
-        html += `<hr style="border:none; border-top:1px solid var(--gray-200); margin:16px 0;"><h4 style="font-size:14px; color:var(--gray-300); margin-bottom:8px;">Antrean Selanjutnya:</h4>`;
-        for(let i=1; i<deliveries.length; i++) {
-            html += `<div style="font-size:13px; color:var(--gray-800); margin-bottom:4px;">Pin ${i+1}: ${deliveries[i].namaPenerima} - ${deliveries[i].NamaAntar}</div>`;
-        }
-    }
-    container.innerHTML = html;
-    initSwipeInteractions();
-}
-
-
-// MAPS LOGIC (OSRM)
-function disableMap() {
-    document.getElementById('map').classList.add('d-none');
-    document.getElementById('map-placeholder').style.display = 'flex';
-}
-function enableMap() {
-    if(!activeOrders.some(o => o.kategori !== 'Kirim Instan')) return; // Map hanya untuk jastip/ambil instan
-    document.getElementById('map').classList.remove('d-none');
-    document.getElementById('map-placeholder').style.display = 'none';
-    if(!map) {
-        map = new maplibregl.Map({ container: 'map', style: 'https://tiles.openfreemap.org/styles/bright', center: currentDeviceCoords || [110.3939, -7.0515], zoom: 15, attributionControl: false });
-        map.on('load', () => {
-            // Add Motor Icon Source
-            map.addSource('driver-loc', { type: 'geojson', data: { type: 'Point', coordinates: currentDeviceCoords || [0,0] } });
-            map.addLayer({ id: 'driver-layer', type: 'circle', source: 'driver-loc', paint: { 'circle-radius': 8, 'circle-color': '#000', 'circle-stroke-width': 2, 'circle-stroke-color': '#FFF' } });
-        });
-    }
-}
-async function drawRouteOSRM() {
-    if(!map || !currentDeliveryPin) return;
-    let start = currentDeviceCoords || parseCoords(currentDeliveryPin.titikAmbil);
-    let end = parseCoords(currentDeliveryPin.mpasAntar);
-    if(!start || !end) return;
-
-    try {
-        const url = `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if(data.routes && data.routes[0]) {
-            const geojson = data.routes[0].geometry;
-            if(map.getSource('route')) map.getSource('route').setData(geojson);
-            else {
-                map.addSource('route', { type: 'geojson', data: geojson });
-                map.addLayer({ id: 'route-layer', type: 'line', source: 'route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#05A357', 'line-width': 5 } });
-            }
-            
-            // Add End Pin
-            if(map.getSource('pin-end')) map.getSource('pin-end').setData({ type: 'Point', coordinates: end });
-            else {
-                map.addSource('pin-end', { type: 'geojson', data: { type: 'Point', coordinates: end } });
-                map.addLayer({ id: 'pin-end-layer', type: 'circle', source: 'pin-end', paint: { 'circle-radius': 10, 'circle-color': '#E11900', 'circle-stroke-width': 3, 'circle-stroke-color': '#FFF' } });
-            }
-            map.fitBounds([start, end], { padding: 50 });
-        }
-    } catch(e) { console.error("OSRM Error", e); }
-}
-
-
-// SWIPE GESTURES
-window.prepareBatchFile = (e, orderId, type) => {
-    if(e.target.files.length > 0) {
-        window.filesBuffer[orderId + '_' + type] = e.target.files[0];
-        document.getElementById(`label-${orderId}-${type}`).innerText = "File Siap";
-        document.getElementById(`label-${orderId}-${type}`).style.color = "var(--green)";
-    }
+window.switchPage = (p) => {
+  document.querySelectorAll('.page,.nav-item').forEach(el => el.classList.remove('active'));
+  const pg = document.getElementById('page-'+p);
+  if(pg) pg.classList.add('active');
+  const nav = document.getElementById('nav-'+p);
+  if(nav) nav.classList.add('active');
+  if(p === 'maps' && map) setTimeout(() => map.resize(), 100);
+  if(p === 'profil') renderProfile();
 };
 
-function initSwipeInteractions() {
-    document.querySelectorAll('.swipe-container').forEach(container => {
-        if(container.dataset.initialized) return;
-        container.dataset.initialized = "true";
-        const knob = container.querySelector('.swipe-knob');
-        let isDragging = false, startX = 0, currentX = 0;
-        const maxDrag = container.offsetWidth - knob.offsetWidth - 8;
+// ========================= TABS (SIGNUP/LOGIN) =========================
+window.showTab = (t) => {
+  document.getElementById('form-login').classList.toggle('d-none', t !== 'login');
+  document.getElementById('form-signup').classList.toggle('d-none', t !== 'signup');
+  document.getElementById('tab-login').classList.toggle('active', t === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', t === 'signup');
+};
 
-        const onMove = (e) => {
-            if(!isDragging) return;
-            const x = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
-            currentX = Math.max(0, Math.min(x, maxDrag));
-            knob.style.transform = `translateX(${currentX}px)`;
-        };
-        const onEnd = () => {
-            if(!isDragging) return;
-            isDragging = false;
-            knob.style.transition = 'transform 0.3s ease';
-            if(currentX >= maxDrag * 0.85) {
-                knob.style.transform = `translateX(${maxDrag}px)`;
-                executeSwipeAction(container);
-            } else { knob.style.transform = `translateX(0px)`; }
-        };
-        const onStart = (e) => {
-            isDragging = true; startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX; knob.style.transition = 'none';
-        };
-        knob.addEventListener('touchstart', onStart, {passive: true});
-        document.addEventListener('touchmove', onMove, {passive: true});
-        document.addEventListener('touchend', onEnd);
+// ========================= SIGNUP STEPS =========================
+let currentStep = 0;
+window.nextStep = (s) => {
+  if (s > currentStep && !validateStep(currentStep)) return;
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  currentStep = s;
+  document.getElementById('step-'+s).classList.add('active');
+  for(let i=0; i<=3; i++) {
+    document.getElementById('sdot-'+i).classList.toggle('done', i <= s);
+  }
+};
+
+function validateStep(s) {
+  if (s === 0) {
+    const fields = ['reg-email','reg-pass','reg-nama','reg-hp','reg-nim'];
+    for (const f of fields) {
+      if (!document.getElementById(f).value.trim()) { showToast('Lengkapi semua field terlebih dahulu!'); return false; }
+    }
+    if (document.getElementById('reg-pass').value.length < 6) { showToast('Password minimal 6 karakter!'); return false; }
+  }
+  if (s === 1) {
+    if (!docFiles['km']) { showToast('Upload Kartu Mahasiswa terlebih dahulu!'); return false; }
+    if (!docFiles['ktp']) { showToast('Upload KTP terlebih dahulu!'); return false; }
+    if (!docFiles['stnk']) { showToast('Upload STNK terlebih dahulu!'); return false; }
+  }
+  if (s === 2) {
+    if (!docFiles['profile']) { showToast('Upload foto profil terlebih dahulu!'); return false; }
+  }
+  return true;
+}
+
+window.handleDocUpload = (e, key) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  docFiles[key] = file;
+  document.getElementById('lbl-'+key).textContent = '✓ ' + file.name.substring(0,20);
+  document.getElementById('ub-'+key).classList.add('uploaded');
+};
+
+// ========================= AUTH =========================
+// =========================  =========================
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUid = user.uid;
+    // Hanya muat profil otomatis jika BUKAN dari proses pendaftaran baru
+    if (!isSigningUp) {
+      await loadDriverProfile();
+    }
+  } else {
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('splash').classList.remove('hidden');
+  }
+});
+
+window.doLogin = async () => {
+  const e = document.getElementById('login-email').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (!e||!p) { showToast('Isi email & password!'); return; }
+  showLoading('Memverifikasi...');
+  try { await signInWithEmailAndPassword(auth, e, p); }
+  catch(err) { showToast('Login gagal: ' + (err.code === 'auth/wrong-password' ? 'Password salah' : err.message)); hideLoading(); }
+};
+
+window.doSignup = async () => {
+  if (!document.getElementById('chk-agree').checked) { showToast('Centang persetujuan terlebih dahulu!'); return; }
+  const e = document.getElementById('reg-email').value.trim();
+  const p = document.getElementById('reg-pass').value;
+  const nama = document.getElementById('reg-nama').value.trim();
+  const hp = document.getElementById('reg-hp').value.trim();
+  const nim = document.getElementById('reg-nim').value.trim();
+
+  showLoading('Mendaftarkan akun...');
+  
+  isSigningUp = true; // <--- KUNCI LISTENER AUTH SEBELUM CREATE USER
+  
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, e, p);
+    showLoading('Mengupload dokumen...');
+
+    let urlKM='', urlKTP='', urlSTNK='', urlSIM='', urlProfile='';
+    if (docFiles['km']) urlKM = await uploadToCloudinary(docFiles['km'], 50);
+    if (docFiles['ktp']) urlKTP = await uploadToCloudinary(docFiles['ktp'], 50);
+    if (docFiles['stnk']) urlSTNK = await uploadToCloudinary(docFiles['stnk'], 50);
+    if (docFiles['sim']) urlSIM = await uploadToCloudinary(docFiles['sim'], 50);
+    if (docFiles['profile']) urlProfile = await uploadToCloudinary(docFiles['profile'], 30);
+
+    // Membuat dokumen dengan semua nama field bawaan yang dilarang disentuh
+    await setDoc(doc(db, "user", cred.user.uid), {
+      GetdriverID: cred.user.uid, nama, wa: hp, email: e,
+      idmahasiswa: nim, urlProfile, urlKartuMahasiswa: urlKM,
+      urlKTP, urlSTNK, urlSIM,
+      role: 'driver', status: 'belumterverifikasi',
+      deposit: 0, tabungan: 0,
+      createdAt: serverTimestamp()
     });
-}
-function resetSwipe() { document.querySelectorAll('.swipe-knob').forEach(k => { k.style.transform = 'translateX(0px)'; }); }
+    
+    // Panggil profil SECARA MANUAL hanya setelah dokumen Firestore selesai dan aman dibuat
+    await loadDriverProfile();
+    
+  } catch(err) { 
+    showToast('Gagal daftar: ' + err.message); 
+    hideLoading(); 
+  } finally {
+    isSigningUp = false; // <--- PASTIKAN KUNCI DIBUKA KEMBALI BAIK SUKSES MAUPUN GAGAL
+  }
+};
 
-async function uploadImage(file) {
-    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-        const data = await res.json(); return data.secure_url; 
-    } catch (e) {
-        return new Promise(r => { const rd = new FileReader(); rd.onload = ev => r(ev.target.result); rd.readAsDataURL(file); });
+window.doLogout = () => { if(confirm('Keluar dari akun?')) signOut(auth); };
+
+// ========================= LOAD PROFILE =========================
+async function loadDriverProfile() {
+  try {
+    const snap = await getDoc(doc(db, "user", currentUid));
+    if (snap.exists() && snap.data().role === 'driver') {
+      driverData = snap.data();
+      document.getElementById('splash').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      updateDepositDisplay();
+      trackGPS();
+      listenOrders();
+      listenProfile();
+      hideLoading();
+      // Show welcome popup on first load
+      if (!sessionStorage.getItem('welcomed')) {
+        sessionStorage.setItem('welcomed','1');
+        setTimeout(() => { document.getElementById('welcome-popup').classList.add('open'); }, 600);
+      }
+    } else { showToast('Akun bukan driver!'); signOut(auth); hideLoading(); }
+  } catch(e) { showToast('Gagal memuat profil'); hideLoading(); }
+}
+
+function listenProfile() {
+  onSnapshot(doc(db, "user", currentUid), snap => {
+    if(snap.exists()) { driverData = snap.data(); updateDepositDisplay(); }
+  });
+}
+
+function updateDepositDisplay() {
+  const dep = driverData?.deposit || 0;
+  document.getElementById('top-deposit-val').textContent = 'Rp ' + dep.toLocaleString('id-ID');
+  document.getElementById('prof-deposit').textContent = 'Rp ' + dep.toLocaleString('id-ID');
+  
+  // Hitung tabungan hari ini dari localStorage
+  const today = new Date().toLocaleDateString('id-ID');
+  let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
+  
+  let tabunganHariIni = dailyHistory
+    .filter(r => r.tanggal === today)
+    .reduce((sum, r) => sum + r.argo, 0);
+
+  document.getElementById('prof-tabungan').textContent = 'Rp ' + tabunganHariIni.toLocaleString('id-ID');
+}
+
+// ========================= RENDER PROFILE =========================
+function renderProfile() {
+  if (!driverData) return;
+  document.getElementById('prof-nama').textContent = driverData.nama || 'Driver';
+  document.getElementById('prof-nim').textContent = 'NIM: ' + (driverData.idmahasiswa || '-');
+  document.getElementById('prof-email').textContent = driverData.email || '-';
+  document.getElementById('prof-hp').textContent = driverData.wa || '-';
+
+  // Avatar
+  if (driverData.urlProfile) {
+    document.getElementById('prof-avatar').innerHTML = `<img src="${driverData.urlProfile}" alt="Profil">`;
+  }
+
+  // Rank badge
+  const rank = driverData.status || 'belumterverifikasi';
+  let badgeHTML='', rankInfo='';
+  if (rank === 'belumterverifikasi') {
+    badgeHTML = `<span class="rank-badge rank-belum"><span class="material-symbols-outlined" style="font-size:14px;">person</span>Belum Terverifikasi</span>`;
+    rankInfo = `<strong>Belum Terverifikasi:</strong> Argo biasa (tanpa tambahan).<br><br>Untuk mendapat gelar <strong>Terverifikasi</strong>, upload SIM & SKCK lalu hubungi admin.`;
+  } else if (rank === 'terverifikasi') {
+    badgeHTML = `<span class="rank-badge rank-verified"><span class="material-symbols-outlined" style="font-size:14px;">verified</span>Terverifikasi</span>`;
+    rankInfo = `<strong>Terverifikasi ✅:</strong> Mendapat <span style="color:var(--oneui-blue);font-weight:700;">+5% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Upload SIM & SKCK aktif.`;
+  } else if (rank === 'terpercaya') {
+    badgeHTML = `<span class="rank-badge rank-trusted"><span class="material-symbols-outlined" style="font-size:14px;">workspace_premium</span>Terpercaya</span>`;
+    rankInfo = `<strong>Terpercaya 🏆:</strong> Mendapat <span style="color:var(--oneui-purple);font-weight:700;">+15% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Aktif menerima order secara konsisten.`;
+  }
+  document.getElementById('prof-rank-badge').innerHTML = badgeHTML;
+  document.getElementById('rank-info-block').innerHTML = rankInfo;
+
+  // Dokumen
+  const docs = [
+    { key:'urlKartuMahasiswa', label:'Kartu Mahasiswa', icon:'badge' },
+    { key:'urlKTP', label:'KTP', icon:'id_card' },
+    { key:'urlSTNK', label:'STNK', icon:'directions_bike' },
+    { key:'urlSIM', label:'SIM', icon:'drive_eta' },
+    { key:'urlProfile', label:'Foto Profil', icon:'person' },
+  ];
+  document.getElementById('doc-list').innerHTML = docs.map(d => {
+    const uploaded = !!driverData[d.key];
+    return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-light);">
+      <span class="material-symbols-outlined" style="color:${uploaded?'var(--oneui-green)':'var(--text-disabled)'};font-size:22px;">${d.icon}</span>
+      <span style="flex:1;font-size:14px;font-weight:600;">${d.label}</span>
+      ${uploaded 
+        ? `<a href="${driverData[d.key]}" target="_blank" style="font-size:11px;color:var(--oneui-blue);font-weight:700;text-decoration:none;background:var(--oneui-blue-bg);padding:4px 8px;border-radius:var(--r-xs);">Lihat</a>`
+        : `<span style="font-size:11px;color:var(--text-tertiary);">Belum upload</span>`
+      }
+    </div>`;
+  }).join('');
+}
+
+// ========================= GPS =========================
+function trackGPS() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.watchPosition(pos => {
+    currentDeviceCoords = [pos.coords.longitude, pos.coords.latitude];
+    if (map && map.getSource('driver-loc')) {
+      map.getSource('driver-loc').setData({ type:'Point', coordinates: currentDeviceCoords });
     }
+  }, null, { enableHighAccuracy:true });
 }
 
-// BACKEND ACTIONS
-async function executeSwipeAction(el) {
-    const action = el.dataset.action;
-    const orderIds = el.dataset.orderids ? el.dataset.orderids.split(',') : [];
-    const orderId = el.dataset.orderid;
+window.centerDriverOnMap = () => {
+  if (map && currentDeviceCoords) map.flyTo({ center: currentDeviceCoords, zoom:16 });
+};
 
-    try {
-        showLoading('Memproses...');
-        if (action === 'terima') {
-            await updateDoc(doc(db, "orders", orderId), { getdriverId: currentUserUid, driverName: driverData.nama, waDriver: driverData.wa, sinceDriver: "Mitra Aktif", rankDriver: driverData.status, UrlprofileDriver: driverData.urlProfile || "", kendaraanDriver: driverData.stnk || "-", status: "terima" });
-        } 
-        else if (action === 'batch_ambil') {
-            await Promise.all(orderIds.map(id => updateDoc(doc(db, "orders", id), { status: "ambil" })));
-        } 
-        else if (action === 'batch_ngantar') {
-            // Validasi file
-            for(let id of orderIds) {
-                if(!window.filesBuffer[id + '_ambil']) { alert('Lengkapi semua foto pesanan!'); hideLoading(); resetSwipe(); return; }
-            }
-            let koordinat = currentDeviceCoords ? `${currentDeviceCoords[0]},${currentDeviceCoords[1]}` : "";
-            // Upload & Update concurrent
-            await Promise.all(orderIds.map(async (id) => {
-                let imgUrl = await uploadImage(window.filesBuffer[id + '_ambil']);
-                return updateDoc(doc(db, "orders", id), { titikAmbil: koordinat, urlbuktiAmbil: imgUrl, status: "ngantar" });
-            }));
-            // Bersihkan buffer
-            orderIds.forEach(id => delete window.filesBuffer[id + '_ambil']);
-        }
-        else if (action === 'tiba_tujuan') {
-            await updateDoc(doc(db, "orders", orderId), { status: "tiba" });
-        }
+// ========================= ARGO WITH RANK BONUS =========================
+
+function calcNetArgo(rawArgo) {
+  const rank = driverData?.status || 'belumterverifikasi';
+  let bonus = 0;
+  if (rank === 'terverifikasi') bonus = 0.05;
+  else if (rank === 'terpercaya') bonus = 0.15;
+  
+  // Hanya tambah bonus rank, tidak ada pemotongan platform di tampilan
+  return Math.round(rawArgo * (1 + bonus)); 
+}
+
+// ========================= SOUNDS =========================
+function playSound(id) {
+  try { const a = document.getElementById(id); a.currentTime=0; a.play().catch(()=>{}); } catch(e){}
+}
+
+// ========================= ONLINE STATUS =========================
+window.toggleOnlineStatus = () => {
+  isOnline = !isOnline;
+  const pill = document.getElementById('status-pill');
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  if (isOnline) {
+    pill.className = 'driver-status-pill online';
+    dot.className = 'status-dot dot-online';
+    txt.textContent = 'Online';
+  } else {
+    pill.className = 'driver-status-pill offline';
+    dot.className = 'status-dot dot-offline';
+    txt.textContent = 'Offline';
+  }
+};
+
+// ========================= LISTENERS =========================
+function listenOrders() {
+  // Active orders
+  const qActive = query(collection(db,"orders"), where("getdriverId","==",currentUid));
+  onSnapshot(qActive, snap => {
+    let tmp = [];
+    snap.forEach(d => {
+      const o = d.data();
+      if (o.status !== 'selesai' && o.status !== 'dibatalkan') tmp.push({ id:d.id, ...o });
+    });
+    activeOrders = tmp;
+    renderActivePanel();
+    updateMapsNavBadge();
+  });
+
+  // Available orders
+  const qAvail = query(collection(db,"orders"), where("getdriverId","==",""), where("status","==","menunggu"));
+  onSnapshot(qAvail, snap => {
+    if (!isOnline) {
+      document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">wifi_off</span><p>Anda sedang offline</p></div>`;
+      return;
+    }
+
+    // Check max orders
+    const normalCount = activeOrders.filter(o => o.jenisOrder === 'normal').length;
+    const gabCount = activeOrders.filter(o => o.jenisOrder === 'gabungan').length;
+
+    let newOrders = [];
+    snap.forEach(d => {
+      const o = d.data();
+      if (!previousOrderIds.has(d.id)) {
+        newOrders.push(d.id);
+      }
+      previousOrderIds.add(d.id);
+    });
+
+    // Play sound for new orders
+    if (newOrders.length > 0) playSound('snd-order');
+
+    renderAvailableOrders(snap, normalCount, gabCount);
+  });
+}
+
+function renderAvailableOrders(snap, normalCount, gabCount) {
+  // Determine if driver can take more orders
+  const canTakeNormal = normalCount === 0;
+  const canTakeGabungan = gabCount < 5;
+  const maxReached = !canTakeNormal && !canTakeGabungan;
+  const inDelivery = activeOrders.some(o => o.status === 'ngantar' || o.status === 'tiba');
+
+  if (maxReached) {
+    document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">check_circle</span><p style="font-size:14px;font-weight:600;">Batas pesanan aktif tercapai</p><p style="font-size:12px;margin-top:4px;">Selesaikan pesanan yang berjalan</p></div>`;
+    document.getElementById('daftar-sub').textContent = 'Pesanan penuh';
+    return;
+  }
+
+  let orders = [];
+  const now = Date.now();
+  snap.forEach(d => {
+    const o = d.data();
+    // Time filter
+    let show = false;
+    if (o.waktuAmbil === 'Langsung') show = true;
+    else {
+      const sched = new Date(o.waktuAmbil).getTime();
+      const diffMin = (sched - now) / 60000;
+      if (diffMin <= 60 && diffMin >= -120) show = true;
+    }
+    // Batching logic
+    if (inDelivery && o.jenisOrder !== 'gabungan') show = false; // during delivery, only gabungan available
+    if (gabCount > 0 && o.jenisOrder === 'normal') show = false; // can't take normal if has gabungan
+    if (o.jenisOrder === 'gabungan' && !canTakeGabungan) show = false;
+    if (o.jenisOrder === 'normal' && !canTakeNormal) show = false;
+
+    if (show) orders.push({ id: d.id, ...o });
+  });
+
+  document.getElementById('daftar-sub').textContent = orders.length > 0 ? `${orders.length} pesanan tersedia` : 'Mencari pesanan...';
+  document.getElementById('nb-daftar').dataset.count = orders.length;
+
+  if (orders.length === 0) {
+    document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">search</span><p style="font-size:14px;font-weight:600;">Mencari pesanan baru...</p><p style="font-size:12px;margin-top:4px;">Kami akan memberitahu saat ada pesanan</p></div>`;
+    return;
+  }
+
+  const html = orders.map(o => {
+    const netArgo = calcNetArgo(o.Argo || 0);
+    return `
+    <div class="order-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div class="argo-display">Rp ${netArgo.toLocaleString('id-ID')}</div>
+          <div class="argo-net" style="font-size:11px;color:var(--text-tertiary);">Dari argo Rp ${(o.Argo||0).toLocaleString('id-ID')}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
+          <span class="badge badge-${o.jenisOrder==='gabungan'?'gabungan':'normal'}">${(o.jenisOrder||'').toUpperCase()}</span>
+          <span class="badge badge-kategori">${o.kategori||''}</span>
+          <span class="badge badge-kategori">${o.JarakTempuh||0} km</span>
+        </div>
+      </div>
+      <div class="loc-row">
+        <span class="material-symbols-outlined loc-icon" style="color:var(--oneui-green);">radio_button_checked</span>
+        <div class="loc-info"><div class="loc-name">${o.namaAmbil||'-'}</div><div class="loc-sub">Titik Ambil</div></div>
+      </div>
+      <div class="loc-row" style="margin-bottom:12px;">
+        <span class="material-symbols-outlined loc-icon" style="color:var(--oneui-red);">location_on</span>
+        <div class="loc-info"><div class="loc-name">${o.NamaAntar||'-'}</div><div class="loc-sub">Titik Antar • ${o.namaPenerima||'-'}</div></div>
+      </div>
+      <div class="swipe-wrap sw-blue" data-action="terima" data-orderid="${o.id}" data-argo="${netArgo}">
+        <div class="swipe-text txt-blue">Geser untuk Terima Pesanan</div>
+        <div class="swipe-knob knob-blue"><span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('available-orders-list').innerHTML = html;
+  initSwipes();
+}
+
+function updateMapsNavBadge() {
+  const navMaps = document.getElementById('nav-maps');
+  if (activeOrders.length > 0) {
+    navMaps.style.color = 'var(--oneui-blue)';
+  } else {
+    navMaps.style.color = '';
+  }
+}
+
+// ========================= ACCEPT ORDER FLOW (10s countdown) =========================
+function triggerAcceptModal(orderId, orderData) {
+  pendingAcceptOrder = { id: orderId, ...orderData };
+  playSound('snd-order');
+  document.getElementById('accept-order-info').innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-${orderData.jenisOrder==='gabungan'?'gabungan':'normal'}">${(orderData.jenisOrder||'').toUpperCase()}</span>
+      <span class="badge badge-kategori">${orderData.kategori||''}</span>
+    </div>
+    <div style="font-size:20px;font-weight:700;color:var(--oneui-green);">Rp ${calcNetArgo(orderData.Argo||0).toLocaleString('id-ID')}</div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">${orderData.JarakTempuh||0} km</div>
+    <div style="font-size:13px;color:var(--text-secondary);">📍 ${orderData.namaAmbil||'-'} → ${orderData.NamaAntar||'-'}</div>
+  `;
+  document.getElementById('accept-modal').classList.add('open');
+  let sec = 10;
+  document.getElementById('accept-countdown').textContent = sec;
+  clearInterval(acceptCountdownTimer);
+  acceptCountdownTimer = setInterval(() => {
+    sec--;
+    document.getElementById('accept-countdown').textContent = sec;
+    if (sec <= 0) {
+      clearInterval(acceptCountdownTimer);
+      document.getElementById('accept-modal').classList.remove('open');
+      pendingAcceptOrder = null;
+    }
+  }, 1000);
+}
+
+window.confirmAcceptOrder = async () => {
+  if (!pendingAcceptOrder) return;
+  clearInterval(acceptCountdownTimer);
+  document.getElementById('accept-modal').classList.remove('open');
+  showLoading('Menerima pesanan...');
+  try {
+    await updateDoc(doc(db,"orders",pendingAcceptOrder.id), {
+      getdriverId: currentUid,
+      driverName: driverData.nama,
+      waDriver: driverData.wa,
+      rankDriver: driverData.status,
+      UrlprofileDriver: driverData.urlProfile||'',
+      kendaraanDriver: driverData.stnk||'-',
+      status: 'terima'
+    });
+    playSound('snd-accept');
+    showToast('✅ Pesanan berhasil diterima!');
+    window.switchPage('maps');
+  } catch(e) { showToast('Gagal menerima: '+e.message); }
+  finally { hideLoading(); pendingAcceptOrder = null; }
+};
+
+window.rejectOrder = () => {
+  clearInterval(acceptCountdownTimer);
+  document.getElementById('accept-modal').classList.remove('open');
+  pendingAcceptOrder = null;
+};
+
+// ========================= ACTIVE ORDER PANEL =========================
+function sortByRoute(orders, refCoords) {
+  if (!refCoords) return orders;
+  return [...orders].sort((a, b) => {
+    const cA = parseCoords(a.mpasAntar), cB = parseCoords(b.mpasAntar);
+    if (!cA) return 1; if (!cB) return -1;
+    // nearest-neighbor sort (greedy TSP)
+    return haversine(refCoords[1],refCoords[0],cA[1],cA[0]) - haversine(refCoords[1],refCoords[0],cB[1],cB[0]);
+  });
+}
+
+function renderActivePanel() {
+  const panel = document.getElementById('active-order-panel');
+  const mapPlaceholder = document.getElementById('map-placeholder-div');
+  const mapEl = document.getElementById('map');
+  const centerBtn = document.getElementById('center-map-btn');
+
+  if (activeOrders.length === 0) {
+    panel.innerHTML = `<div class="empty-state" style="padding:24px;"><span class="material-symbols-outlined">inbox</span><p>Belum ada pesanan aktif</p></div>`;
+    mapPlaceholder.style.display = 'flex';
+    mapEl.classList.add('d-none');
+    centerBtn.classList.add('d-none');
+    if (document.getElementById('page-maps').classList.contains('active')) window.switchPage('daftar');
+    return;
+  }
+
+  const pickups = activeOrders.filter(o => o.status === 'terima' || o.status === 'ambil');
+  
+  if (pickups.length > 0) {
+    mapPlaceholder.style.display = 'flex';
+    mapEl.classList.add('d-none');
+    centerBtn.classList.add('d-none');
+    renderPickupPhase(pickups);
+    return;
+  }
+
+  // DELIVERY PHASE
+  mapPlaceholder.style.display = 'none';
+  mapEl.classList.remove('d-none');
+  centerBtn.classList.remove('d-none');
+  initMap();
+
+  const deliveries = activeOrders.filter(o => o.status === 'ngantar' || o.status === 'tiba');
+  const sorted = sortByRoute(deliveries, currentDeviceCoords);
+  currentDeliveryPin = sorted[0];
+
+  drawAllPinsAndRoute(sorted);
+  renderDeliveryPhase(sorted);
+}
+
+function renderPickupPhase(pickups) {
+  const panel = document.getElementById('active-order-panel');
+  // Group by same pickup location
+  const targetLoc = pickups[0].mapsAmbil;
+  const group = pickups.filter(o => o.mapsAmbil === targetLoc);
+  const isTerima = group.some(o => o.status === 'terima');
+  const ids = group.map(o => o.id).join(',');
+
+  let html = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div>
+      <div style="font-size:17px;font-weight:700;">Menuju Lokasi Ambil</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">${group[0].namaAmbil||'-'}</div>
+    </div>
+    <div style="background:var(--oneui-orange-bg);color:var(--oneui-orange);padding:4px 8px;border-radius:var(--r-xs);font-size:11px;font-weight:700;">${group.length} PESANAN</div>
+  </div>`;
+
+  if (isTerima) {
+    // Show all in group
+    group.forEach(o => {
+      html += `
+      <div style="background:var(--surface-input);border-radius:var(--r-md);padding:10px 12px;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;">${o.namaPenerima||'-'}</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">${o.catatan||'Tidak ada catatan'}</div>
+        <div style="font-size:13px;color:var(--oneui-green);font-weight:600;margin-top:4px;">Rp ${calcNetArgo(o.Argo||0).toLocaleString('id-ID')}</div>
+      </div>`;
+    });
+
+    // DELAY 2s + countdown 10s before allowing "ambil"
+    html += `
+    <div class="countdown-bar" id="amb-countdown-bar">
+      <span class="material-symbols-outlined" style="color:var(--oneui-orange);font-size:20px;">timer</span>
+      <span class="countdown-text">Konfirmasi tiba:</span>
+      <span class="countdown-num" id="amb-sec">10</span>
+      <button class="cancel-small" id="btn-cancel-order" onclick="cancelOrderGroup('${ids}')">Batalkan</button>
+    </div>
+    <div class="swipe-wrap sw-green d-none" id="swipe-ambil" data-action="batch_ambil" data-orderids="${ids}">
+      <div class="swipe-text txt-green">Geser Tiba di Lokasi Pengambilan</div>
+      <div class="swipe-knob knob-green"><span class="material-symbols-outlined" style="font-size:20px;">storefront</span></div>
+    </div>`;
+
+  } else {
+    // Upload photos per order
+    group.forEach((o, i) => {
+      html += `
+      <div style="background:var(--surface-input);border-radius:var(--r-md);padding:12px;margin-bottom:10px;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:2px;">${i+1}. ${o.namaPenerima||'-'}</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;">Catatan: ${o.catatan||'-'}</div>
+        <div class="upload-box" id="ub-order-${o.id}" style="background:#FFF;">
+          <input type="file" accept="image/*" onchange="prepareOrderFile(event,'${o.id}','ambil')">
+          <div class="upload-box-content">
+            <span class="material-symbols-outlined" style="font-size:20px;">photo_camera</span>
+            <span class="upload-label" id="lbl-${o.id}-ambil">Foto Barang/Nota (maks. 20KB)</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `
+    <div class="swipe-wrap" id="swipe-ngantar" data-action="batch_ngantar" data-orderids="${ids}">
+      <div class="swipe-text">Geser Mulai Antar Semua</div>
+      <div class="swipe-knob knob-dark"><span class="material-symbols-outlined" style="font-size:20px;">two_wheeler</span></div>
+    </div>`;
+  }
+
+  panel.innerHTML = html;
+  initSwipes();
+
+  // Start countdown if 'terima' phase
+  if (isTerima) {
+    let sec = 10;
+    const timer = setInterval(() => {
+      sec--;
+      const el = document.getElementById('amb-sec');
+      if (el) el.textContent = sec;
+      if (sec <= 0) {
+        clearInterval(timer);
+        const ambBar = document.getElementById('amb-countdown-bar');
+        const ambSwipe = document.getElementById('swipe-ambil');
+        const cancelBtn = document.getElementById('btn-cancel-order');
+        if(ambBar) ambBar.style.display = 'none';
+        if(ambSwipe) ambSwipe.classList.remove('d-none');
+        if(cancelBtn) cancelBtn.style.display = 'none';
+        initSwipes();
+      }
+    }, 1000);
+  }
+}
+
+window.cancelOrderGroup = async (ids) => {
+  if (!confirm('Batalkan pesanan ini?')) return;
+  showLoading('Membatalkan...');
+  try {
+    const idArr = ids.split(',');
+    await Promise.all(idArr.map(id => updateDoc(doc(db,"orders",id), { getdriverId:'', driverName:'', status:'menunggu' })));
+    showToast('Pesanan dibatalkan');
+  } catch(e) { showToast('Gagal batalkan: '+e.message); }
+  finally { hideLoading(); }
+};
+
+function renderDeliveryPhase(sorted) {
+  const panel = document.getElementById('active-order-panel');
+  const o = sorted[0];
+  const netArgo = calcNetArgo(o.Argo||0);
+
+  // Pin list
+  const pinListHTML = sorted.map((item, i) => {
+    const isDone = false;
+    const isActive = i === 0;
+    return `
+    <div class="pin-item">
+      <div class="pin-badge ${isActive?'pin-active':isDone?'pin-done':'pin-next'}">${isActive?'▶':i+1}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:${isActive?700:500};color:${isActive?'var(--text-primary)':'var(--text-tertiary)'};">${item.namaPenerima||'-'}</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">${item.NamaAntar||'-'}</div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:${isActive?'var(--oneui-green)':'var(--text-disabled)'};">Rp ${calcNetArgo(item.Argo||0).toLocaleString('id-ID')}</div>
+    </div>`;
+  }).join('');
+
+  let actionHTML = '';
+  if (o.status === 'ngantar') {
+    actionHTML = `
+    <div class="countdown-bar" id="tiba-countdown-bar-${o.id}" style="display:none">
+      <span class="material-symbols-outlined" style="font-size:20px;">timer</span>
+      <span class="countdown-text">Konfirmasi tiba:</span>
+      <span class="countdown-num" id="tiba-sec-${o.id}">2</span>
+    </div>
+    <div class="swipe-wrap sw-green" data-action="tiba_tujuan" data-orderid="${o.id}">
+      <div class="swipe-text txt-green">Geser Tiba di Tujuan</div>
+      <div class="swipe-knob knob-green"><span class="material-symbols-outlined" style="font-size:20px;">flag</span></div>
+    </div>`;
+  } else if (o.status === 'tiba') {
+    actionHTML = `
+    <div class="upload-box" id="ub-selesai-${o.id}" style="background:var(--surface-input);margin-bottom:12px;">
+      <input type="file" accept="image/*" onchange="prepareOrderFile(event,'${o.id}','selesai')">
+      <div class="upload-box-content">
+        <span class="material-symbols-outlined">verified</span>
+        <span class="upload-label" id="lbl-${o.id}-selesai">Foto Bukti Selesai (maks. 30KB)</span>
+      </div>
+    </div>
+    <div class="countdown-bar" id="sel-countdown-bar-${o.id}" style="display:none">
+      <span class="material-symbols-outlined" style="font-size:20px;">timer</span>
+      <span class="countdown-text">Konfirmasi selesai:</span>
+      <span class="countdown-num" id="sel-sec-${o.id}">2</span>
+    </div>
+    <div class="swipe-wrap sw-blue" data-action="selesai_pesanan" data-orderid="${o.id}" data-argo="${netArgo}">
+      <div class="swipe-text txt-blue">Geser Selesai • Rp ${netArgo.toLocaleString('id-ID')}</div>
+      <div class="swipe-knob knob-blue"><span class="material-symbols-outlined" style="font-size:20px;">check_circle</span></div>
+    </div>`;
+  }
+
+  panel.innerHTML = `
+  <div style="margin-bottom:12px;">
+    <div style="font-size:17px;font-weight:700;">Pengantaran Aktif — Pin 1</div>
+    <div style="font-size:12px;color:var(--text-tertiary);">Ikuti urutan pin sesuai arah rute</div>
+  </div>
+  <div style="background:var(--surface-input);border-radius:var(--r-md);padding:10px 12px;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${o.namaPenerima||'-'} <span style="font-size:11px;font-weight:400;color:var(--text-tertiary);">${o.waPenerima||''}</span></div>
+    <div style="font-size:12px;color:var(--text-tertiary);">${o.NamaAntar||'-'}</div>
+    <div style="font-size:12px;color:var(--text-tertiary);">Catatan: ${o.catatan||'-'}</div>
+  </div>
+  ${actionHTML}
+  ${sorted.length > 1 ? `
+  <div style="margin-top:14px;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Urutan Pin</div>
+    <div class="pin-list">${pinListHTML}</div>
+  </div>` : ''}
+  `;
+  initSwipes();
+}
+
+// ========================= MAPS =========================
+function initMap() {
+  if (map) return;
+  document.getElementById('map').classList.remove('d-none');
+  map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://tiles.openfreemap.org/styles/bright',
+    center: currentDeviceCoords || [110.3939, -7.0515],
+    zoom: 14,
+    attributionControl: false
+  });
+  map.on('load', () => {
+    map.addSource('driver-loc', { type:'geojson', data:{ type:'Point', coordinates: currentDeviceCoords||[0,0] } });
+    map.addLayer({ id:'driver-layer', type:'circle', source:'driver-loc', paint:{ 'circle-radius':10, 'circle-color':'#1259C3', 'circle-stroke-width':3, 'circle-stroke-color':'#FFF' } });
+    map.addSource('route', { type:'geojson', data:{ type:'LineString', coordinates:[] } });
+    map.addLayer({ id:'route-layer', type:'line', source:'route', layout:{'line-join':'round','line-cap':'round'}, paint:{'line-color':'#1259C3','line-width':5,'line-opacity':0.8} });
+  });
+}
+
+function drawAllPinsAndRoute(sorted) {
+  if (!map) return;
+  // Remove old markers
+  document.querySelectorAll('.maplibregl-marker').forEach(m => m.remove());
+
+  sorted.forEach((o, i) => {
+    const coords = parseCoords(o.mpasAntar);
+    if (!coords) return;
+    const el = document.createElement('div');
+    el.className = 'map-pin';
+    el.style.background = i === 0 ? '#1259C3' : '#8A8A8A';
+    el.textContent = i + 1;
+    new maplibregl.Marker({ element: el }).setLngLat(coords).addTo(map);
+  });
+
+  // Draw route: driver → all pins via OSRM
+  if (!currentDeliveryPin) return;
+  const start = currentDeviceCoords || parseCoords(currentDeliveryPin.titikAmbil);
+  const end = parseCoords(currentDeliveryPin.mpasAntar);
+  if (!start || !end) return;
+
+  // Build multi-stop waypoints
+  let waypoints = [start];
+  sorted.forEach(o => { const c = parseCoords(o.mpasAntar); if(c) waypoints.push(c); });
+  const coordStr = waypoints.map(c => `${c[0]},${c[1]}`).join(';');
+
+  fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.routes && data.routes[0]) {
+        if (map.getSource('route')) map.getSource('route').setData(data.routes[0].geometry);
+        const bounds = new maplibregl.LngLatBounds();
+        waypoints.forEach(c => bounds.extend(c));
+        map.fitBounds(bounds, { padding:50, maxZoom:15 });
+      }
+    }).catch(() => {});
+}
+
+// ========================= SWIPE ACTIONS =========================
+window.prepareOrderFile = (e, orderId, type) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  window.filesBuffer[orderId+'_'+type] = file;
+  const lbl = document.getElementById(`lbl-${orderId}-${type}`);
+  if(lbl) { lbl.textContent = '✓ Foto siap'; lbl.style.color = 'var(--oneui-green)'; }
+  const ub = document.getElementById(`ub-order-${orderId}`) || document.getElementById(`ub-selesai-${orderId}`);
+  if(ub) ub.classList.add('uploaded');
+};
+
+function initSwipes() {
+  document.querySelectorAll('.swipe-wrap:not([data-init])').forEach(container => {
+    container.dataset.init = '1';
+    const knob = container.querySelector('.swipe-knob');
+    let isDragging=false, startX=0, curX=0;
+    const maxDrag = () => container.offsetWidth - knob.offsetWidth - 10;
+
+    const onStart = e => { isDragging=true; startX=(e.touches?e.touches[0].clientX:e.clientX)-curX; knob.style.transition='none'; };
+    const onMove = e => {
+      if(!isDragging) return;
+      curX = Math.max(0, Math.min((e.touches?e.touches[0].clientX:e.clientX)-startX, maxDrag()));
+      knob.style.transform = `translateX(${curX}px)`;
+    };
+    const onEnd = () => {
+      if(!isDragging) return;
+      isDragging=false;
+      knob.style.transition='transform 0.3s ease';
+      if(curX >= maxDrag()*0.85) { knob.style.transform=`translateX(${maxDrag()}px)`; executeSwipe(container); }
+      else { knob.style.transform='translateX(0)'; curX=0; }
+    };
+    knob.addEventListener('touchstart', onStart, {passive:true});
+    knob.addEventListener('mousedown', onStart);
+    document.addEventListener('touchmove', onMove, {passive:true});
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('mouseup', onEnd);
+  });
+}
+
+function resetAllSwipes() {
+  document.querySelectorAll('.swipe-knob').forEach(k => { k.style.transition='transform 0.3s ease'; k.style.transform='translateX(0)'; });
+}
+
+async function executeSwipe(container) {
+  const action = container.dataset.action;
+  const orderIds = container.dataset.orderids ? container.dataset.orderids.split(',') : [];
+  const orderId = container.dataset.orderid;
+
+  // 2-second delay for most actions
+  const delayActions = ['batch_ambil','tiba_tujuan','selesai_pesanan'];
+  if (delayActions.includes(action)) {
+    let barId, secId;
+    if(action==='tiba_tujuan') { barId=`tiba-countdown-bar-${orderId}`; secId=`tiba-sec-${orderId}`; }
+    else if(action==='selesai_pesanan') { barId=`sel-countdown-bar-${orderId}`; secId=`sel-sec-${orderId}`; }
+    
+    if(barId) {
+      const bar = document.getElementById(barId);
+      if(bar) { bar.style.display='flex'; }
+      let s=2;
+      await new Promise(r => {
+        const t = setInterval(() => {
+          s--;
+          const secEl = document.getElementById(secId);
+          if(secEl) secEl.textContent=s;
+          if(s<=0){clearInterval(t);r();}
+        },1000);
+      });
+      if(bar) bar.style.display='none';
+    } else {
+      await new Promise(r=>setTimeout(r,2000));
+    }
+  }
+
+  showLoading('Memproses...');
+  try {
+    if (action === 'terima') {
+      // Use accept modal for new order accept
+      const o = { id: orderId };
+      await updateDoc(doc(db,"orders",orderId), {
+        getdriverId: currentUid, driverName: driverData.nama, waDriver: driverData.wa,
+        rankDriver: driverData.status, UrlprofileDriver: driverData.urlProfile||'',
+        kendaraanDriver: driverData.stnk||'-', status:'terima'
+      });
+      playSound('snd-accept');
+      showToast('✅ Pesanan diterima!');
+      window.switchPage('maps');
+    }
+    else if (action === 'batch_ambil') {
+      await Promise.all(orderIds.map(id => updateDoc(doc(db,"orders",id), { status:'ambil' })));
+    }
+    else if (action === 'batch_ngantar') {
+      for(const id of orderIds) {
+        if(!window.filesBuffer[id+'_ambil']) { showToast('Lengkapi semua foto pesanan!'); hideLoading(); resetAllSwipes(); return; }
+      }
+      const koordinat = currentDeviceCoords ? `${currentDeviceCoords[0]},${currentDeviceCoords[1]}` : '';
+      await Promise.all(orderIds.map(async id => {
+        const url = await uploadToCloudinary(window.filesBuffer[id+'_ambil'], 20);
+        delete window.filesBuffer[id+'_ambil'];
+        return updateDoc(doc(db,"orders",id), { titikAmbil:koordinat, urlbuktiAmbil:url, status:'ngantar' });
+      }));
+    }
+    else if (action === 'tiba_tujuan') {
+      await updateDoc(doc(db,"orders",orderId), { status:'tiba' });
+    }
         else if (action === 'selesai_pesanan') {
-            if(!window.filesBuffer[orderId + '_selesai']) { alert('Pilih foto bukti selesai!'); hideLoading(); resetSwipe(); return; }
-            let imgUrl = await uploadImage(window.filesBuffer[orderId + '_selesai']);
-            await updateDoc(doc(db, "orders", orderId), { urlbuktiSelesai: imgUrl, status: "selesai" });
-            
-            // Tambah Pendapatan Cache
-            addIncome(parseInt(el.dataset.argo));
-            delete window.filesBuffer[orderId + '_selesai'];
-        }
-        hideLoading();
-    } catch(e) {
-        console.error(e);
-        alert('Terjadi kesalahan: ' + e.message);
-        hideLoading();
-        resetSwipe();
-    }
-}
-</script>
+      if(!window.filesBuffer[orderId+'_selesai']) { showToast('Pilih foto bukti selesai!'); hideLoading(); resetAllSwipes(); return; }
+      const url = await uploadToCloudinary(window.filesBuffer[orderId+'_selesai'], 30);
+      delete window.filesBuffer[orderId+'_selesai'];
+      
+      const netArgo = parseInt(container.dataset.argo) || 0; // Ini sekarang bernilai 100% (Argo Utuh)
 
+      await updateDoc(doc(db,"orders",orderId), { urlbuktiSelesai:url, status:'selesai' });
+
+      // Pemotongan deposit 20% langsung dari argo utuh
+      const platformCut = Math.round(netArgo * 0.20); 
+      const newDeposit = Math.max(0, (driverData.deposit||0) - platformCut);
+      
+      // Update hanya deposit di Firestore (Tabungan tidak disimpan di Firestore)
+      await updateDoc(doc(db,"user",currentUid), { deposit:newDeposit });
+
+      // Simpan riwayat harian ke LocalStorage
+      const today = new Date().toLocaleDateString('id-ID');
+      let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
+      
+      // Bersihkan riwayat hari sebelumnya agar tidak menumpuk
+      dailyHistory = dailyHistory.filter(r => r.tanggal === today);
+      
+      dailyHistory.push({
+        orderId, 
+        argo: netArgo, 
+        namaAntar: currentDeliveryPin?.NamaAntar||'-',
+        selesaiAt: Date.now(),
+        tanggal: today
+      });
+      localStorage.setItem('riwayat_harian_' + currentUid, JSON.stringify(dailyHistory));
+
+      // Panggil fungsi display untuk langsung update angka tabungan
+      updateDepositDisplay();
+
+      tripTotalArgo += netArgo;
+
+      // Check if all orders done
+      const remaining = activeOrders.filter(o => o.id !== orderId);
+      if (remaining.length === 0) {
+        showEarningPopup(tripTotalArgo);
+        tripTotalArgo = 0;
+      }
+    }
+    
+    hideLoading();
+  } catch(e) {
+    showToast('Error: ' + e.message);
+    hideLoading();
+    resetAllSwipes();
+  }
+}
+
+// ========================= EARNING POPUP =========================
+function showEarningPopup(total) {
+  document.getElementById('earning-total').textContent = 'Rp ' + total.toLocaleString('id-ID');
+  document.getElementById('earning-popup').classList.add('open');
+  playSound('snd-accept');
+}
+window.closeEarningPopup = () => {
+  document.getElementById('earning-popup').classList.remove('open');
+  window.switchPage('daftar');
+};
+
+// ========================= MODALS =========================
+window.closeWelcomePopup = () => document.getElementById('welcome-popup').classList.remove('open');
+window.openTopupModal = () => document.getElementById('topup-modal').classList.add('open');
+window.closeTopupModal = () => document.getElementById('topup-modal').classList.remove('open');
+
+// ========================= RIWAYAT =========================
+function loadRiwayat() {
+  const today = new Date().toLocaleDateString('id-ID');
+  let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
+  
+  // Filter khusus riwayat hari ini
+  dailyHistory = dailyHistory.filter(r => r.tanggal === today);
+
+  if (dailyHistory.length === 0) {
+    document.getElementById('riwayat-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">history</span><p>Belum ada riwayat hari ini</p></div>`;
+    return;
+  }
+
+  // Urutkan dari yang paling baru
+  dailyHistory.sort((a,b) => b.selesaiAt - a.selesaiAt);
+
+  document.getElementById('riwayat-list').innerHTML = dailyHistory.map(r => {
+    const timeStr = new Date(r.selesaiAt).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+    return `
+      <div class="riwayat-item">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:14px;font-weight:600;">${r.namaAntar||'-'}</div>
+          <div style="font-size:16px;font-weight:700;color:var(--oneui-green);">+Rp ${(r.argo||0).toLocaleString('id-ID')}</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px;">Hari ini, ${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Override switchPage to load riwayat lazily
+const _origSwitch = window.switchPage;
+window.switchPage = (p) => {
+  _origSwitch(p);
+  if (p === 'riwayat') loadRiwayat();
+};
+
+</script>
+</body>
 </html>
