@@ -169,7 +169,36 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 #map { width:100%; background:var(--surface-input); flex:1; min-height:0; }
 .map-placeholder { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text-tertiary); background:var(--surface-input); }
 .map-placeholder .material-symbols-outlined { font-size:48px; }
-.floating-panel { background:var(--surface-card); padding:20px 20px 16px; border-radius:var(--r-2xl) var(--r-2xl) 0 0; box-shadow:0 -4px 24px rgba(0,0,0,0.1); position:absolute; bottom:80px; left:0; right:0; z-index:10; max-height:56vh; overflow-y:auto; }
+/* DRAGGABLE BOTTOM SHEET (Grab-style) */
+.floating-panel {
+  background:var(--surface-card);
+  border-radius:var(--r-2xl) var(--r-2xl) 0 0;
+  box-shadow:0 -4px 24px rgba(0,0,0,0.14);
+  position:absolute;
+  bottom:0; left:0; right:0;
+  z-index:10;
+  overflow:hidden;
+  touch-action:none;
+  /* Will be controlled by JS translateY */
+  transform:translateY(0);
+  transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  /* Reserve space for nav bar */
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px);
+}
+.sheet-drag-handle-wrap {
+  width:100%;
+  padding:8px 0 4px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  cursor:grab;
+  user-select:none;
+  -webkit-user-select:none;
+  flex-shrink:0;
+}
+.sheet-drag-handle-wrap:active { cursor:grabbing; }
+.sheet-drag-bar { width:40px; height:4px; background:var(--border-medium); border-radius:var(--r-full); }
+.sheet-inner { padding:0 20px 8px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .center-btn { position:absolute; top:16px; right:16px; z-index:20; background:var(--surface-card); border:none; border-radius:var(--r-md); width:44px; height:44px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md); cursor:pointer; color:var(--text-primary); }
 
 /* PIN ROUTE LIST */
@@ -575,7 +604,12 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
     <button class="center-btn d-none" id="center-map-btn" onclick="centerDriverOnMap()">
       <span class="material-symbols-outlined">my_location</span>
     </button>
-    <div class="floating-panel" id="active-order-panel"></div>
+    <div class="floating-panel" id="active-order-panel">
+      <div class="sheet-drag-handle-wrap" id="sheet-drag-handle">
+        <div class="sheet-drag-bar"></div>
+      </div>
+      <div class="sheet-inner" id="sheet-inner-content"></div>
+    </div>
   </div>
 
   <!-- PAGE: RIWAYAT -->
@@ -812,6 +846,79 @@ window.switchPage = (p) => {
   if(p === 'profil') renderProfile();
 };
 
+// ========================= DRAGGABLE BOTTOM SHEET =========================
+(function initDraggableSheet() {
+  // Snap positions: fraction of panel height hidden (0=full up, 1=mostly hidden)
+  // We use translateY(px) — positive = more hidden
+  const SNAP_FULL = 0;       // full open
+  const SNAP_MID  = 0.45;    // mid peek (like Grab showing map mostly)
+  const SNAP_MINI = 0.72;    // mini peek
+
+  let sheetEl, handleEl, innerEl;
+  let isDragging = false;
+  let startY = 0, startTranslate = 0, currentTranslate = 0;
+  let sheetHeight = 0;
+
+  function getPanel() {
+    sheetEl    = document.getElementById('active-order-panel');
+    handleEl   = document.getElementById('sheet-drag-handle');
+    innerEl    = document.getElementById('sheet-inner-content');
+    return sheetEl && handleEl;
+  }
+
+  function snapTo(fraction) {
+    if (!sheetEl) return;
+    sheetHeight = sheetEl.offsetHeight;
+    const ty = Math.round(sheetHeight * fraction);
+    currentTranslate = ty;
+    sheetEl.style.transition = 'transform 0.35s cubic-bezier(0.16,1,0.3,1)';
+    sheetEl.style.transform = `translateY(${ty}px)`;
+    // Allow/block inner scroll based on position
+    if (innerEl) innerEl.style.overflowY = fraction < 0.2 ? 'auto' : 'hidden';
+  }
+
+  window.snapSheetTo = snapTo;
+  window.snapSheetMid = () => snapTo(SNAP_MID);
+  window.snapSheetFull = () => snapTo(SNAP_FULL);
+  window.snapSheetMini = () => snapTo(SNAP_MINI);
+
+  function closestSnap(ty) {
+    if (!sheetEl) return SNAP_FULL;
+    const h = sheetEl.offsetHeight;
+    const fr = ty / h;
+    const snaps = [SNAP_FULL, SNAP_MID, SNAP_MINI];
+    return snaps.reduce((best, s) => Math.abs(s - fr) < Math.abs(best - fr) ? s : best, snaps[0]);
+  }
+
+  document.addEventListener('touchstart', e => {
+    if (!getPanel()) return;
+    // Only drag if touch starts on the handle area
+    const target = e.target;
+    if (!handleEl.contains(target)) return;
+    isDragging = true;
+    startY = e.touches[0].clientY;
+    const m = sheetEl.style.transform.match(/translateY\((-?\d+(?:\.\d+)?)px\)/);
+    startTranslate = m ? parseFloat(m[1]) : 0;
+    sheetEl.style.transition = 'none';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!isDragging || !sheetEl) return;
+    const dy = e.touches[0].clientY - startY;
+    sheetHeight = sheetEl.offsetHeight;
+    const newTy = Math.max(0, Math.min(startTranslate + dy, sheetHeight * SNAP_MINI + 10));
+    currentTranslate = newTy;
+    sheetEl.style.transform = `translateY(${newTy}px)`;
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if (!isDragging || !sheetEl) return;
+    isDragging = false;
+    const snap = closestSnap(currentTranslate);
+    snapTo(snap);
+  });
+}());
+
 // ========================= TABS (SIGNUP/LOGIN) =========================
 window.showTab = (t) => {
   document.getElementById('form-login').classList.toggle('d-none', t !== 'login');
@@ -942,6 +1049,8 @@ async function loadDriverProfile() {
       listenOrders();
       listenProfile();
       hideLoading();
+      // Warm up canvas/image pipeline to avoid first-upload delay
+      warmUpCanvas();
       // Show welcome popup on first load
       if (!sessionStorage.getItem('welcomed')) {
         sessionStorage.setItem('welcomed','1');
@@ -949,6 +1058,16 @@ async function loadDriverProfile() {
       }
     } else { showToast('Akun bukan driver!'); signOut(auth); hideLoading(); }
   } catch(e) { showToast('Gagal memuat profil'); hideLoading(); }
+}
+
+// Warm up the browser's canvas/image decode pipeline to avoid first-upload lag
+function warmUpCanvas() {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 1; c.height = 1;
+    c.getContext('2d').fillRect(0,0,1,1);
+    c.toBlob(() => {}, 'image/jpeg', 0.8);
+  } catch(e) {}
 }
 
 function listenProfile() {
@@ -1268,7 +1387,7 @@ function sortByRoute(orders, refCoords) {
 }
 
 function renderActivePanel() {
-  const panel = document.getElementById('active-order-panel');
+  const panel = document.getElementById('sheet-inner-content');
   const mapPlaceholder = document.getElementById('map-placeholder-div');
   const mapEl = document.getElementById('map');
   const centerBtn = document.getElementById('center-map-btn');
@@ -1289,10 +1408,12 @@ function renderActivePanel() {
     mapEl.classList.add('d-none');
     centerBtn.classList.add('d-none');
     renderPickupPhase(pickups);
+    // Sheet full open (no map behind)
+    setTimeout(() => window.snapSheetFull && window.snapSheetFull(), 50);
     return;
   }
 
-  // DELIVERY PHASE
+  // DELIVERY PHASE — show map, sheet snapped to mid (Grab style)
   mapPlaceholder.style.display = 'none';
   mapEl.classList.remove('d-none');
   centerBtn.classList.remove('d-none');
@@ -1304,10 +1425,13 @@ function renderActivePanel() {
 
   drawAllPinsAndRoute(sorted);
   renderDeliveryPhase(sorted);
+
+  // Snap sheet to mid so map is visible (Grab style)
+  setTimeout(() => window.snapSheetMid && window.snapSheetMid(), 80);
 }
 
 function renderPickupPhase(pickups) {
-  const panel = document.getElementById('active-order-panel');
+  const panel = document.getElementById('sheet-inner-content');
   // Group by same pickup location
   const targetLoc = pickups[0].mapsAmbil;
   const group = pickups.filter(o => o.mapsAmbil === targetLoc);
@@ -1406,7 +1530,7 @@ window.cancelOrderGroup = async (ids) => {
 };
 
 function renderDeliveryPhase(sorted) {
-  const panel = document.getElementById('active-order-panel');
+  const panel = document.getElementById('sheet-inner-content');
   const o = sorted[0];
   const netArgo = calcNetArgo(o.Argo||0);
 
@@ -1459,7 +1583,7 @@ function renderDeliveryPhase(sorted) {
 
   panel.innerHTML = `
   <div style="margin-bottom:12px;">
-    <div style="font-size:17px;font-weight:700;">Pengantaran Aktif — Pin 1</div>
+    <div style="font-size:17px;font-weight:700;">Pengantaran Aktif</div>
     <div style="font-size:12px;color:var(--text-tertiary);">Ikuti urutan pin sesuai arah rute</div>
   </div>
   <div style="background:var(--surface-input);border-radius:var(--r-md);padding:10px 12px;margin-bottom:12px;">
@@ -1479,7 +1603,11 @@ function renderDeliveryPhase(sorted) {
 
 // ========================= MAPS =========================
 function initMap() {
-  if (map) return;
+  if (map) {
+    // Map already exists — just resize and redraw if needed
+    setTimeout(() => map.resize(), 50);
+    return;
+  }
   document.getElementById('map').classList.remove('d-none');
   map = new maplibregl.Map({
     container: 'map',
@@ -1493,11 +1621,23 @@ function initMap() {
     map.addLayer({ id:'driver-layer', type:'circle', source:'driver-loc', paint:{ 'circle-radius':10, 'circle-color':'#1259C3', 'circle-stroke-width':3, 'circle-stroke-color':'#FFF' } });
     map.addSource('route', { type:'geojson', data:{ type:'LineString', coordinates:[] } });
     map.addLayer({ id:'route-layer', type:'line', source:'route', layout:{'line-join':'round','line-cap':'round'}, paint:{'line-color':'#1259C3','line-width':5,'line-opacity':0.8} });
+
+    // Draw route immediately if delivery phase is already active
+    const deliveries = activeOrders.filter(o => o.status === 'ngantar' || o.status === 'tiba');
+    if (deliveries.length > 0) {
+      const sorted = sortByRoute(deliveries, currentDeviceCoords);
+      drawAllPinsAndRoute(sorted);
+    }
   });
 }
 
 function drawAllPinsAndRoute(sorted) {
   if (!map) return;
+  // If map style not yet loaded, wait for it
+  if (!map.isStyleLoaded()) {
+    map.once('load', () => drawAllPinsAndRoute(sorted));
+    return;
+  }
   // Remove old markers
   document.querySelectorAll('.maplibregl-marker').forEach(m => m.remove());
 
@@ -1629,12 +1769,14 @@ async function executeSwipe(container) {
       for(const id of orderIds) {
         if(!window.filesBuffer[id+'_ambil']) { showToast('Lengkapi semua foto pesanan!'); hideLoading(); resetAllSwipes(); return; }
       }
+      showLoading(`Mengupload ${orderIds.length} foto...`);
       const koordinat = currentDeviceCoords ? `${currentDeviceCoords[0]},${currentDeviceCoords[1]}` : '';
-      await Promise.all(orderIds.map(async id => {
-        const url = await uploadToCloudinary(window.filesBuffer[id+'_ambil'], 20);
-        delete window.filesBuffer[id+'_ambil'];
-        return updateDoc(doc(db,"orders",id), { titikAmbil:koordinat, urlbuktiAmbil:url, status:'ngantar' });
-      }));
+      // Upload all files in PARALLEL (not sequentially) to avoid first-upload lag
+      const uploadResults = await Promise.all(orderIds.map(id => uploadToCloudinary(window.filesBuffer[id+'_ambil'], 20)));
+      orderIds.forEach(id => delete window.filesBuffer[id+'_ambil']);
+      await Promise.all(orderIds.map((id, idx) =>
+        updateDoc(doc(db,"orders",id), { titikAmbil:koordinat, urlbuktiAmbil:uploadResults[idx], status:'ngantar' })
+      ));
     }
     else if (action === 'tiba_tujuan') {
       await updateDoc(doc(db,"orders",orderId), { status:'tiba' });
