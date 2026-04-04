@@ -5,327 +5,729 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>JastipUnnes - Driver</title>
 <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" type="image/png">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet"/>
 <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <style>
 /* ============================================================
-   ONE UI SAMSUNG DESIGN SYSTEM
+   SAMSUNG ONE UI 6 — NATIVE APP DESIGN SYSTEM
    ============================================================ */
 :root {
+  /* One UI Blue — Samsung primary */
   --oneui-blue: #1259C3;
-  --oneui-blue-light: #3478F6;
+  --oneui-blue-light: #4A90E2;
   --oneui-blue-bg: #EBF1FD;
   --oneui-blue-dark: #0A3D8F;
-  --oneui-red: #C9373C;
-  --oneui-red-bg: #FDECEA;
-  --oneui-green: #0E7A45;
-  --oneui-green-bg: #E6F5ED;
-  --oneui-orange: #E07B00;
-  --oneui-orange-bg: #FEF3E2;
-  --oneui-purple: #6E3DC0;
-  --oneui-purple-bg: #F0EAFB;
-  --surface-bg: #F2F2F7;
+  /* Status colors */
+  --oneui-red: #D32F2F;
+  --oneui-red-bg: #FFEBEE;
+  --oneui-green: #1B8A3F;
+  --oneui-green-bg: #E8F5E9;
+  --oneui-orange: #C45700;
+  --oneui-orange-bg: #FFF3E0;
+  --oneui-purple: #5E35B1;
+  --oneui-purple-bg: #EDE7F6;
+  /* One UI surface hierarchy — critical for native feel */
+  --surface-bg: #F4F4F4;    /* System background — not pure grey */
   --surface-card: #FFFFFF;
-  --surface-input: #F1F3F5;
-  --text-primary: #1A1A1A;
-  --text-secondary: #5A5A5A;
-  --text-tertiary: #8A8A8A;
+  --surface-input: #EBEBEB; /* One UI input bg */
+  --surface-elevated: #FAFAFA;
+  /* Text */
+  --text-primary: #1C1C1C;
+  --text-secondary: #4A4A4A;
+  --text-tertiary: #878787;
   --text-disabled: #BBBBBB;
-  --border-light: #E8E8E8;
-  --border-medium: #D0D0D0;
-  --r-xs: 6px; --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-xl: 28px; --r-2xl: 36px; --r-full: 100px;
-  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-  --font: 'Noto Sans KR', -apple-system, sans-serif;
+  --text-inverse: #FFFFFF;
+  /* Borders — very subtle in One UI */
+  --border-light: #E5E5E5;
+  --border-medium: #D1D1D1;
+  /* Border radius — One UI uses rounder but specific values */
+  --r-xs: 8px; --r-sm: 12px; --r-md: 18px; --r-lg: 24px; --r-xl: 30px; --r-2xl: 38px; --r-full: 100px;
+  /* Shadows — barely visible in One UI */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 2px 12px rgba(0,0,0,0.07);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,0.10);
+  /* Typography */
+  --font: 'Noto Sans', -apple-system, 'Samsung One', sans-serif;
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width:100%; height:100%; overflow:hidden; overscroll-behavior:none; background:var(--surface-bg); color:var(--text-primary); font-family:var(--font); -webkit-font-smoothing:antialiased; user-select:none; -webkit-user-select:none; }
+html, body {
+  width:100%; height:100%; overflow:hidden; overscroll-behavior:none;
+  background:var(--surface-bg); color:var(--text-primary);
+  font-family:var(--font); -webkit-font-smoothing:antialiased;
+  user-select:none; -webkit-user-select:none;
+}
 input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 * { -webkit-tap-highlight-color:transparent!important; outline:none!important; }
 button, [onclick] { touch-action: manipulation; cursor: pointer; }
-button:active, .order-card:active, .nav-item:active { transform: scale(0.97); transition: transform 0.08s ease; }
-.btn-oneui:active { transform: scale(0.97) !important; transition: transform 0.08s ease !important; }
 .swipe-wrap { -webkit-touch-callout: none; }
 .d-none { display:none!important; }
 
-/* LOADING */
-#loading-overlay { position:fixed; inset:0; background:rgba(255,255,255,0.88); backdrop-filter:blur(8px); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
-#loading-overlay.visible { display:flex; }
-.oneui-spinner { width:44px; height:44px; border:3px solid var(--border-light); border-top:3px solid var(--oneui-blue); border-radius:50%; animation:spin 0.75s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-#loading-text { font-size:14px; font-weight:600; color:var(--text-secondary); }
+/* ======== PRESS STATES — Samsung-style scale feedback ======== */
+button:active, .order-card:active { transform: scale(0.975); transition: transform 0.06s ease; }
+.btn-oneui:active { transform: scale(0.975) !important; }
+.nav-item:active { transform: scale(0.88) !important; }
 
-/* TOAST */
-#toast { position:fixed; top:60px; left:50%; transform:translateX(-50%) translateY(-20px); background:rgba(30,30,30,0.78); backdrop-filter:blur(16px); color:rgba(255,255,255,0.95); padding:12px 22px; border-radius:var(--r-full); font-size:13px; font-weight:600; z-index:10001; display:none; align-items:center; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.12); opacity:0; transition:opacity 0.3s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1); max-width:calc(100vw - 40px); }
+/* ======== LOADING OVERLAY ======== */
+#loading-overlay {
+  position:fixed; inset:0;
+  background:rgba(244,244,244,0.90);
+  backdrop-filter:blur(12px);
+  z-index:10000; display:none; flex-direction:column;
+  align-items:center; justify-content:center; gap:20px;
+}
+#loading-overlay.visible { display:flex; }
+.oneui-spinner {
+  width:40px; height:40px;
+  border:3px solid var(--border-light);
+  border-top:3px solid var(--oneui-blue);
+  border-radius:50%;
+  animation:spin 0.65s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+#loading-text { font-size:13px; font-weight:600; color:var(--text-tertiary); letter-spacing:0.1px; }
+
+/* ======== TOAST — One UI snackbar style ======== */
+#toast {
+  position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 88px);
+  left:50%; transform:translateX(-50%) translateY(16px);
+  background:#1C1C1C;
+  color:#FFFFFF;
+  padding:13px 22px;
+  border-radius:var(--r-full);
+  font-size:13px; font-weight:600;
+  z-index:10001; display:none; align-items:center; text-align:center;
+  box-shadow:0 4px 20px rgba(0,0,0,0.22);
+  opacity:0;
+  transition:opacity 0.25s ease, transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  max-width:calc(100vw - 48px);
+  white-space:nowrap;
+}
 #toast.show { display:flex; opacity:1; transform:translateX(-50%) translateY(0); }
 
-/* MODAL */
-.modal-overlay { position:fixed; inset:0; z-index:9500; background:rgba(0,0,0,0.45); display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px); }
-.modal-overlay.open { display:flex; animation:fadeIn 0.2s ease; }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-.modal-sheet { background:var(--surface-card); border-radius:var(--r-2xl) var(--r-2xl) 0 0; padding:8px 20px 40px; width:100%; max-width:520px; max-height:92vh; overflow-y:auto; overscroll-behavior-y:none; animation:slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
-@keyframes slideUp { from{transform:translateY(100%);opacity:0.6} to{transform:translateY(0);opacity:1} }
-.modal-handle { width:40px; height:4px; background:var(--border-medium); border-radius:var(--r-full); margin:10px auto 20px; }
-.modal-title { font-size:20px; font-weight:700; color:var(--text-primary); margin-bottom:6px; letter-spacing:-0.4px; }
-.modal-sub { font-size:13px; color:var(--text-secondary); margin-bottom:20px; line-height:1.6; }
+/* ======== MODAL — One UI bottom sheet ======== */
+.modal-overlay {
+  position:fixed; inset:0; z-index:9500;
+  background:rgba(0,0,0,0.40);
+  display:none; align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.modal-overlay.open { display:flex; animation:sheetFadeIn 0.22s ease; }
+@keyframes sheetFadeIn { from{opacity:0} to{opacity:1} }
+.modal-sheet {
+  background:var(--surface-card);
+  border-radius:var(--r-2xl) var(--r-2xl) 0 0;
+  padding:0 20px 40px;
+  width:100%; max-width:520px;
+  max-height:93vh; overflow-y:auto;
+  overscroll-behavior-y:none;
+  animation:sheetSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes sheetSlideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle {
+  width:36px; height:4px;
+  background:var(--border-medium);
+  border-radius:var(--r-full);
+  margin:12px auto 22px;
+}
+.modal-title { font-size:19px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+.modal-sub { font-size:13px; color:var(--text-secondary); margin-bottom:20px; line-height:1.55; }
 
-/* SPLASH / AUTH */
-#splash { position:fixed; inset:0; z-index:9000; background:var(--surface-card); display:flex; flex-direction:column; height:100dvh; overflow-y:auto; overscroll-behavior-y:none; }
+/* ======== SPLASH / AUTH — One UI Login Screen ======== */
+#splash {
+  position:fixed; inset:0; z-index:9000;
+  background:var(--surface-card);
+  display:flex; flex-direction:column;
+  height:100dvh; overflow-y:auto; overscroll-behavior-y:none;
+}
 #splash.hidden { display:none; }
-.splash-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px 24px; background:linear-gradient(160deg, var(--oneui-blue-bg) 0%, var(--surface-card) 100%); min-height:200px; }
-.splash-logo { width:72px; height:72px; background:var(--oneui-blue); border-radius:var(--r-xl); display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 8px 24px rgba(18,89,195,0.3); }
-.splash-sheet { background:var(--surface-card); border-radius:var(--r-2xl) var(--r-2xl) 0 0; padding:28px 24px 0; box-shadow:0 -4px 24px rgba(0,0,0,0.08); }
-.auth-tab-bar { display:flex; background:var(--surface-input); border-radius:var(--r-lg); padding:4px; margin-bottom:24px; }
-.auth-tab { flex:1; padding:10px; border:none; background:transparent; border-radius:var(--r-md); font-size:14px; font-weight:600; color:var(--text-tertiary); cursor:pointer; transition:all 0.2s; }
-.auth-tab.active { background:var(--surface-card); color:var(--text-primary); box-shadow:var(--shadow-sm); }
 
-/* FORM FIELDS */
-.field-group { margin-bottom:16px; }
-.field-label { font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:4px; }
+.splash-hero {
+  flex:1;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:56px 28px 32px;
+  background:var(--surface-card);
+  min-height:220px;
+}
+.splash-logo {
+  width:76px; height:76px;
+  background:var(--oneui-blue);
+  border-radius:24px;
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:22px;
+  box-shadow:0 6px 24px rgba(18,89,195,0.28);
+}
+.splash-logo .material-symbols-rounded { color:#FFF; font-size:38px; }
+.splash-app-name {
+  font-size:26px; font-weight:800;
+  letter-spacing:-0.5px;
+  color:var(--text-primary);
+  margin-bottom:6px;
+}
+.splash-app-name span { color:var(--oneui-blue); }
+.splash-tagline { font-size:13px; color:var(--text-tertiary); font-weight:500; }
+
+/* Auth sheet — slides up from bottom like One UI */
+.splash-sheet {
+  background:var(--surface-bg);
+  border-radius:var(--r-2xl) var(--r-2xl) 0 0;
+  padding:28px 20px 0;
+}
+
+/* Tab bar — One UI segmented control style */
+.auth-tab-bar {
+  display:flex;
+  background:var(--surface-input);
+  border-radius:var(--r-md);
+  padding:3px;
+  margin-bottom:22px;
+  gap:2px;
+}
+.auth-tab {
+  flex:1; padding:9px 0;
+  border:none; background:transparent;
+  border-radius:calc(var(--r-md) - 3px);
+  font-size:14px; font-weight:600;
+  color:var(--text-tertiary);
+  cursor:pointer;
+  transition:all 0.18s ease;
+  font-family:var(--font);
+}
+.auth-tab.active {
+  background:var(--surface-card);
+  color:var(--text-primary);
+  box-shadow:0 1px 4px rgba(0,0,0,0.10);
+}
+
+/* ======== FORM FIELDS — One UI style ======== */
+.field-group { margin-bottom:14px; }
+.field-label {
+  font-size:12px; font-weight:700;
+  color:var(--text-secondary);
+  margin-bottom:7px;
+  display:flex; align-items:center; gap:4px;
+  text-transform:uppercase; letter-spacing:0.4px;
+}
 .field-required { color:var(--oneui-red); }
-.oneui-input { width:100%; padding:14px 16px; background:var(--surface-input); border:1.5px solid transparent; border-radius:var(--r-md); font-size:15px; font-family:var(--font); color:var(--text-primary); transition:all 0.2s; }
-.oneui-input:focus { background:#FFF; border-color:var(--oneui-blue); box-shadow:0 0 0 3px rgba(18,89,195,0.1); }
+.oneui-input {
+  width:100%;
+  padding:14px 16px;
+  background:var(--surface-input);
+  border:1.5px solid transparent;
+  border-radius:var(--r-md);
+  font-size:15px; font-family:var(--font);
+  color:var(--text-primary);
+  transition:all 0.18s ease;
+}
+.oneui-input:focus {
+  background:var(--surface-card);
+  border-color:var(--oneui-blue);
+  box-shadow:0 0 0 3px rgba(18,89,195,0.08);
+}
 .oneui-input::placeholder { color:var(--text-disabled); }
-.oneui-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%238A8A8A' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:40px; }
+.oneui-select {
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Cpath fill='%23878787' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center;
+  padding-right:42px;
+}
 
-/* UPLOAD BOX */
-.upload-box { border:2px dashed var(--border-medium); border-radius:var(--r-md); padding:14px; text-align:center; position:relative; background:var(--surface-input); transition:all 0.2s; }
-.upload-box.uploaded { border-color:var(--oneui-green); background:var(--oneui-green-bg); }
+/* ======== UPLOAD BOX ======== */
+.upload-box {
+  border:1.5px dashed var(--border-medium);
+  border-radius:var(--r-md);
+  padding:16px 14px;
+  text-align:center; position:relative;
+  background:var(--surface-input);
+  transition:all 0.18s ease;
+}
+.upload-box.uploaded { border-color:var(--oneui-green); background:var(--oneui-green-bg); border-style:solid; }
 .upload-box input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-.upload-box-content { display:flex; flex-direction:column; align-items:center; gap:4px; pointer-events:none; }
-.upload-box-content .material-symbols-outlined { font-size:24px; color:var(--oneui-blue); }
+.upload-box-content { display:flex; flex-direction:column; align-items:center; gap:5px; pointer-events:none; }
+.upload-box-content .material-symbols-rounded { font-size:26px; color:var(--oneui-blue); }
 .upload-label { font-size:12px; font-weight:600; color:var(--text-secondary); }
-.upload-sub { font-size:10px; color:var(--text-tertiary); }
+.upload-sub { font-size:11px; color:var(--text-tertiary); }
 
-/* BUTTONS */
-.btn-oneui { width:100%; padding:16px; border:none; border-radius:var(--r-lg); font-size:16px; font-weight:700; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; transition:all 0.15s; font-family:var(--font); letter-spacing:-0.2px; -webkit-tap-highlight-color:transparent; }
-.btn-primary { background:var(--oneui-blue); color:#FFF; box-shadow:0 4px 16px rgba(18,89,195,0.3); }
-.btn-primary:active { background:var(--oneui-blue-dark); transform:scale(0.97); }
-.btn-secondary { background:var(--surface-input); color:var(--text-primary); }
-.btn-secondary:active { background:var(--border-light); transform:scale(0.97); }
+/* ======== BUTTONS — One UI style ======== */
+.btn-oneui {
+  width:100%; padding:15px;
+  border:none;
+  border-radius:var(--r-xl);
+  font-size:15px; font-weight:700;
+  cursor:pointer;
+  display:flex; justify-content:center; align-items:center; gap:8px;
+  transition:all 0.12s ease;
+  font-family:var(--font);
+  letter-spacing:-0.1px;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-primary {
+  background:var(--oneui-blue);
+  color:#FFF;
+}
+.btn-primary:active { background:var(--oneui-blue-dark); }
+.btn-secondary {
+  background:var(--surface-input);
+  color:var(--text-primary);
+}
+.btn-secondary:active { background:var(--border-light); }
 .btn-danger { background:var(--oneui-red-bg); color:var(--oneui-red); }
-.btn-danger:active { transform:scale(0.97); }
-.btn-sm { padding:10px 16px; font-size:13px; border-radius:var(--r-md); width:auto; }
+.btn-danger:active { background:#FFCDD2; }
+.btn-sm { padding:9px 16px; font-size:13px; border-radius:var(--r-md); width:auto; }
 
-/* APP */
+/* ======== APP SHELL ======== */
 #app { display:none; flex-direction:column; height:100dvh; background:var(--surface-bg); }
 #app.visible { display:flex; }
 
-/* TOP BAR */
-.top-bar { padding:12px 20px; background:var(--surface-card); display:flex; justify-content:space-between; align-items:center; z-index:100; box-shadow:var(--shadow-sm); flex-shrink:0; }
-.driver-status-pill { padding:7px 14px; border-radius:var(--r-full); font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; transition:all 0.15s; }
-.driver-status-pill:active { transform:scale(0.95); }
+/* ======== TOP BAR — One UI header style ======== */
+.top-bar {
+  padding:10px 16px 10px;
+  background:var(--surface-card);
+  display:flex; justify-content:space-between; align-items:center;
+  z-index:100;
+  border-bottom:1px solid var(--border-light);
+  flex-shrink:0;
+  min-height:56px;
+}
+/* Status toggle pill */
+.driver-status-pill {
+  padding:7px 14px 7px 10px;
+  border-radius:var(--r-full);
+  font-size:13px; font-weight:700;
+  display:flex; align-items:center; gap:7px;
+  cursor:pointer;
+  transition:all 0.15s ease;
+  border:none;
+  font-family:var(--font);
+}
 .driver-status-pill.online { background:var(--oneui-green-bg); color:var(--oneui-green); }
 .driver-status-pill.offline { background:var(--surface-input); color:var(--text-tertiary); }
-.status-dot { width:7px; height:7px; border-radius:50%; }
-.dot-online { background:var(--oneui-green); }
+.status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.dot-online { background:var(--oneui-green); box-shadow:0 0 0 2px rgba(27,138,63,0.2); }
 .dot-offline { background:var(--text-disabled); }
-.top-deposit { display:flex; flex-direction:column; align-items:flex-end; }
-.top-deposit-label { font-size:10px; color:var(--text-tertiary); font-weight:600; }
-.top-deposit-val { font-size:16px; font-weight:700; color:var(--text-primary); }
+/* Deposit tap area */
+.top-deposit { display:flex; flex-direction:column; align-items:flex-end; gap:1px; cursor:pointer; padding:4px 0; }
+.top-deposit-label { font-size:10px; color:var(--text-tertiary); font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+.top-deposit-val { font-size:17px; font-weight:800; color:var(--text-primary); letter-spacing:-0.5px; }
 
-/* PAGES */
-.page { flex:1; overflow-y:auto; display:none; padding-bottom:100px; -webkit-overflow-scrolling:touch; }
+/* ======== PAGES ======== */
+.page { flex:1; overflow-y:auto; display:none; padding-bottom:92px; -webkit-overflow-scrolling:touch; }
 .page.active { display:block; }
-.page-header { padding:20px 20px 12px; background:var(--surface-card); }
-.page-header h1 { font-size:26px; font-weight:700; letter-spacing:-0.5px; }
-.page-header p { font-size:13px; color:var(--text-tertiary); margin-top:2px; }
 
-/* CARDS */
-.order-card { background:var(--surface-card); margin:0 0 10px 0; padding:18px 20px; border-radius:0; border-bottom:1px solid var(--border-light); transition:background 0.1s; }
-.order-card:first-child { border-top:1px solid var(--border-light); }
-.order-card:active { background:#f8f8f8; }
-.argo-display { font-size:22px; font-weight:700; color:var(--text-primary); }
-.argo-net { font-size:14px; color:var(--oneui-green); font-weight:600; }
-.badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:var(--r-xs); font-size:11px; font-weight:700; }
+/* One UI large title header */
+.page-header { padding:20px 20px 14px; background:var(--surface-card); border-bottom:1px solid var(--border-light); }
+.page-header h1 { font-size:28px; font-weight:800; letter-spacing:-0.8px; color:var(--text-primary); }
+.page-header p { font-size:13px; color:var(--text-tertiary); margin-top:3px; font-weight:500; }
+
+/* ======== ORDER CARDS — One UI list style ======== */
+.order-card {
+  background:var(--surface-card);
+  margin:0; padding:16px 20px;
+  border-bottom:1px solid var(--border-light);
+  transition:background 0.08s ease;
+  animation:cardIn 0.28s cubic-bezier(0.22,1,0.36,1);
+}
+.order-card:active { background:var(--surface-input); }
+@keyframes cardIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.argo-display { font-size:22px; font-weight:800; color:var(--text-primary); letter-spacing:-0.5px; }
+.argo-net { font-size:12px; color:var(--text-tertiary); font-weight:500; margin-top:2px; }
+
+/* One UI chip/badge */
+.badge {
+  display:inline-flex; align-items:center;
+  padding:4px 9px;
+  border-radius:var(--r-xs);
+  font-size:11px; font-weight:700;
+  letter-spacing:0.2px;
+}
 .badge-gabungan { background:var(--oneui-green-bg); color:var(--oneui-green); }
 .badge-normal { background:var(--oneui-blue-bg); color:var(--oneui-blue); }
 .badge-kategori { background:var(--surface-input); color:var(--text-secondary); }
 .badge-bayar { background:var(--oneui-purple-bg); color:var(--oneui-purple); }
+
+/* Location rows */
 .loc-row { display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
 .loc-icon { font-size:20px; margin-top:1px; color:var(--text-secondary); flex-shrink:0; }
 .loc-info .loc-name { font-size:14px; font-weight:600; color:var(--text-primary); }
 .loc-info .loc-sub { font-size:12px; color:var(--text-tertiary); margin-top:1px; }
 
-/* SWIPE */
-.swipe-wrap { position:relative; width:100%; height:58px; background:var(--surface-input); border-radius:var(--r-full); overflow:hidden; margin-top:14px; }
+/* ======== SWIPE TO ACTION — One UI style ======== */
+.swipe-wrap {
+  position:relative; width:100%; height:58px;
+  background:var(--surface-input);
+  border-radius:var(--r-full); overflow:hidden; margin-top:14px;
+}
 .swipe-wrap.sw-green { background:var(--oneui-green-bg); }
 .swipe-wrap.sw-blue { background:var(--oneui-blue-bg); }
 .swipe-wrap.sw-red { background:var(--oneui-red-bg); }
-.swipe-text { position:absolute; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; pointer-events:none; z-index:1; letter-spacing:-0.2px; }
+.swipe-text {
+  position:absolute; width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700;
+  pointer-events:none; z-index:1;
+  letter-spacing:0.1px;
+}
 .swipe-text.txt-green { color:var(--oneui-green); }
 .swipe-text.txt-blue { color:var(--oneui-blue); }
 .swipe-text.txt-red { color:var(--oneui-red); }
-.swipe-knob { position:absolute; top:5px; left:5px; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:2; cursor:grab; box-shadow:var(--shadow-md); }
+.swipe-knob {
+  position:absolute; top:5px; left:5px;
+  width:48px; height:48px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  z-index:2; cursor:grab;
+  box-shadow:0 2px 10px rgba(0,0,0,0.18);
+}
 .swipe-knob:active { cursor:grabbing; }
 .knob-green { background:var(--oneui-green); color:#FFF; }
 .knob-blue { background:var(--oneui-blue); color:#FFF; }
 .knob-dark { background:var(--text-primary); color:#FFF; }
 .knob-red { background:var(--oneui-red); color:#FFF; }
 
-/* COUNTDOWN */
-.countdown-bar { background:var(--oneui-orange-bg); border-radius:var(--r-md); padding:10px 14px; display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+/* ======== COUNTDOWN BAR ======== */
+.countdown-bar {
+  background:var(--oneui-orange-bg);
+  border-radius:var(--r-md);
+  padding:11px 14px;
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:12px;
+}
 .countdown-text { font-size:13px; font-weight:700; color:var(--oneui-orange); }
-.countdown-num { font-size:20px; font-weight:700; color:var(--oneui-orange); min-width:28px; }
-.cancel-small { background:var(--oneui-red-bg); color:var(--oneui-red); border:none; border-radius:var(--r-md); padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; margin-left:auto; flex-shrink:0; }
-.cancel-small:active { transform:scale(0.95); }
+.countdown-num { font-size:20px; font-weight:800; color:var(--oneui-orange); min-width:28px; letter-spacing:-0.5px; }
+.cancel-small {
+  background:var(--oneui-red-bg); color:var(--oneui-red);
+  border:none; border-radius:var(--r-md);
+  padding:6px 14px; font-size:12px; font-weight:700;
+  cursor:pointer; margin-left:auto; flex-shrink:0;
+  font-family:var(--font);
+}
+.cancel-small:active { background:#FFCDD2; transform:scale(0.95); }
 
-/* MAPS PAGE */
+/* ======== MAPS PAGE ======== */
 #page-maps { padding:0; position:relative; display:none; flex-direction:column; }
 #page-maps.active { display:flex; }
 #map { width:100%; background:var(--surface-input); flex:1; min-height:0; }
-.map-placeholder { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text-tertiary); background:var(--surface-input); }
-.map-placeholder .material-symbols-outlined { font-size:48px; }
+.map-placeholder {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:14px;
+  color:var(--text-tertiary); background:var(--surface-input);
+}
+.map-placeholder .material-symbols-rounded { font-size:52px; opacity:0.5; }
+.map-placeholder p { font-size:14px; font-weight:600; }
 
-/* DRAGGABLE BOTTOM SHEET */
+/* ======== FLOATING BOTTOM SHEET ======== */
 .floating-panel {
   background:var(--surface-card);
   border-radius:var(--r-2xl) var(--r-2xl) 0 0;
-  box-shadow:0 -4px 24px rgba(0,0,0,0.14);
-  position:absolute;
-  bottom:0; left:0; right:0;
-  z-index:10;
-  overflow:hidden;
-  touch-action:none;
+  box-shadow:0 -2px 20px rgba(0,0,0,0.10);
+  position:absolute; bottom:0; left:0; right:0;
+  z-index:10; overflow:hidden; touch-action:none;
   transform:translateY(0);
-  transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  transition:transform 0.32s cubic-bezier(0.22,1,0.36,1);
   padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px);
 }
 .sheet-drag-handle-wrap {
-  width:100%;
-  padding:8px 0 4px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  cursor:grab;
-  user-select:none;
-  -webkit-user-select:none;
-  flex-shrink:0;
+  width:100%; padding:10px 0 6px;
+  display:flex; flex-direction:column; align-items:center;
+  cursor:grab; user-select:none; -webkit-user-select:none; flex-shrink:0;
 }
 .sheet-drag-handle-wrap:active { cursor:grabbing; }
-.sheet-drag-bar { width:40px; height:4px; background:var(--border-medium); border-radius:var(--r-full); }
-.sheet-inner { padding:0 20px 8px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-.center-btn { position:absolute; top:16px; right:16px; z-index:20; background:var(--surface-card); border:none; border-radius:var(--r-md); width:44px; height:44px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md); cursor:pointer; color:var(--text-primary); }
-.center-btn:active { transform:scale(0.95); background:var(--surface-input); }
+.sheet-drag-bar { width:34px; height:4px; background:var(--border-medium); border-radius:var(--r-full); }
+.sheet-inner { padding:0 16px 8px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.center-btn {
+  position:absolute; top:16px; right:16px; z-index:20;
+  background:var(--surface-card);
+  border:none; border-radius:var(--r-md);
+  width:46px; height:46px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-md); cursor:pointer; color:var(--text-primary);
+}
+.center-btn:active { transform:scale(0.93); background:var(--surface-input); }
 
-/* ORDER DETAIL MODAL */
+/* ======== ORDER DETAIL MODAL ======== */
 .queue-order-modal { max-height:88vh; }
-.detail-row { display:flex; justify-content:space-between; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--border-light); gap:12px; }
+.detail-row {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  padding:11px 0; border-bottom:1px solid var(--border-light); gap:12px;
+}
 .detail-row:last-child { border-bottom:none; }
-.detail-label { font-size:12px; color:var(--text-tertiary); font-weight:600; flex-shrink:0; }
+.detail-label { font-size:12px; color:var(--text-tertiary); font-weight:600; flex-shrink:0; text-transform:uppercase; letter-spacing:0.3px; }
 .detail-value { font-size:13px; font-weight:600; color:var(--text-primary); text-align:right; line-height:1.4; }
-/* Catatan highlight */
-.detail-catatan { background:var(--oneui-orange-bg); border-radius:var(--r-md); padding:10px 12px; margin:8px 0; border-left:4px solid var(--oneui-orange); }
-.detail-catatan .catatan-label { font-size:11px; font-weight:700; color:var(--oneui-orange); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
-.detail-catatan .catatan-text { font-size:14px; font-weight:700; color:var(--text-primary); line-height:1.5; }
+.detail-catatan {
+  background:var(--oneui-orange-bg);
+  border-radius:var(--r-md); padding:12px 14px; margin:8px 0;
+  border-left:3px solid var(--oneui-orange);
+}
+.detail-catatan .catatan-text { font-size:14px; font-weight:600; color:var(--text-primary); line-height:1.5; }
 
-/* PIN ROUTE LIST */
+/* ======== PIN ROUTE LIST ======== */
 .pin-list { display:flex; flex-direction:column; gap:0; }
-.pin-item { display:flex; align-items:center; gap:12px; padding:8px 0; cursor:pointer; }
-.pin-item:not(:last-child) { border-bottom:1px dashed var(--border-light); }
-.pin-item:active { background:var(--surface-input); border-radius:var(--r-md); }
-.pin-badge { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.pin-item {
+  display:flex; align-items:center; gap:12px;
+  padding:9px 0; cursor:pointer;
+  transition:background 0.08s;
+}
+.pin-item:not(:last-child) { border-bottom:1px solid var(--border-light); }
+.pin-item:active { background:var(--surface-input); border-radius:var(--r-sm); padding-left:6px; padding-right:6px; }
+.pin-badge {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; flex-shrink:0;
+}
 .pin-active { background:var(--oneui-blue); color:#FFF; }
 .pin-next { background:var(--surface-input); color:var(--text-secondary); }
 .pin-done { background:var(--oneui-green-bg); color:var(--oneui-green); }
 
-/* CLICKABLE QUEUE ITEMS */
-.queue-item-clickable { cursor:pointer; transition:background 0.1s; border-radius:var(--r-md); padding:10px 12px; margin-bottom:8px; background:var(--surface-input); }
+/* ======== QUEUE ITEMS ======== */
+.queue-item-clickable {
+  cursor:pointer; transition:background 0.08s;
+  border-radius:var(--r-sm); padding:12px 14px;
+  margin-bottom:8px; background:var(--surface-input);
+}
 .queue-item-clickable:active { background:var(--border-light); }
 
-/* BOTTOM NAV */
-.bottom-nav { position:fixed; bottom:0; width:100%; background:var(--surface-card); display:flex; border-top:1px solid var(--border-light); padding-bottom:env(safe-area-inset-bottom,12px); z-index:100; flex-shrink:0; }
-.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-disabled); background:none; border:none; cursor:pointer; gap:2px; padding:10px 0 4px; transition:color 0.12s, transform 0.08s; }
-.nav-item:active { transform:scale(0.9); }
+/* ======== BOTTOM NAV — One UI style ======== */
+.bottom-nav {
+  position:fixed; bottom:0; width:100%;
+  background:var(--surface-card);
+  display:flex;
+  border-top:1px solid var(--border-light);
+  padding:6px 0 calc(env(safe-area-inset-bottom,6px) + 0px);
+  z-index:100; flex-shrink:0;
+}
+.nav-item {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  color:var(--text-tertiary);
+  background:none; border:none; cursor:pointer;
+  gap:3px; padding:4px 0 6px;
+  transition:color 0.12s, transform 0.06s;
+  font-family:var(--font);
+  position:relative;
+}
+/* One UI active indicator — pill above icon */
+.nav-item::before {
+  content:'';
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:0px; height:3px;
+  background:var(--oneui-blue);
+  border-radius:0 0 3px 3px;
+  transition:width 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.nav-item.active::before { width:24px; }
 .nav-item.active { color:var(--oneui-blue); }
-.nav-item .material-symbols-outlined { font-size:26px; }
-.nav-item .nav-label { font-size:10px; font-weight:700; }
+.nav-item .material-symbols-rounded { font-size:26px; transition:transform 0.12s; }
+.nav-item.active .material-symbols-rounded { transform:scale(1.05); }
+.nav-item .nav-label { font-size:10px; font-weight:700; letter-spacing:0.2px; }
+/* Badge */
 .nav-badge { position:relative; }
-.nav-badge::after { content:attr(data-count); position:absolute; top:-2px; right:-8px; background:var(--oneui-red); color:#FFF; font-size:9px; font-weight:700; padding:2px 5px; border-radius:var(--r-full); min-width:16px; text-align:center; display:none; }
+.nav-badge::after {
+  content:attr(data-count); position:absolute;
+  top:-4px; right:-10px;
+  background:var(--oneui-red); color:#FFF;
+  font-size:9px; font-weight:800;
+  padding:2px 5px; border-radius:var(--r-full);
+  min-width:16px; text-align:center; display:none;
+  border:1.5px solid var(--surface-card);
+}
 .nav-badge[data-count]:not([data-count="0"])::after { display:block; }
 
-/* PROFIL */
-.profile-avatar { width:80px; height:80px; border-radius:var(--r-xl); background:var(--oneui-blue-bg); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
+/* ======== PROFILE ======== */
+.profile-avatar {
+  width:80px; height:80px;
+  border-radius:22px;
+  background:var(--oneui-blue-bg);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; flex-shrink:0;
+}
 .profile-avatar img { width:100%; height:100%; object-fit:cover; }
-.rank-badge { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:var(--r-full); font-size:12px; font-weight:700; margin-top:6px; }
+.rank-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:4px 12px; border-radius:var(--r-full);
+  font-size:11px; font-weight:700; margin-top:6px;
+}
 .rank-belum { background:var(--surface-input); color:var(--text-secondary); }
 .rank-verified { background:var(--oneui-blue-bg); color:var(--oneui-blue); }
 .rank-trusted { background:var(--oneui-purple-bg); color:var(--oneui-purple); }
-.info-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--border-light); }
+/* Info rows */
+.info-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:13px 0; border-bottom:1px solid var(--border-light);
+}
 .info-row:last-child { border-bottom:none; }
-.info-label { font-size:13px; color:var(--text-tertiary); }
+.info-label { font-size:13px; color:var(--text-tertiary); font-weight:500; }
 .info-value { font-size:14px; font-weight:600; color:var(--text-primary); }
-.section-card { background:var(--surface-card); border-radius:var(--r-lg); padding:16px 20px; margin-bottom:12px; }
-.section-title { font-size:13px; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; }
 
-/* DEPOSIT */
-.deposit-card { background:linear-gradient(135deg, var(--oneui-blue) 0%, var(--oneui-blue-dark) 100%); border-radius:var(--r-xl); padding:20px; color:#FFF; margin-bottom:12px; }
-.deposit-label { font-size:12px; font-weight:600; opacity:0.75; }
-.deposit-val { font-size:28px; font-weight:700; letter-spacing:-1px; margin-top:4px; }
-.tabungan-card { background:var(--oneui-green-bg); border-radius:var(--r-xl); padding:18px 20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+/* Section card — One UI settings panel style */
+.section-card {
+  background:var(--surface-card);
+  border-radius:var(--r-lg);
+  padding:16px 20px;
+  margin-bottom:10px;
+}
+.section-title {
+  font-size:11px; font-weight:800;
+  color:var(--text-tertiary);
+  text-transform:uppercase; letter-spacing:0.7px;
+  margin-bottom:12px;
+}
 
-/* RIWAYAT */
-.riwayat-item { background:var(--surface-card); padding:16px 20px; border-bottom:1px solid var(--border-light); }
-.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px; gap:12px; color:var(--text-tertiary); text-align:center; }
-.empty-state .material-symbols-outlined { font-size:52px; }
+/* ======== DEPOSIT CARD ======== */
+.deposit-card {
+  background:var(--oneui-blue);
+  border-radius:var(--r-xl); padding:20px 20px;
+  color:#FFF; margin-bottom:10px;
+  position:relative; overflow:hidden;
+}
+.deposit-card::before {
+  content:'';
+  position:absolute; top:-30px; right:-20px;
+  width:120px; height:120px;
+  background:rgba(255,255,255,0.06);
+  border-radius:50%;
+}
+.deposit-card::after {
+  content:'';
+  position:absolute; bottom:-40px; left:40px;
+  width:90px; height:90px;
+  background:rgba(255,255,255,0.04);
+  border-radius:50%;
+}
+.deposit-label { font-size:11px; font-weight:700; opacity:0.75; text-transform:uppercase; letter-spacing:0.5px; }
+.deposit-val { font-size:30px; font-weight:800; letter-spacing:-1px; margin-top:4px; }
+.tabungan-card {
+  background:var(--oneui-green-bg);
+  border-radius:var(--r-lg); padding:16px 20px;
+  margin-bottom:10px;
+  display:flex; justify-content:space-between; align-items:center;
+}
 
-/* POPUP AWAL */
-#welcome-popup .modal-sheet { padding-bottom:32px; }
-.warning-box { background:var(--oneui-red-bg); border-radius:var(--r-md); border-left:4px solid var(--oneui-red); padding:14px 16px; margin-bottom:16px; }
+/* ======== RIWAYAT ======== */
+.riwayat-item {
+  background:var(--surface-card);
+  padding:15px 20px;
+  border-bottom:1px solid var(--border-light);
+}
+.empty-state {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:64px 24px; gap:14px;
+  color:var(--text-tertiary); text-align:center;
+}
+.empty-state .material-symbols-rounded { font-size:56px; opacity:0.4; }
+.empty-state p { font-size:14px; font-weight:600; }
+
+/* ======== WELCOME POPUP ======== */
+#welcome-popup .modal-sheet { padding-bottom:28px; }
+.warning-box {
+  background:var(--oneui-red-bg);
+  border-radius:var(--r-md);
+  border-left:3px solid var(--oneui-red);
+  padding:14px 16px; margin-bottom:14px;
+}
 .warning-box p { font-size:13px; color:var(--oneui-red); line-height:1.6; font-weight:600; }
-.spirit-box { background:var(--oneui-blue-bg); border-radius:var(--r-md); padding:14px 16px; margin-bottom:16px; }
+.spirit-box {
+  background:var(--oneui-blue-bg);
+  border-radius:var(--r-md);
+  padding:14px 16px; margin-bottom:14px;
+}
 .spirit-box p { font-size:13px; color:var(--oneui-blue-dark); line-height:1.7; }
 
-/* ORDER TIMER ACCEPT */
+/* ======== ACCEPT MODAL ======== */
 .accept-timer-modal .modal-sheet { text-align:center; }
-.big-countdown { font-size:56px; font-weight:700; color:var(--oneui-blue); letter-spacing:-2px; line-height:1; margin:16px 0; }
-.accept-order-info { background:var(--surface-input); border-radius:var(--r-md); padding:14px; margin-bottom:16px; text-align:left; }
+.big-countdown {
+  font-size:60px; font-weight:800;
+  color:var(--oneui-blue);
+  letter-spacing:-3px; line-height:1;
+  margin:16px 0;
+}
+.accept-order-info {
+  background:var(--surface-input);
+  border-radius:var(--r-md);
+  padding:14px 16px; margin-bottom:16px; text-align:left;
+}
 
-/* DIVIDER */
+/* ======== DIVIDER ======== */
 .divider { height:8px; background:var(--surface-bg); }
 
-/* SIGNUP STEPS */
+/* ======== SIGNUP STEPS ======== */
 .signup-step { display:none; }
 .signup-step.active { display:block; }
-.step-indicator { display:flex; gap:6px; margin-bottom:20px; }
-.step-dot { height:4px; flex:1; border-radius:var(--r-full); background:var(--border-light); transition:background 0.2s; }
+.step-indicator { display:flex; gap:4px; margin-bottom:20px; }
+.step-dot { height:4px; flex:1; border-radius:var(--r-full); background:var(--border-light); transition:background 0.2s ease; }
 .step-dot.done { background:var(--oneui-blue); }
 
-/* PROMO NOTE */
-.note-box { display:flex; align-items:flex-start; gap:8px; padding:10px 12px; background:var(--oneui-orange-bg); border-radius:var(--r-md); margin-bottom:12px; }
-.note-box .material-symbols-outlined { font-size:18px; color:var(--oneui-orange); flex-shrink:0; margin-top:1px; }
+/* ======== NOTE BOX ======== */
+.note-box {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:12px 14px; background:var(--oneui-orange-bg);
+  border-radius:var(--r-md); margin-bottom:12px;
+}
+.note-box .material-symbols-rounded { font-size:18px; color:var(--oneui-orange); flex-shrink:0; margin-top:1px; }
 .note-box p { font-size:12px; color:var(--oneui-orange); font-weight:600; line-height:1.5; }
 
-/* SECTION */
-.section-label { font-size:11px; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.6px; padding:16px 20px 6px; }
+/* ======== SECTION LABEL ======== */
+.section-label {
+  font-size:11px; font-weight:800;
+  color:var(--text-tertiary);
+  text-transform:uppercase; letter-spacing:0.7px;
+  padding:18px 20px 8px;
+}
 
-/* ANIMATE */
-.order-card { animation:cardIn 0.3s cubic-bezier(0.16,1,0.3,1); }
-@keyframes cardIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-
-/* PIN MARKERS */
-.map-pin { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; border:2.5px solid #FFF; box-shadow:0 2px 6px rgba(0,0,0,0.3); cursor:pointer; transition:transform 0.15s; }
+/* ======== MAP PINS ======== */
+.map-pin {
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700;
+  border:2.5px solid #FFF;
+  box-shadow:0 2px 8px rgba(0,0,0,0.28);
+  cursor:pointer; transition:transform 0.12s;
+}
 .map-pin:active { transform:scale(1.15); }
 
-/* FORM A1 */
+/* ======== FORM A1 ======== */
 .a1-section { margin-bottom:14px; }
-.a1-section .field-label { font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px; }
-.a1-checkbox { display:flex; align-items:flex-start; gap:10px; background:var(--oneui-red-bg); border-radius:var(--r-md); padding:12px; margin-bottom:16px; border:1.5px solid var(--oneui-red); }
+.a1-section .field-label { font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.4px; }
+.a1-checkbox {
+  display:flex; align-items:flex-start; gap:10px;
+  background:var(--oneui-red-bg);
+  border-radius:var(--r-md); padding:12px 14px;
+  margin-bottom:16px; border:1.5px solid var(--oneui-red);
+}
 .a1-checkbox input { width:18px; height:18px; margin-top:2px; accent-color:var(--oneui-red); flex-shrink:0; cursor:pointer; }
-.a1-checkbox span { font-size:12px; color:var(--oneui-red); font-weight:600; line-height:1.5; }
-.proses-badge { display:inline-flex; align-items:center; gap:6px; background:var(--oneui-orange-bg); border-radius:var(--r-full); padding:6px 14px; font-size:12px; font-weight:700; color:var(--oneui-orange); margin-bottom:16px; }
+.a1-checkbox span { font-size:12px; color:var(--oneui-red); font-weight:600; line-height:1.55; }
+.proses-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--oneui-orange-bg);
+  border-radius:var(--r-full); padding:6px 14px;
+  font-size:12px; font-weight:700; color:var(--oneui-orange);
+  margin-bottom:14px;
+}
 
-/* Ripple click */
-.ripple-effect { position:relative; overflow:hidden; }
-.ripple { position:absolute; border-radius:50%; background:rgba(255,255,255,0.3); transform:scale(0); animation:rippleAnim 0.4s linear; pointer-events:none; }
-@keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
-
-/* Clickable address links */
-.addr-link { color:var(--oneui-blue); text-decoration:underline; cursor:pointer; font-weight:700; }
+/* ======== ADDR LINKS ======== */
+.addr-link { color:var(--oneui-blue); text-decoration:none; font-weight:700; border-bottom:1px solid rgba(18,89,195,0.3); }
 .addr-link:active { opacity:0.7; }
+
+/* ======== ONE UI PANEL HEADER (inside sheets) ======== */
+.panel-header-row {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:14px; padding:0 0 10px;
+  border-bottom:1px solid var(--border-light);
+}
+.panel-title { font-size:16px; font-weight:800; color:var(--text-primary); }
+.panel-sub { font-size:12px; color:var(--text-tertiary); margin-top:2px; font-weight:500; }
+.chip-action {
+  background:var(--oneui-blue-bg); color:var(--oneui-blue);
+  border:none; border-radius:var(--r-full);
+  padding:6px 14px; font-size:12px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; gap:4px;
+  font-family:var(--font);
+}
+.chip-action:active { background:var(--border-light); }
 </style>
 </head>
 <body>
@@ -355,10 +757,10 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
 <div id="splash">
   <div class="splash-hero">
     <div class="splash-logo">
-      <span class="material-symbols-outlined" style="color:#FFF;font-size:36px;">two_wheeler</span>
+      <span class="material-symbols-rounded">two_wheeler</span>
     </div>
-    <h1 style="font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--text-primary);">Driver <span style="color:var(--oneui-blue);">JastipUnnes</span></h1>
-    <p style="font-size:14px;color:var(--text-tertiary);margin-top:6px;text-align:center;">Mitra Pengiriman Mahasiswa UNNES</p>
+    <div class="splash-app-name">Driver <span>JastipUnnes</span></div>
+    <div class="splash-tagline">Mitra Pengiriman Mahasiswa UNNES</div>
   </div>
 
   <div class="splash-sheet" id="auth-sheet">
@@ -378,7 +780,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
         <input type="password" class="oneui-input" id="login-pass" placeholder="Minimal 6 karakter">
       </div>
       <button class="btn-oneui btn-primary" onclick="playTap();window.doLogin();" style="margin-top:4px;">
-        <span class="material-symbols-outlined" style="font-size:20px;">login</span> Masuk
+        <span class="material-symbols-rounded" style="font-size:20px;">login</span> Masuk
       </button>
       <div style="height:32px;"></div>
     </div>
@@ -433,7 +835,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
           <div class="upload-box" id="ub-km">
             <input type="file" accept="image/*" onchange="handleDocUpload(event,'km')">
             <div class="upload-box-content">
-              <span class="material-symbols-outlined">badge</span>
+              <span class="material-symbols-rounded">badge</span>
               <span class="upload-label" id="lbl-km">Ketuk untuk Upload</span>
               <span class="upload-sub">Kartu Tanda Mahasiswa UNNES</span>
             </div>
@@ -444,7 +846,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
           <div class="upload-box" id="ub-ktp">
             <input type="file" accept="image/*" onchange="handleDocUpload(event,'ktp')">
             <div class="upload-box-content">
-              <span class="material-symbols-outlined">id_card</span>
+              <span class="material-symbols-rounded">id_card</span>
               <span class="upload-label" id="lbl-ktp">Ketuk untuk Upload</span>
               <span class="upload-sub">KTP / Identitas Nasional</span>
             </div>
@@ -455,7 +857,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
           <div class="upload-box" id="ub-stnk">
             <input type="file" accept="image/*" onchange="handleDocUpload(event,'stnk')">
             <div class="upload-box-content">
-              <span class="material-symbols-outlined">directions_bike</span>
+              <span class="material-symbols-rounded">directions_bike</span>
               <span class="upload-label" id="lbl-stnk">Ketuk untuk Upload</span>
               <span class="upload-sub">STNK Kendaraan</span>
             </div>
@@ -466,7 +868,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
           <div class="upload-box" id="ub-platNomor">
             <input type="file" accept="image/*" onchange="handleDocUpload(event,'platNomor')">
             <div class="upload-box-content">
-              <span class="material-symbols-outlined">pin</span>
+              <span class="material-symbols-rounded">pin</span>
               <span class="upload-label" id="lbl-platNomor">Ketuk untuk Upload</span>
               <span class="upload-sub">Foto plat nomor kendaraan yang jelas</span>
             </div>
@@ -487,7 +889,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
           <div class="upload-box" id="ub-sim">
             <input type="file" accept="image/*" onchange="handleDocUpload(event,'sim')">
             <div class="upload-box-content">
-              <span class="material-symbols-outlined">drive_eta</span>
+              <span class="material-symbols-rounded">drive_eta</span>
               <span class="upload-label" id="lbl-sim">Ketuk untuk Upload</span>
               <span class="upload-sub">SIM A/C — untuk gelar Terverifikasi</span>
             </div>
@@ -498,7 +900,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
           <div class="upload-box" id="ub-skck">
             <input type="file" accept="image/*" onchange="handleDocUpload(event,'skck')">
             <div class="upload-box-content">
-              <span class="material-symbols-outlined">security</span>
+              <span class="material-symbols-rounded">security</span>
               <span class="upload-label" id="lbl-skck">Ketuk untuk Upload</span>
               <span class="upload-sub">SKCK Kepolisian — untuk gelar Terverifikasi</span>
             </div>
@@ -509,7 +911,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
           <div class="upload-box" id="ub-profile">
             <input type="file" accept="image/*" onchange="handleDocUpload(event,'profile')">
             <div class="upload-box-content">
-              <span class="material-symbols-outlined">person</span>
+              <span class="material-symbols-rounded">person</span>
               <span class="upload-label" id="lbl-profile">Foto Profil</span>
               <span class="upload-sub">Foto wajah yang jelas</span>
             </div>
@@ -525,7 +927,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
       <div class="signup-step" id="step-3">
         <div style="font-size:16px;font-weight:700;margin-bottom:16px;">Persetujuan & Perjanjian</div>
         <div class="warning-box" style="margin-bottom:12px;">
-          <p>⚠️ <strong>PERINGATAN KERAS:</strong> Tindak pencurian, pelecehan, atau kejahatan lain akan ditindak tegas secara hukum, dilaporkan ke pihak berwajib, dan dituntut pencabutan status mahasiswa serta ganti rugi.</p>
+          <p>⚠ <strong>PERINGATAN KERAS:</strong> Tindak pencurian, pelecehan, atau kejahatan lain akan ditindak tegas secara hukum, dilaporkan ke pihak berwajib, dan dituntut pencabutan status mahasiswa serta ganti rugi.</p>
         </div>
         <div style="background:var(--surface-input);border-radius:var(--r-md);padding:14px;font-size:12px;color:var(--text-secondary);line-height:1.7;max-height:140px;overflow-y:auto;margin-bottom:16px;">
           Dengan mendaftar sebagai driver JastipUnnes, saya menyatakan bahwa semua data yang saya berikan adalah benar dan valid. Saya setuju untuk mematuhi semua aturan dan ketentuan yang berlaku. Saya memahami bahwa pelanggaran terhadap peraturan akan mengakibatkan penangguhan atau penghentian akun secara permanen.
@@ -537,7 +939,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
         <div style="display:flex;gap:10px;">
           <button class="btn-oneui btn-secondary" onclick="playTap();nextStep(2)" style="flex:0.5;">← Kembali</button>
           <button class="btn-oneui btn-primary" id="btn-daftar" onclick="playTap();window.doSignup()" style="flex:1;">
-            <span class="material-symbols-outlined" style="font-size:18px;">how_to_reg</span> Daftar Sekarang
+            <span class="material-symbols-rounded" style="font-size:18px;">how_to_reg</span> Daftar Sekarang
           </button>
         </div>
         <div style="height:32px;"></div>
@@ -553,18 +955,18 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
   <div class="modal-sheet" style="max-height:85vh;">
     <div class="modal-handle"></div>
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:36px;margin-bottom:8px;">🌙</div>
-      <div class="modal-title" style="font-size:22px;">Selamat Datang, Mitra!</div>
-      <div class="modal-sub">Semangat mencari rezeki yang halal & berkah 💪</div>
+      <div style="display:flex;align-items:center;justify-content:center;width:64px;height:64px;background:var(--oneui-blue-bg);border-radius:22px;margin:0 auto 16px;"><span class="material-symbols-rounded" style="font-size:34px;color:var(--oneui-blue);">waving_hand</span></div>
+      <div class="modal-title" style="font-size:22px;font-weight:800;">Selamat Datang, Mitra!</div>
+      <div class="modal-sub">Semangat mencari rezeki yang halal & berkah</div>
     </div>
     <div class="spirit-box">
-      <p>✨ <strong>Setiap pesanan adalah kepercayaan.</strong> Jaga amanah, layani dengan hati, dan jadilah kebanggaan mahasiswa UNNES. Rezeki yang halal membawa keberkahan untuk kita semua!</p>
+      <p>● <strong>Setiap pesanan adalah kepercayaan.</strong> Jaga amanah, layani dengan hati, dan jadilah kebanggaan mahasiswa UNNES. Rezeki yang halal membawa keberkahan untuk kita semua!</p>
     </div>
     <div class="warning-box">
-      <p>🚨 <strong>PERINGATAN KERAS:</strong> Segala bentuk pencurian, pelecehan seksual, penipuan, atau tindak kriminal lainnya akan <strong>ditindak tegas secara hukum</strong>, dilaporkan ke kepolisian, dan dituntut <strong>pencabutan status mahasiswa</strong> serta ganti rugi penuh. JastipUnnes ZERO TOLERANCE terhadap kejahatan.</p>
+      <p>⚠ <strong>PERINGATAN KERAS:</strong> Segala bentuk pencurian, pelecehan seksual, penipuan, atau tindak kriminal lainnya akan <strong>ditindak tegas secara hukum</strong>, dilaporkan ke kepolisian, dan dituntut <strong>pencabutan status mahasiswa</strong> serta ganti rugi penuh. JastipUnnes ZERO TOLERANCE terhadap kejahatan.</p>
     </div>
     <div class="section-card" style="background:var(--oneui-blue-bg);margin-bottom:16px;">
-      <div class="section-title" style="color:var(--oneui-blue);">📋 Panduan Cepat</div>
+      <div class="section-title">Panduan Cepat</div>
       <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
         1. Pastikan status <strong>Online</strong> untuk menerima pesanan<br>
         2. Ambil pesanan normal → boleh tambah 1 gabungan (dalam 10 menit)<br>
@@ -574,7 +976,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
       </div>
     </div>
     <button class="btn-oneui btn-primary" onclick="playTap();closeWelcomePopup()">
-      <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span> Saya Mengerti, Siap Bekerja!
+      <span class="material-symbols-rounded" style="font-size:20px;">check_circle</span> Saya Mengerti, Siap Bekerja!
     </button>
   </div>
 </div>
@@ -592,7 +994,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
     </div>
     <div class="accept-order-info" id="accept-order-info"></div>
     <button class="btn-oneui btn-primary" id="btn-terima-modal" onclick="playTap();confirmAcceptOrder()">
-      <span class="material-symbols-outlined" style="font-size:20px;">check</span> Terima Pesanan
+      <span class="material-symbols-rounded" style="font-size:20px;">check</span> Terima Pesanan
     </button>
     <button class="btn-oneui btn-secondary" onclick="playTap();rejectOrder()" style="margin-top:10px;">Lewati</button>
   </div>
@@ -604,8 +1006,8 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
 <div class="modal-overlay" id="earning-popup">
   <div class="modal-sheet" style="text-align:center;">
     <div class="modal-handle"></div>
-    <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-    <div class="modal-title">Semua Pesanan Selesai!</div>
+    <div style="display:flex;align-items:center;justify-content:center;width:64px;height:64px;background:var(--oneui-green-bg);border-radius:22px;margin:0 auto 16px;"><span class="material-symbols-rounded" style="font-size:36px;color:var(--oneui-green);">celebration</span></div>
+    <div class="modal-title" style="font-size:22px;font-weight:800;">Semua Pesanan Selesai!</div>
     <div class="modal-sub">Kerja keras Anda membuahkan hasil</div>
     <div style="background:var(--oneui-green-bg);border-radius:var(--r-xl);padding:20px;margin:16px 0;">
       <div style="font-size:13px;color:var(--oneui-green);font-weight:600;">Total Pendapatan Trip Ini</div>
@@ -613,7 +1015,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
     </div>
     <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Sudah ditambahkan ke tabungan Anda</div>
     <button class="btn-oneui btn-primary" onclick="playTap();closeEarningPopup()">
-      <span class="material-symbols-outlined" style="font-size:20px;">done</span> Lanjutkan
+      <span class="material-symbols-rounded" style="font-size:20px;">done</span> Lanjutkan
     </button>
   </div>
 </div>
@@ -624,7 +1026,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
 <div class="modal-overlay" id="topup-modal">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">💰 Topup Deposit</div>
+    <div class="modal-title">Topup Deposit</div>
     <div class="modal-sub">Deposit digunakan sebagai jaminan modal operasional. Biaya platform akan dipotong dari deposit setiap pesanan selesai.</div>
     <div style="background:var(--oneui-orange-bg);border-radius:var(--r-md);padding:14px;margin-bottom:16px;">
       <div style="font-size:13px;font-weight:700;color:var(--oneui-orange);">Cara Topup Deposit:</div>
@@ -636,7 +1038,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
       </div>
     </div>
     <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20topup%20deposit%20JastipUnnes." target="_blank" class="btn-oneui btn-primary" style="text-decoration:none;display:flex;" onclick="playTap()">
-      <span class="material-symbols-outlined" style="font-size:20px;">chat</span> Hubungi Admin via WhatsApp
+      <span class="material-symbols-rounded" style="font-size:20px;">chat</span> Hubungi Admin via WhatsApp
     </a>
     <button class="btn-oneui btn-secondary" onclick="playTap();closeTopupModal()" style="margin-top:10px;">Tutup</button>
   </div>
@@ -648,13 +1050,13 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
 <div class="modal-overlay" id="order-detail-modal">
   <div class="modal-sheet queue-order-modal">
     <div class="modal-handle"></div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:4px;">📦 Detail Pesanan</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px;"><span class="material-symbols-rounded" style="font-size:20px;color:var(--oneui-blue);">inventory_2</span>Detail Pesanan</div>
     <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Informasi lengkap orderan</div>
     <div id="order-detail-content"></div>
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn-oneui btn-secondary" onclick="playTap();closeOrderDetail()" style="flex:1;">Tutup</button>
       <button class="btn-oneui btn-primary" onclick="playTap();openA1FromDetail()" style="flex:1;background:var(--oneui-orange);box-shadow:none;">
-        <span class="material-symbols-outlined" style="font-size:18px;">support_agent</span> Bantuan
+        <span class="material-symbols-rounded" style="font-size:18px;">support_agent</span> Bantuan
       </button>
     </div>
   </div>
@@ -666,9 +1068,9 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
 <div class="modal-overlay" id="a1-modal">
   <div class="modal-sheet" style="max-height:92vh;">
     <div class="modal-handle"></div>
-    <div class="modal-title">🆘 Form Bantuan (A1)</div>
+    <div class="modal-title" style="display:flex;align-items:center;gap:8px;"><span class="material-symbols-rounded" style="font-size:22px;color:var(--oneui-orange);">support_agent</span>Form Bantuan (A1)</div>
     <div class="proses-badge">
-      <span class="material-symbols-outlined" style="font-size:16px;">schedule</span>
+      <span class="material-symbols-rounded" style="font-size:16px;">schedule</span>
       Proses 1×24 Jam
     </div>
     <div class="modal-sub">Isi form dengan jujur dan lengkap. Pengajuan palsu akan berakibat penghapusan akun.</div>
@@ -711,7 +1113,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
     </div>
 
     <button class="btn-oneui btn-primary" onclick="playTap();submitA1()" style="background:var(--oneui-green);">
-      <span class="material-symbols-outlined" style="font-size:20px;">send</span> Submit & Kirim via WhatsApp
+      <span class="material-symbols-rounded" style="font-size:20px;">send</span> Submit & Kirim via WhatsApp
     </button>
     <button class="btn-oneui btn-secondary" onclick="playTap();closeA1Modal()" style="margin-top:10px;">Batal</button>
   </div>
@@ -728,7 +1130,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
       <span id="status-text">Online</span>
     </button>
     <div class="top-deposit" onclick="playTap();openTopupModal()" style="cursor:pointer;">
-      <span class="top-deposit-label">DEPOSIT 💳</span>
+      <span class="top-deposit-label">DEPOSIT</span>
       <span class="top-deposit-val" id="top-deposit-val">Rp 0</span>
     </div>
   </div>
@@ -736,22 +1138,22 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
   <!-- PAGE: DAFTAR PESANAN -->
   <div class="page active" id="page-daftar">
     <div class="page-header">
-      <h1>Daftar Pesanan</h1>
+      <h1>Pesanan</h1>
       <p id="daftar-sub">Mencari pesanan tersedia...</p>
     </div>
     <div class="divider"></div>
-    <div id="available-orders-list" style="padding-top:4px;"></div>
+    <div id="available-orders-list"></div>
   </div>
 
   <!-- PAGE: MAPS / AKTIF -->
   <div class="page" id="page-maps" style="padding:0;position:relative;flex-direction:column;">
     <div id="map-placeholder-div" class="map-placeholder" style="flex:1;min-height:200px;">
-      <span class="material-symbols-outlined">map</span>
-      <p style="font-size:14px;font-weight:600;">Peta aktif saat pengantaran</p>
+      <span class="material-symbols-rounded">map</span>
+      <p>Peta aktif saat pengantaran</p>
     </div>
     <div id="map" class="d-none" style="flex:1;min-height:0;"></div>
     <button class="center-btn d-none" id="center-map-btn" onclick="playTap();centerDriverOnMap()">
-      <span class="material-symbols-outlined">my_location</span>
+      <span class="material-symbols-rounded">my_location</span>
     </button>
     <div class="floating-panel" id="active-order-panel">
       <div class="sheet-drag-handle-wrap" id="sheet-drag-handle">
@@ -765,7 +1167,7 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
   <div class="page" id="page-riwayat">
     <div class="page-header">
       <h1>Riwayat</h1>
-      <p>Rekam jejak perjalanan Anda</p>
+      <p>Rekam jejak perjalanan hari ini</p>
     </div>
     <div class="divider"></div>
     <div id="riwayat-list"></div>
@@ -774,66 +1176,81 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
   <!-- PAGE: PROFIL -->
   <div class="page" id="page-profil">
     <div class="page-header">
-      <h1>Profil Saya</h1>
+      <h1>Profil</h1>
     </div>
     <div class="divider"></div>
-    <div style="padding:20px;">
-      <div class="section-card">
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+
+      <!-- Identity card -->
+      <div class="section-card" style="padding:20px;">
+        <div style="display:flex;align-items:center;gap:16px;">
           <div class="profile-avatar" id="prof-avatar">
-            <span class="material-symbols-outlined" style="font-size:36px;color:var(--oneui-blue);">person</span>
+            <span class="material-symbols-rounded" style="font-size:38px;color:var(--oneui-blue);">account_circle</span>
           </div>
-          <div>
-            <div style="font-size:18px;font-weight:700;" id="prof-nama">Driver</div>
-            <div id="prof-nim" style="font-size:13px;color:var(--text-tertiary);">NIM: -</div>
-            <div id="prof-plat" style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Plat: -</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:19px;font-weight:800;letter-spacing:-0.3px;" id="prof-nama">Driver</div>
+            <div id="prof-nim" style="font-size:12px;color:var(--text-tertiary);margin-top:2px;font-weight:500;">NIM: -</div>
+            <div id="prof-plat" style="font-size:12px;color:var(--text-tertiary);margin-top:1px;font-weight:500;">Plat: -</div>
             <div id="prof-rank-badge"></div>
           </div>
         </div>
-        <div class="info-row">
+        <div style="height:1px;background:var(--border-light);margin:14px 0;"></div>
+        <div class="info-row" style="padding:8px 0;">
           <span class="info-label">Email</span>
-          <span class="info-value" id="prof-email">-</span>
+          <span class="info-value" id="prof-email" style="font-size:13px;">-</span>
         </div>
-        <div class="info-row">
+        <div class="info-row" style="padding:8px 0;border-bottom:none;">
           <span class="info-label">No. HP</span>
-          <span class="info-value" id="prof-hp">-</span>
+          <span class="info-value" id="prof-hp" style="font-size:13px;">-</span>
         </div>
       </div>
 
+      <!-- Finance cards -->
       <div class="deposit-card">
-        <div class="deposit-label">SALDO DEPOSIT</div>
-        <div class="deposit-val" id="prof-deposit">Rp 0</div>
-        <div style="font-size:11px;opacity:0.65;margin-top:4px;">Dipotong 20% dari setiap pesanan selesai</div>
-        <button onclick="playTap();openTopupModal()" style="margin-top:12px;background:rgba(255,255,255,0.2);color:#FFF;border:1px solid rgba(255,255,255,0.3);border-radius:var(--r-md);padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">+ Topup Deposit</button>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="deposit-label">SALDO DEPOSIT</div>
+            <div class="deposit-val" id="prof-deposit">Rp 0</div>
+            <div style="font-size:11px;opacity:0.6;margin-top:3px;">Dipotong 20% per pesanan selesai</div>
+          </div>
+          <span class="material-symbols-rounded" style="font-size:28px;opacity:0.5;">account_balance_wallet</span>
+        </div>
+        <button onclick="playTap();openTopupModal()" style="margin-top:14px;background:rgba(255,255,255,0.18);color:#FFF;border:1.5px solid rgba(255,255,255,0.28);border-radius:var(--r-full);padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;">
+          <span class="material-symbols-rounded" style="font-size:16px;">add</span> Topup Deposit
+        </button>
       </div>
+
       <div class="tabungan-card">
         <div>
-          <div style="font-size:12px;font-weight:600;color:var(--oneui-green);">TABUNGAN PENDAPATAN</div>
-          <div style="font-size:22px;font-weight:700;color:var(--oneui-green);" id="prof-tabungan">Rp 0</div>
+          <div style="font-size:11px;font-weight:800;color:var(--oneui-green);text-transform:uppercase;letter-spacing:0.5px;">Tabungan Pendapatan</div>
+          <div style="font-size:24px;font-weight:800;color:var(--oneui-green);letter-spacing:-0.5px;margin-top:4px;" id="prof-tabungan">Rp 0</div>
         </div>
-        <span class="material-symbols-outlined" style="font-size:32px;color:var(--oneui-green);opacity:0.5;">savings</span>
+        <span class="material-symbols-rounded" style="font-size:34px;color:var(--oneui-green);opacity:0.45;">savings</span>
       </div>
 
+      <!-- Rank section -->
       <div class="section-card">
         <div class="section-title">Gelar & Verifikasi</div>
         <div id="rank-info-block" style="font-size:13px;color:var(--text-secondary);line-height:1.7;"></div>
-        <div style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">Untuk perubahan gelar, hubungi admin.</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:10px;">Untuk perubahan gelar, hubungi admin.</div>
         <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20mengajukan%20verifikasi%20gelar." target="_blank" class="btn-oneui btn-secondary btn-sm" style="margin-top:12px;display:inline-flex;width:auto;" onclick="playTap()">
-          <span class="material-symbols-outlined" style="font-size:16px;">verified</span> Ajukan Verifikasi
+          <span class="material-symbols-rounded" style="font-size:16px;">verified</span> Ajukan Verifikasi
         </a>
       </div>
 
+      <!-- Documents -->
       <div class="section-card">
         <div class="section-title">Dokumen Saya</div>
-        <div id="doc-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-        <div class="note-box" style="margin-top:12px;margin-bottom:0;">
-          <span class="material-symbols-outlined">info</span>
-          <p>Dokumen yang sudah diupload tidak dapat diubah. Untuk perubahan, hubungi admin.</p>
+        <div id="doc-list" style="display:flex;flex-direction:column;gap:0;"></div>
+        <div class="note-box" style="margin-top:14px;margin-bottom:0;">
+          <span class="material-symbols-rounded">info</span>
+          <p>Dokumen yang sudah diupload tidak dapat diubah. Hubungi admin untuk perubahan.</p>
         </div>
       </div>
 
-      <button class="btn-oneui btn-danger" onclick="playTap();window.doLogout()" style="margin-top:4px;">
-        <span class="material-symbols-outlined" style="font-size:20px;">logout</span> Keluar dari Akun
+      <!-- Logout -->
+      <button class="btn-oneui btn-danger" onclick="playTap();window.doLogout()" style="margin-top:2px;margin-bottom:8px;">
+        <span class="material-symbols-rounded" style="font-size:20px;">logout</span> Keluar dari Akun
       </button>
     </div>
   </div>
@@ -842,20 +1259,20 @@ button:active, .order-card:active, .nav-item:active { transform: scale(0.97); tr
   <div class="bottom-nav">
     <button class="nav-item active" id="nav-daftar" onclick="playTap();window.switchPage('daftar')">
       <div class="nav-badge" id="nb-daftar" data-count="0">
-        <span class="material-symbols-outlined">list_alt</span>
+        <span class="material-symbols-rounded">inbox</span>
       </div>
-      <span class="nav-label">Daftar</span>
+      <span class="nav-label">Pesanan</span>
     </button>
     <button class="nav-item" id="nav-maps" onclick="playTap();window.switchPage('maps')">
-      <span class="material-symbols-outlined">explore</span>
+      <span class="material-symbols-rounded">navigation</span>
       <span class="nav-label">Antar</span>
     </button>
     <button class="nav-item" id="nav-riwayat" onclick="playTap();window.switchPage('riwayat')">
-      <span class="material-symbols-outlined">receipt_long</span>
+      <span class="material-symbols-rounded">history</span>
       <span class="nav-label">Riwayat</span>
     </button>
     <button class="nav-item" id="nav-profil" onclick="playTap();window.switchPage('profil')">
-      <span class="material-symbols-outlined">person</span>
+      <span class="material-symbols-rounded">account_circle</span>
       <span class="nav-label">Profil</span>
     </button>
   </div>
@@ -1100,7 +1517,7 @@ window.handleDocUpload = (e, key) => {
   const file = e.target.files[0];
   if (!file) return;
   docFiles[key] = file;
-  document.getElementById('lbl-'+key).textContent = '✓ ' + file.name.substring(0,20);
+  document.getElementById('lbl-'+key).textContent = 'Terpilih: ' + file.name.substring(0,20);
   document.getElementById('ub-'+key).classList.add('uploaded');
 };
 
@@ -1237,14 +1654,14 @@ function renderProfile() {
   const rank = driverData.status || 'belumterverifikasi';
   let badgeHTML='', rankInfo='';
   if (rank === 'belumterverifikasi') {
-    badgeHTML = `<span class="rank-badge rank-belum"><span class="material-symbols-outlined" style="font-size:14px;">person</span>Belum Terverifikasi</span>`;
+    badgeHTML = `<span class="rank-badge rank-belum"><span class="material-symbols-rounded" style="font-size:14px;">person</span>Belum Terverifikasi</span>`;
     rankInfo = `<strong>Belum Terverifikasi:</strong> Argo biasa (tanpa tambahan).<br><br>Untuk mendapat gelar <strong>Terverifikasi</strong>, upload SIM & SKCK lalu hubungi admin.`;
   } else if (rank === 'terverifikasi') {
-    badgeHTML = `<span class="rank-badge rank-verified"><span class="material-symbols-outlined" style="font-size:14px;">verified</span>Terverifikasi</span>`;
-    rankInfo = `<strong>Terverifikasi ✅:</strong> Mendapat <span style="color:var(--oneui-blue);font-weight:700;">+5% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Upload SIM & SKCK aktif.`;
+    badgeHTML = `<span class="rank-badge rank-verified"><span class="material-symbols-rounded" style="font-size:14px;">verified</span>Terverifikasi</span>`;
+    rankInfo = `<strong>Terverifikasi :</strong> Mendapat <span style="color:var(--oneui-blue);font-weight:700;">+5% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Upload SIM & SKCK aktif.`;
   } else if (rank === 'terpercaya') {
-    badgeHTML = `<span class="rank-badge rank-trusted"><span class="material-symbols-outlined" style="font-size:14px;">workspace_premium</span>Terpercaya</span>`;
-    rankInfo = `<strong>Terpercaya 🏆:</strong> Mendapat <span style="color:var(--oneui-purple);font-weight:700;">+15% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Aktif menerima order secara konsisten.`;
+    badgeHTML = `<span class="rank-badge rank-trusted"><span class="material-symbols-rounded" style="font-size:14px;">workspace_premium</span>Terpercaya</span>`;
+    rankInfo = `<strong>Terpercaya :</strong> Mendapat <span style="color:var(--oneui-purple);font-weight:700;">+15% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Aktif menerima order secara konsisten.`;
   }
   document.getElementById('prof-rank-badge').innerHTML = badgeHTML;
   document.getElementById('rank-info-block').innerHTML = rankInfo;
@@ -1259,10 +1676,12 @@ function renderProfile() {
   ];
   document.getElementById('doc-list').innerHTML = docs.map(d => {
     const uploaded = !!driverData[d.key];
-    return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-light);">
-      <span class="material-symbols-outlined" style="color:${uploaded?'var(--oneui-green)':'var(--text-disabled)'};font-size:22px;">${d.icon}</span>
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-light);">
+      <div style="width:36px;height:36px;border-radius:12px;background:${uploaded?'var(--oneui-green-bg)':'var(--surface-input)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-rounded" style="color:${uploaded?'var(--oneui-green)':'var(--text-disabled)'};font-size:20px;">${d.icon}</span>
+      </div>
       <span style="flex:1;font-size:14px;font-weight:600;">${d.label}</span>
-      ${uploaded ? `<a href="${driverData[d.key]}" target="_blank" onclick="playTap()" style="font-size:11px;color:var(--oneui-blue);font-weight:700;text-decoration:none;background:var(--oneui-blue-bg);padding:4px 8px;border-radius:var(--r-xs);">Lihat</a>` : `<span style="font-size:11px;color:var(--text-tertiary);">Belum upload</span>`}
+      ${uploaded ? '<span class="material-symbols-rounded" style="font-size:18px;color:var(--oneui-green);">check_circle</span>' : '<span style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Belum upload</span>'}
     </div>`;
   }).join('');
 }
@@ -1362,7 +1781,7 @@ function startListeningAvailableOrders() {
   const qAvail = query(collection(db,"orders"), where("getdriverId","==",""), where("status","==","menunggu"));
   availableOrdersUnsubscribe = onSnapshot(qAvail, snap => {
     if (!isOnline) {
-      document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">wifi_off</span><p>Anda sedang offline</p></div>`;
+      document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">wifi_off</span><p>Anda sedang offline</p></div>`;
       return;
     }
     let newOrders = [];
@@ -1391,7 +1810,7 @@ function renderAvailableOrders(snap) {
   document.getElementById('daftar-sub').textContent = orders.length > 0 ? `${orders.length} pesanan tersedia` : 'Mencari pesanan...';
   document.getElementById('nb-daftar').dataset.count = orders.length;
   if (orders.length === 0) {
-    list.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">search</span><p style="font-size:14px;font-weight:600;">Mencari pesanan baru...</p><p style="font-size:12px;margin-top:4px;">Kami akan memberitahu saat ada pesanan</p></div>`;
+    list.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search</span><p style="font-size:14px;font-weight:600;">Mencari pesanan baru...</p><p style="font-size:12px;margin-top:4px;">Kami akan memberitahu saat ada pesanan</p></div>`;
     return;
   }
   list.innerHTML = orders.map(o => {
@@ -1407,20 +1826,20 @@ function renderAvailableOrders(snap) {
           <span class="badge badge-${o.jenisOrder==='gabungan'?'gabungan':'normal'}">${(o.jenisOrder||'').toUpperCase()}</span>
           <span class="badge badge-kategori">${o.kategori||''}</span>
           <span class="badge badge-kategori">${o.JarakTempuh||0} km</span>
-          <span class="badge badge-bayar">💳 ${o.pembayaran||'-'}</span>
+          <span class="badge badge-bayar">${o.pembayaran||'-'}</span>
         </div>
       </div>
       <div class="loc-row">
-        <span class="material-symbols-outlined loc-icon" style="color:var(--oneui-green);">radio_button_checked</span>
+        <span class="material-symbols-rounded loc-icon" style="color:var(--oneui-green);">radio_button_checked</span>
         <div class="loc-info"><div class="loc-name">${o.namaAmbil||'-'}</div><div class="loc-sub">Titik Ambil</div></div>
       </div>
       <div class="loc-row" style="margin-bottom:12px;">
-        <span class="material-symbols-outlined loc-icon" style="color:var(--oneui-red);">location_on</span>
+        <span class="material-symbols-rounded loc-icon" style="color:var(--oneui-red);">location_on</span>
         <div class="loc-info"><div class="loc-name">${o.NamaAntar||'-'}</div><div class="loc-sub">Titik Antar • ${o.namaPenerima||'-'}</div></div>
       </div>
       <div class="swipe-wrap sw-blue" data-action="terima" data-orderid="${o.id}" data-argo="${netArgo}" data-jenis="${o.jenisOrder||'normal'}">
         <div class="swipe-text txt-blue">Geser untuk Terima Pesanan</div>
-        <div class="swipe-knob knob-blue"><span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span></div>
+        <div class="swipe-knob knob-blue"><span class="material-symbols-rounded" style="font-size:20px;">arrow_forward</span></div>
       </div>
     </div>`;
   }).join('');
@@ -1442,11 +1861,11 @@ function triggerAcceptModal(orderId, orderData) {
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <span class="badge badge-${orderData.jenisOrder==='gabungan'?'gabungan':'normal'}">${(orderData.jenisOrder||'').toUpperCase()}</span>
       <span class="badge badge-kategori">${orderData.kategori||''}</span>
-      <span class="badge badge-bayar">💳 ${orderData.pembayaran||'-'}</span>
+      <span class="badge badge-bayar">${orderData.pembayaran||'-'}</span>
     </div>
     <div style="font-size:20px;font-weight:700;color:var(--oneui-green);">Rp ${netArgo.toLocaleString('id-ID')}</div>
     <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">${orderData.JarakTempuh||0} km</div>
-    <div style="font-size:13px;color:var(--text-secondary);">📍 ${orderData.namaAmbil||'-'} → ${orderData.NamaAntar||'-'}</div>
+    <div style="font-size:13px;color:var(--text-secondary);">${orderData.namaAmbil||'-'} → ${orderData.NamaAntar||'-'}</div>
   `;
   document.getElementById('accept-modal').classList.add('open');
   let sec = 10;
@@ -1471,7 +1890,7 @@ window.confirmAcceptOrder = async () => {
       status: 'terima', acceptedAt: Date.now()
     });
     playSound('snd-accept');
-    showToast('✅ Pesanan berhasil diterima!');
+    showToast('Pesanan berhasil diterima!');
     window.switchPage('maps');
   } catch(e) { showToast('Gagal menerima: '+e.message); }
   finally { hideLoading(); pendingAcceptOrder = null; }
@@ -1496,7 +1915,7 @@ window.openOrderDetail = (orderJson) => {
 
   document.getElementById('order-detail-content').innerHTML = `
     <div class="detail-row">
-      <span class="detail-label">📍 Ambil</span>
+      <span class="detail-label">Ambil</span>
       <span class="detail-value">
         ${mapsAmbilUrl
           ? `<a href="${mapsAmbilUrl}" target="_blank" class="addr-link" onclick="playTap()">${o.namaAmbil||'-'}</a>`
@@ -1504,7 +1923,7 @@ window.openOrderDetail = (orderJson) => {
       </span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">🏁 Antar</span>
+      <span class="detail-label">Antar</span>
       <span class="detail-value">
         ${mapsAntarUrl
           ? `<a href="${mapsAntarUrl}" target="_blank" class="addr-link" onclick="playTap()">${o.namaAntar||o.NamaAntar||'-'}</a>`
@@ -1512,19 +1931,19 @@ window.openOrderDetail = (orderJson) => {
       </span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">👤 Penerima</span>
+      <span class="detail-label">Penerima</span>
       <span class="detail-value">${o.namaPenerima||'-'}</span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">💳 Pembayaran</span>
-      <span class="detail-value"><span class="badge badge-bayar">💳 ${o.pembayaran||'-'}</span></span>
+      <span class="detail-label">Pembayaran</span>
+      <span class="detail-value"><span class="badge badge-bayar">${o.pembayaran||'-'}</span></span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">🕐 Waktu</span>
+      <span class="detail-label">Waktu</span>
       <span class="detail-value">${waktuStr}</span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">📱 WA Penerima</span>
+      <span class="detail-label">WA Penerima</span>
       <span class="detail-value">
         ${waUrl
           ? `<a href="${waUrl}" target="_blank" class="addr-link" onclick="playTap()">${o.waPenerima||'-'}</a>`
@@ -1532,7 +1951,7 @@ window.openOrderDetail = (orderJson) => {
       </span>
     </div>
     <div style="margin-top:10px;margin-bottom:4px;">
-      <div style="font-size:11px;font-weight:700;color:var(--oneui-orange);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">📝 Catatan Pesanan</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oneui-orange);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Catatan Pesanan</div>
       <div class="detail-catatan">
         <div class="catatan-text">${o.catatan || 'Tidak ada catatan'}</div>
       </div>
@@ -1586,7 +2005,7 @@ window.submitA1 = () => {
   const waUrl = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(pesan)}`;
   window.open(waUrl, '_blank');
   closeA1Modal();
-  showToast('✅ Form dikirim via WhatsApp!');
+  showToast('Form dikirim via WhatsApp!');
 };
 
 // ========================= ACTIVE ORDER PANEL =========================
@@ -1614,7 +2033,7 @@ function renderActivePanel() {
   const centerBtn = document.getElementById('center-map-btn');
 
   if (activeOrders.length === 0) {
-    panel.innerHTML = `<div class="empty-state" style="padding:24px;"><span class="material-symbols-outlined">inbox</span><p>Belum ada pesanan aktif</p></div>`;
+    panel.innerHTML = `<div class="empty-state" style="padding:24px;"><span class="material-symbols-rounded">inbox</span><p>Belum ada pesanan aktif</p></div>`;
     mapPlaceholder.style.display = 'flex';
     mapEl.classList.add('d-none');
     centerBtn.classList.add('d-none');
@@ -1682,7 +2101,7 @@ function renderPickupPhase(pickups) {
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
             <div style="font-size:13px;color:var(--oneui-green);font-weight:600;">Rp ${calcNetArgo(o.Argo||0).toLocaleString('id-ID')}</div>
-            <span class="material-symbols-outlined" style="font-size:16px;color:var(--text-tertiary);">chevron_right</span>
+            <span class="material-symbols-rounded" style="font-size:16px;color:var(--text-tertiary);">chevron_right</span>
           </div>
         </div>
       </div>`;
@@ -1690,14 +2109,14 @@ function renderPickupPhase(pickups) {
 
     html += `
     <div class="countdown-bar" id="amb-countdown-bar">
-      <span class="material-symbols-outlined" style="color:var(--oneui-orange);font-size:20px;">timer</span>
+      <span class="material-symbols-rounded" style="color:var(--oneui-orange);font-size:20px;">timer</span>
       <span class="countdown-text">Konfirmasi tiba:</span>
       <span class="countdown-num" id="amb-sec">10</span>
       <button class="cancel-small" id="btn-cancel-order" onclick="cancelOrderGroup('${ids}')">Batalkan</button>
     </div>
     <div class="swipe-wrap sw-green d-none" id="swipe-ambil" data-action="batch_ambil" data-orderids="${ids}">
       <div class="swipe-text txt-green">Geser Tiba di Lokasi Pengambilan</div>
-      <div class="swipe-knob knob-green"><span class="material-symbols-outlined" style="font-size:20px;">storefront</span></div>
+      <div class="swipe-knob knob-green"><span class="material-symbols-rounded" style="font-size:20px;">storefront</span></div>
     </div>`;
 
   } else {
@@ -1711,7 +2130,7 @@ function renderPickupPhase(pickups) {
         <div class="upload-box" id="ub-order-${o.id}" style="background:#FFF;">
           <input type="file" accept="image/*" onchange="prepareOrderFile(event,'${o.id}','ambil')">
           <div class="upload-box-content">
-            <span class="material-symbols-outlined" style="font-size:20px;">photo_camera</span>
+            <span class="material-symbols-rounded" style="font-size:20px;">photo_camera</span>
             <span class="upload-label" id="lbl-${o.id}-ambil">Foto Barang/Nota (maks. 20KB)</span>
           </div>
         </div>
@@ -1720,7 +2139,7 @@ function renderPickupPhase(pickups) {
     html += `
     <div class="swipe-wrap" id="swipe-ngantar" data-action="batch_ngantar" data-orderids="${ids}">
       <div class="swipe-text">Geser Mulai Antar Semua</div>
-      <div class="swipe-knob knob-dark"><span class="material-symbols-outlined" style="font-size:20px;">two_wheeler</span></div>
+      <div class="swipe-knob knob-dark"><span class="material-symbols-rounded" style="font-size:20px;">two_wheeler</span></div>
     </div>`;
   }
 
@@ -1813,7 +2232,7 @@ function renderDeliveryPhase(sorted) {
       </div>
       <div style="display:flex;align-items:center;gap:4px;">
         <div style="font-size:12px;font-weight:700;color:${isActive?'var(--oneui-green)':'var(--text-disabled)'};">Rp ${calcNetArgo(item.Argo||0).toLocaleString('id-ID')}</div>
-        <span class="material-symbols-outlined" style="font-size:14px;color:var(--text-tertiary);">info</span>
+        <span class="material-symbols-rounded" style="font-size:14px;color:var(--text-tertiary);">info</span>
       </div>
     </div>`;
   }).join('');
@@ -1823,31 +2242,31 @@ function renderDeliveryPhase(sorted) {
   if (o.status === 'ngantar' || o.status === 'menungguAntar') {
     actionHTML = `
     <div class="countdown-bar" id="tiba-countdown-bar-${o.id}" style="display:none">
-      <span class="material-symbols-outlined" style="font-size:20px;">timer</span>
+      <span class="material-symbols-rounded" style="font-size:20px;">timer</span>
       <span class="countdown-text">Konfirmasi tiba:</span>
       <span class="countdown-num" id="tiba-sec-${o.id}">2</span>
     </div>
     <div class="swipe-wrap sw-green" data-action="tiba_tujuan" data-orderid="${o.id}">
       <div class="swipe-text txt-green">Geser Tiba di Tujuan</div>
-      <div class="swipe-knob knob-green"><span class="material-symbols-outlined" style="font-size:20px;">flag</span></div>
+      <div class="swipe-knob knob-green"><span class="material-symbols-rounded" style="font-size:20px;">flag</span></div>
     </div>`;
   } else if (o.status === 'tiba') {
     actionHTML = `
     <div class="upload-box" id="ub-selesai-${o.id}" style="background:var(--surface-input);margin-bottom:12px;">
       <input type="file" accept="image/*" onchange="prepareOrderFile(event,'${o.id}','selesai')">
       <div class="upload-box-content">
-        <span class="material-symbols-outlined">verified</span>
+        <span class="material-symbols-rounded">verified</span>
         <span class="upload-label" id="lbl-${o.id}-selesai">Foto Bukti Selesai (maks. 30KB)</span>
       </div>
     </div>
     <div class="countdown-bar" id="sel-countdown-bar-${o.id}" style="display:none">
-      <span class="material-symbols-outlined" style="font-size:20px;">timer</span>
+      <span class="material-symbols-rounded" style="font-size:20px;">timer</span>
       <span class="countdown-text">Konfirmasi selesai:</span>
       <span class="countdown-num" id="sel-sec-${o.id}">2</span>
     </div>
     <div class="swipe-wrap sw-blue" data-action="selesai_pesanan" data-orderid="${o.id}" data-argo="${netArgo}">
       <div class="swipe-text txt-blue">Geser Selesai • Rp ${netArgo.toLocaleString('id-ID')}</div>
-      <div class="swipe-knob knob-blue"><span class="material-symbols-outlined" style="font-size:20px;">check_circle</span></div>
+      <div class="swipe-knob knob-blue"><span class="material-symbols-rounded" style="font-size:20px;">check_circle</span></div>
     </div>`;
   }
 
@@ -1867,7 +2286,7 @@ function renderDeliveryPhase(sorted) {
       <div style="font-size:12px;color:var(--text-tertiary);">Ketuk urutan pin untuk detail pesanan</div>
     </div>
     <button onclick="playTap();openOrderDetail('${activeOJson}')" style="background:var(--oneui-blue-bg);color:var(--oneui-blue);border:none;border-radius:var(--r-md);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
-      <span class="material-symbols-outlined" style="font-size:16px;">info</span>Detail
+      <span class="material-symbols-rounded" style="font-size:16px;">info</span>Detail
     </button>
   </div>
   <div style="background:var(--surface-input);border-radius:var(--r-md);padding:10px 12px;margin-bottom:12px;">
@@ -1878,7 +2297,7 @@ function renderDeliveryPhase(sorted) {
     ${antarMapsUrl
       ? `<div style="font-size:12px;"><a href="${antarMapsUrl}" target="_blank" class="addr-link" onclick="playTap()">${o.NamaAntar||'-'}</a></div>`
       : `<div style="font-size:12px;color:var(--text-tertiary);">${o.NamaAntar||'-'}</div>`}
-    <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">💳 ${o.pembayaran||'-'}</div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">${o.pembayaran||'-'}</div>
   </div>
   ${actionHTML}
   ${sorted.length > 1 ? `
@@ -1965,7 +2384,7 @@ window.prepareOrderFile = (e, orderId, type) => {
   if (!file) return;
   window.filesBuffer[orderId+'_'+type] = file;
   const lbl = document.getElementById(`lbl-${orderId}-${type}`);
-  if(lbl) { lbl.textContent = '✓ Foto siap'; lbl.style.color = 'var(--oneui-green)'; }
+  if(lbl) { lbl.textContent = 'Foto siap'; lbl.style.color = 'var(--oneui-green)'; }
   const ub = document.getElementById(`ub-order-${orderId}`) || document.getElementById(`ub-selesai-${orderId}`);
   if(ub) ub.classList.add('uploaded');
 };
@@ -2026,12 +2445,12 @@ async function executeSwipe(container) {
     if (action === 'terima') {
       const orderArgo = parseInt(container.dataset.argo) || 0;
       if (!hasEnoughDeposit(orderArgo)) {
-        showToast(`❌ Deposit tidak cukup! Butuh min. Rp ${Math.round(orderArgo*0.20).toLocaleString('id-ID')} (20% dari argo)`);
+        showToast(` Deposit tidak cukup! Butuh min. Rp ${Math.round(orderArgo*0.20).toLocaleString('id-ID')} (20% dari argo)`);
         hideLoading(); resetAllSwipes(); return;
       }
       const jenisOrder = container.dataset.jenis || 'normal';
       const check = canAddOrder(jenisOrder);
-      if (!check.ok) { showToast('❌ ' + check.reason); hideLoading(); resetAllSwipes(); return; }
+      if (!check.ok) { showToast(' ' + check.reason); hideLoading(); resetAllSwipes(); return; }
       await updateDoc(doc(db,"orders",orderId), {
         getdriverId: currentUid, driverName: driverData.nama, waDriver: driverData.wa,
         rankDriver: driverData.status, UrlprofileDriver: driverData.urlProfile||'',
@@ -2040,7 +2459,7 @@ async function executeSwipe(container) {
       });
       if (!firstOrderType) { firstOrderType = jenisOrder; firstOrderAcceptedAt = Date.now(); }
       playSound('snd-accept');
-      showToast('✅ Pesanan diterima!');
+      showToast(' Pesanan diterima!');
       window.switchPage('maps');
     }
     else if (action === 'batch_ambil') {
@@ -2152,7 +2571,7 @@ function loadRiwayat() {
   dailyHistory = dailyHistory.filter(r => r.tanggal === today);
 
   if (dailyHistory.length === 0) {
-    document.getElementById('riwayat-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">history</span><p>Belum ada riwayat hari ini</p></div>`;
+    document.getElementById('riwayat-list').innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">history</span><p>Belum ada riwayat hari ini</p></div>`;
     return;
   }
 
@@ -2162,16 +2581,20 @@ function loadRiwayat() {
     const timeStr = new Date(r.selesaiAt).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
     return `
       <div class="riwayat-item">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <div style="font-size:14px;font-weight:600;">${r.namaPenerima||'Pesanan'}</div>
-            <div style="font-size:12px;color:var(--text-disabled);margin-top:1px;font-style:italic;">Alamat disembunyikan </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;background:var(--oneui-green-bg);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-rounded" style="font-size:20px;color:var(--oneui-green);">check_circle</span>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:700;">${r.namaPenerima||'Pesanan'}</div>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">Hari ini, ${timeStr}</div>
+            </div>
           </div>
-          <div style="font-size:16px;font-weight:700;color:var(--oneui-green);">+Rp ${(r.argo||0).toLocaleString('id-ID')}</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-          <div style="font-size:12px;color:var(--text-tertiary);">Hari ini, ${timeStr}</div>
-          ${r.pembayaran ? `<span class="badge badge-bayar" style="font-size:10px;">💳 ${r.pembayaran}</span>` : ''}
+          <div style="text-align:right;">
+            <div style="font-size:16px;font-weight:800;color:var(--oneui-green);letter-spacing:-0.5px;">+Rp ${(r.argo||0).toLocaleString('id-ID')}</div>
+            ${r.pembayaran ? `<span class="badge badge-bayar" style="font-size:10px;margin-top:3px;">${r.pembayaran}</span>` : ''}
+          </div>
         </div>
       </div>
     `;
