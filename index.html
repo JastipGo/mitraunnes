@@ -44,7 +44,13 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width:100%; height:100%; overflow:hidden; overscroll-behavior:none; background:var(--surface-bg); color:var(--text-primary); font-family:var(--font); -webkit-font-smoothing:antialiased; user-select:none; -webkit-user-select:none; }
 input, textarea, select { user-select:auto; -webkit-user-select:auto; }
+/* FIX #8: App-like feel — NO tap highlight, instant active feedback */
 * { -webkit-tap-highlight-color:transparent!important; outline:none!important; }
+button, [onclick] { touch-action: manipulation; cursor: pointer; }
+/* Active press states for app-like responsiveness */
+button:active, .order-card:active, .nav-item:active { transform: scale(0.97); transition: transform 0.08s ease; }
+.btn-oneui:active { transform: scale(0.97) !important; transition: transform 0.08s ease !important; }
+.swipe-wrap { -webkit-touch-callout: none; }
 .d-none { display:none!important; }
 
 /* LOADING */
@@ -97,11 +103,13 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 .upload-sub { font-size:10px; color:var(--text-tertiary); }
 
 /* BUTTONS */
-.btn-oneui { width:100%; padding:16px; border:none; border-radius:var(--r-lg); font-size:16px; font-weight:700; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; transition:all 0.2s; font-family:var(--font); letter-spacing:-0.2px; }
+.btn-oneui { width:100%; padding:16px; border:none; border-radius:var(--r-lg); font-size:16px; font-weight:700; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; transition:all 0.15s; font-family:var(--font); letter-spacing:-0.2px; -webkit-tap-highlight-color:transparent; }
 .btn-primary { background:var(--oneui-blue); color:#FFF; box-shadow:0 4px 16px rgba(18,89,195,0.3); }
-.btn-primary:active { background:var(--oneui-blue-dark); transform:scale(0.98); }
+.btn-primary:active { background:var(--oneui-blue-dark); transform:scale(0.97); }
 .btn-secondary { background:var(--surface-input); color:var(--text-primary); }
+.btn-secondary:active { background:var(--border-light); transform:scale(0.97); }
 .btn-danger { background:var(--oneui-red-bg); color:var(--oneui-red); }
+.btn-danger:active { transform:scale(0.97); }
 .btn-sm { padding:10px 16px; font-size:13px; border-radius:var(--r-md); width:auto; }
 
 /* APP */
@@ -110,7 +118,8 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 
 /* TOP BAR */
 .top-bar { padding:12px 20px; background:var(--surface-card); display:flex; justify-content:space-between; align-items:center; z-index:100; box-shadow:var(--shadow-sm); flex-shrink:0; }
-.driver-status-pill { padding:7px 14px; border-radius:var(--r-full); font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; transition:all 0.2s; }
+.driver-status-pill { padding:7px 14px; border-radius:var(--r-full); font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; transition:all 0.15s; }
+.driver-status-pill:active { transform:scale(0.95); }
 .driver-status-pill.online { background:var(--oneui-green-bg); color:var(--oneui-green); }
 .driver-status-pill.offline { background:var(--surface-input); color:var(--text-tertiary); }
 .status-dot { width:7px; height:7px; border-radius:50%; }
@@ -128,14 +137,16 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 .page-header p { font-size:13px; color:var(--text-tertiary); margin-top:2px; }
 
 /* CARDS */
-.order-card { background:var(--surface-card); margin:0 0 10px 0; padding:18px 20px; border-radius:0; border-bottom:1px solid var(--border-light); }
+.order-card { background:var(--surface-card); margin:0 0 10px 0; padding:18px 20px; border-radius:0; border-bottom:1px solid var(--border-light); transition:background 0.1s; }
 .order-card:first-child { border-top:1px solid var(--border-light); }
+.order-card:active { background:#f8f8f8; }
 .argo-display { font-size:22px; font-weight:700; color:var(--text-primary); }
 .argo-net { font-size:14px; color:var(--oneui-green); font-weight:600; }
 .badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:var(--r-xs); font-size:11px; font-weight:700; }
 .badge-gabungan { background:var(--oneui-green-bg); color:var(--oneui-green); }
 .badge-normal { background:var(--oneui-blue-bg); color:var(--oneui-blue); }
 .badge-kategori { background:var(--surface-input); color:var(--text-secondary); }
+.badge-bayar { background:var(--oneui-purple-bg); color:var(--oneui-purple); }
 .loc-row { display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
 .loc-icon { font-size:20px; margin-top:1px; color:var(--text-secondary); flex-shrink:0; }
 .loc-info .loc-name { font-size:14px; font-weight:600; color:var(--text-primary); }
@@ -162,6 +173,7 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 .countdown-text { font-size:13px; font-weight:700; color:var(--oneui-orange); }
 .countdown-num { font-size:20px; font-weight:700; color:var(--oneui-orange); min-width:28px; }
 .cancel-small { background:var(--oneui-red-bg); color:var(--oneui-red); border:none; border-radius:var(--r-md); padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; margin-left:auto; flex-shrink:0; }
+.cancel-small:active { transform:scale(0.95); }
 
 /* MAPS PAGE */
 #page-maps { padding:0; position:relative; display:none; flex-direction:column; }
@@ -169,7 +181,8 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 #map { width:100%; background:var(--surface-input); flex:1; min-height:0; }
 .map-placeholder { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text-tertiary); background:var(--surface-input); }
 .map-placeholder .material-symbols-outlined { font-size:48px; }
-/* DRAGGABLE BOTTOM SHEET (Grab-style) */
+
+/* DRAGGABLE BOTTOM SHEET */
 .floating-panel {
   background:var(--surface-card);
   border-radius:var(--r-2xl) var(--r-2xl) 0 0;
@@ -179,10 +192,8 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
   z-index:10;
   overflow:hidden;
   touch-action:none;
-  /* Will be controlled by JS translateY */
   transform:translateY(0);
   transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
-  /* Reserve space for nav bar */
   padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px);
 }
 .sheet-drag-handle-wrap {
@@ -200,6 +211,14 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 .sheet-drag-bar { width:40px; height:4px; background:var(--border-medium); border-radius:var(--r-full); }
 .sheet-inner { padding:0 20px 8px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .center-btn { position:absolute; top:16px; right:16px; z-index:20; background:var(--surface-card); border:none; border-radius:var(--r-md); width:44px; height:44px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md); cursor:pointer; color:var(--text-primary); }
+.center-btn:active { transform:scale(0.95); background:var(--surface-input); }
+
+/* FIX #2: Queue order detail modal */
+.queue-order-modal { max-height:88vh; }
+.detail-row { display:flex; justify-content:space-between; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--border-light); gap:12px; }
+.detail-row:last-child { border-bottom:none; }
+.detail-label { font-size:12px; color:var(--text-tertiary); font-weight:600; flex-shrink:0; }
+.detail-value { font-size:13px; font-weight:600; color:var(--text-primary); text-align:right; line-height:1.4; }
 
 /* PIN ROUTE LIST */
 .pin-list { display:flex; flex-direction:column; gap:0; }
@@ -210,9 +229,14 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 .pin-next { background:var(--surface-input); color:var(--text-secondary); }
 .pin-done { background:var(--oneui-green-bg); color:var(--oneui-green); }
 
+/* CLICKABLE QUEUE ITEMS */
+.queue-item-clickable { cursor:pointer; transition:background 0.1s; border-radius:var(--r-md); padding:10px 12px; margin-bottom:8px; background:var(--surface-input); }
+.queue-item-clickable:active { background:var(--border-light); }
+
 /* BOTTOM NAV */
 .bottom-nav { position:fixed; bottom:0; width:100%; background:var(--surface-card); display:flex; border-top:1px solid var(--border-light); padding-bottom:env(safe-area-inset-bottom,12px); z-index:100; flex-shrink:0; }
-.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-disabled); background:none; border:none; cursor:pointer; gap:2px; padding:10px 0 4px; transition:color 0.15s; }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-disabled); background:none; border:none; cursor:pointer; gap:2px; padding:10px 0 4px; transition:color 0.12s, transform 0.08s; }
+.nav-item:active { transform:scale(0.9); }
 .nav-item.active { color:var(--oneui-blue); }
 .nav-item .material-symbols-outlined { font-size:26px; }
 .nav-item .nav-label { font-size:10px; font-weight:700; }
@@ -281,13 +305,25 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 
 /* PIN MARKERS */
 .map-pin { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; border:2.5px solid #FFF; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
+
+/* FIX #9: Click sound ripple indicator */
+.ripple-effect { position:relative; overflow:hidden; }
+.ripple { position:absolute; border-radius:50%; background:rgba(255,255,255,0.3); transform:scale(0); animation:rippleAnim 0.4s linear; pointer-events:none; }
+@keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
 </style>
 </head>
 <body>
 
-<!-- AUDIO ELEMENTS -->
+<!-- FIX #9: Audio elements for button clicks -->
 <audio id="snd-order" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 <audio id="snd-accept" src="https://assets.mixkit.co/active_storage/sfx/2872/2872-preview.mp3" preload="auto"></audio>
+<!-- Short tap sound for UI clicks -->
+<audio id="snd-tap" preload="auto">
+  <source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" type="audio/mpeg">
+</audio>
+<audio id="snd-swipe" preload="auto">
+  <source src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3" type="audio/mpeg">
+</audio>
 
 <!-- LOADING -->
 <div id="loading-overlay">
@@ -310,11 +346,10 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
     <p style="font-size:14px;color:var(--text-tertiary);margin-top:6px;text-align:center;">Mitra Pengiriman Mahasiswa UNNES</p>
   </div>
   
-  <!-- AUTH SHEET -->
   <div class="splash-sheet" id="auth-sheet">
     <div class="auth-tab-bar">
-      <button class="auth-tab active" id="tab-login" onclick="showTab('login')">Masuk</button>
-      <button class="auth-tab" id="tab-signup" onclick="showTab('signup')">Daftar</button>
+      <button class="auth-tab active" id="tab-login" onclick="playTap();showTab('login')">Masuk</button>
+      <button class="auth-tab" id="tab-signup" onclick="playTap();showTab('signup')">Daftar</button>
     </div>
 
     <!-- LOGIN FORM -->
@@ -327,7 +362,7 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
         <div class="field-label">Password <span class="field-required">*</span></div>
         <input type="password" class="oneui-input" id="login-pass" placeholder="Minimal 6 karakter">
       </div>
-      <button class="btn-oneui btn-primary" onclick="window.doLogin()" style="margin-top:4px;">
+      <button class="btn-oneui btn-primary" onclick="playTap();window.doLogin();" style="margin-top:4px;">
         <span class="material-symbols-outlined" style="font-size:20px;">login</span> Masuk
       </button>
       <div style="height:32px;"></div>
@@ -335,11 +370,13 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 
     <!-- SIGNUP FORM -->
     <div id="form-signup" class="d-none">
+      <!-- FIX #11: step indicator = 5 dots (step 0-4) -->
       <div class="step-indicator" id="step-indicator">
         <div class="step-dot done" id="sdot-0"></div>
         <div class="step-dot" id="sdot-1"></div>
         <div class="step-dot" id="sdot-2"></div>
         <div class="step-dot" id="sdot-3"></div>
+        <div class="step-dot" id="sdot-4"></div>
       </div>
 
       <!-- STEP 0: AKUN -->
@@ -365,7 +402,12 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
           <div class="field-label">NIM / ID Mahasiswa <span class="field-required">*</span></div>
           <input type="text" class="oneui-input" id="reg-nim" placeholder="Nomor Induk Mahasiswa">
         </div>
-        <button class="btn-oneui btn-primary" onclick="nextStep(1)">Lanjut →</button>
+        <!-- FIX #10: Plat Nomor input wajib -->
+        <div class="field-group">
+          <div class="field-label">Plat Nomor Kendaraan <span class="field-required">*</span></div>
+          <input type="text" class="oneui-input" id="reg-plat" placeholder="cth: H 1234 ABC" style="text-transform:uppercase;">
+        </div>
+        <button class="btn-oneui btn-primary" onclick="playTap();nextStep(1)">Lanjut →</button>
       </div>
 
       <!-- STEP 1: DOKUMEN WAJIB -->
@@ -406,9 +448,21 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
             </div>
           </div>
         </div>
+        <!-- FIX #10: Foto Plat Nomor wajib -->
+        <div class="field-group">
+          <div class="field-label">Foto Plat Nomor <span class="field-required">*</span></div>
+          <div class="upload-box" id="ub-platNomor">
+            <input type="file" accept="image/*" onchange="handleDocUpload(event,'platNomor')">
+            <div class="upload-box-content">
+              <span class="material-symbols-outlined">pin</span>
+              <span class="upload-label" id="lbl-platNomor">Ketuk untuk Upload</span>
+              <span class="upload-sub">Foto plat nomor kendaraan yang jelas</span>
+            </div>
+          </div>
+        </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn-oneui btn-secondary" onclick="nextStep(0)" style="flex:0.5;">← Kembali</button>
-          <button class="btn-oneui btn-primary" onclick="nextStep(2)" style="flex:1;">Lanjut →</button>
+          <button class="btn-oneui btn-secondary" onclick="playTap();nextStep(0)" style="flex:0.5;">← Kembali</button>
+          <button class="btn-oneui btn-primary" onclick="playTap();nextStep(2)" style="flex:1;">Lanjut →</button>
         </div>
       </div>
 
@@ -428,6 +482,18 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
             </div>
           </div>
         </div>
+        <!-- FIX #11: SKCK opsional di signup -->
+        <div class="field-group">
+          <div class="field-label">Foto SKCK (Opsional)</div>
+          <div class="upload-box" id="ub-skck">
+            <input type="file" accept="image/*" onchange="handleDocUpload(event,'skck')">
+            <div class="upload-box-content">
+              <span class="material-symbols-outlined">security</span>
+              <span class="upload-label" id="lbl-skck">Ketuk untuk Upload</span>
+              <span class="upload-sub">SKCK Kepolisian — untuk gelar Terverifikasi</span>
+            </div>
+          </div>
+        </div>
         <div class="field-group">
           <div class="field-label">Foto Profil <span class="field-required">*</span></div>
           <div class="upload-box" id="ub-profile">
@@ -440,8 +506,8 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
           </div>
         </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn-oneui btn-secondary" onclick="nextStep(1)" style="flex:0.5;">← Kembali</button>
-          <button class="btn-oneui btn-primary" onclick="nextStep(3)" style="flex:1;">Lanjut →</button>
+          <button class="btn-oneui btn-secondary" onclick="playTap();nextStep(1)" style="flex:0.5;">← Kembali</button>
+          <button class="btn-oneui btn-primary" onclick="playTap();nextStep(3)" style="flex:1;">Lanjut →</button>
         </div>
       </div>
 
@@ -455,12 +521,12 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
           Dengan mendaftar sebagai driver JastipUnnes, saya menyatakan bahwa semua data yang saya berikan adalah benar dan valid. Saya setuju untuk mematuhi semua aturan dan ketentuan yang berlaku. Saya memahami bahwa pelanggaran terhadap peraturan akan mengakibatkan penangguhan atau penghentian akun secara permanen.
         </div>
         <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-bottom:20px;">
-          <input type="checkbox" id="chk-agree" style="width:20px;height:20px;margin-top:1px;accent-color:var(--oneui-blue);cursor:pointer;">
+          <input type="checkbox" id="chk-agree" style="width:20px;height:20px;margin-top:1px;accent-color:var(--oneui-blue);cursor:pointer;" onclick="playTap()">
           <span style="font-size:13px;color:var(--text-primary);font-weight:600;line-height:1.5;">Saya telah membaca, memahami, dan menyetujui seluruh syarat, ketentuan, serta perjanjian Driver JastipUnnes.</span>
         </label>
         <div style="display:flex;gap:10px;">
-          <button class="btn-oneui btn-secondary" onclick="nextStep(2)" style="flex:0.5;">← Kembali</button>
-          <button class="btn-oneui btn-primary" id="btn-daftar" onclick="window.doSignup()" style="flex:1;">
+          <button class="btn-oneui btn-secondary" onclick="playTap();nextStep(2)" style="flex:0.5;">← Kembali</button>
+          <button class="btn-oneui btn-primary" id="btn-daftar" onclick="playTap();window.doSignup()" style="flex:1;">
             <span class="material-symbols-outlined" style="font-size:18px;">how_to_reg</span> Daftar Sekarang
           </button>
         </div>
@@ -471,7 +537,7 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 </div>
 
 <!-- ============================================================
-     WELCOME POPUP (setelah login)
+     WELCOME POPUP
      ============================================================ -->
 <div class="modal-overlay" id="welcome-popup">
   <div class="modal-sheet" style="max-height:85vh;">
@@ -491,13 +557,13 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
       <div class="section-title" style="color:var(--oneui-blue);">📋 Panduan Cepat</div>
       <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
         1. Pastikan status <strong>Online</strong> untuk menerima pesanan<br>
-        2. Anda dapat menerima <strong>1 order normal + 1 order gabungan</strong> (maks. 5 pesanan)<br>
-        3. Selesaikan sesuai urutan PIN yang ditentukan<br>
+        2. Ambil pesanan normal → boleh tambah 1 gabungan (dalam 10 menit)<br>
+        3. Jika ambil gabungan pertama → maks 5 dalam 20 menit<br>
         4. Upload bukti foto di setiap tahapan<br>
         5. Argo yang diterima sudah dipotong 20% komisi platform
       </div>
     </div>
-    <button class="btn-oneui btn-primary" onclick="closeWelcomePopup()">
+    <button class="btn-oneui btn-primary" onclick="playTap();closeWelcomePopup()">
       <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span> Saya Mengerti, Siap Bekerja!
     </button>
   </div>
@@ -514,18 +580,16 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
       <div class="big-countdown" id="accept-countdown">10</div>
       <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">detik tersisa untuk memutuskan</div>
     </div>
-    <div class="accept-order-info" id="accept-order-info">
-      <!-- Dynamic order info -->
-    </div>
-    <button class="btn-oneui btn-primary" id="btn-terima-modal" onclick="confirmAcceptOrder()">
+    <div class="accept-order-info" id="accept-order-info"></div>
+    <button class="btn-oneui btn-primary" id="btn-terima-modal" onclick="playTap();confirmAcceptOrder()">
       <span class="material-symbols-outlined" style="font-size:20px;">check</span> Terima Pesanan
     </button>
-    <button class="btn-oneui btn-secondary" onclick="rejectOrder()" style="margin-top:10px;">Lewati</button>
+    <button class="btn-oneui btn-secondary" onclick="playTap();rejectOrder()" style="margin-top:10px;">Lewati</button>
   </div>
 </div>
 
 <!-- ============================================================
-     EARNING POPUP (selesai semua order)
+     EARNING POPUP
      ============================================================ -->
 <div class="modal-overlay" id="earning-popup">
   <div class="modal-sheet" style="text-align:center;">
@@ -538,7 +602,7 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
       <div style="font-size:36px;font-weight:700;color:var(--oneui-green);letter-spacing:-1px;" id="earning-total">Rp 0</div>
     </div>
     <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Sudah ditambahkan ke tabungan Anda</div>
-    <button class="btn-oneui btn-primary" onclick="closeEarningPopup()">
+    <button class="btn-oneui btn-primary" onclick="playTap();closeEarningPopup()">
       <span class="material-symbols-outlined" style="font-size:20px;">done</span> Lanjutkan
     </button>
   </div>
@@ -561,10 +625,21 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
         4. Deposit akan diproses dalam 1x24 jam
       </div>
     </div>
-    <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20topup%20deposit%20JastipUnnes." target="_blank" class="btn-oneui btn-primary" style="text-decoration:none;display:flex;">
+    <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20topup%20deposit%20JastipUnnes." target="_blank" class="btn-oneui btn-primary" style="text-decoration:none;display:flex;" onclick="playTap()">
       <span class="material-symbols-outlined" style="font-size:20px;">chat</span> Hubungi Admin via WhatsApp
     </a>
-    <button class="btn-oneui btn-secondary" onclick="closeTopupModal()" style="margin-top:10px;">Tutup</button>
+    <button class="btn-oneui btn-secondary" onclick="playTap();closeTopupModal()" style="margin-top:10px;">Tutup</button>
+  </div>
+</div>
+
+<!-- FIX #2: Modal detail antrian pesanan di halaman maps -->
+<div class="modal-overlay" id="queue-detail-modal">
+  <div class="modal-sheet queue-order-modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Detail Pesanan Antrian</div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">Ketuk item antrian untuk melihat detail</div>
+    <div id="queue-detail-content"></div>
+    <button class="btn-oneui btn-secondary" onclick="playTap();closeQueueDetail()" style="margin-top:4px;">Tutup</button>
   </div>
 </div>
 
@@ -574,11 +649,11 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 <div id="app">
   <!-- TOP BAR -->
   <div class="top-bar">
-    <button class="driver-status-pill online" id="status-pill" onclick="toggleOnlineStatus()">
+    <button class="driver-status-pill online" id="status-pill" onclick="playTap();toggleOnlineStatus()">
       <span class="status-dot dot-online" id="status-dot"></span>
       <span id="status-text">Online</span>
     </button>
-    <div class="top-deposit" onclick="openTopupModal()" style="cursor:pointer;">
+    <div class="top-deposit" onclick="playTap();openTopupModal()" style="cursor:pointer;">
       <span class="top-deposit-label">DEPOSIT 💳</span>
       <span class="top-deposit-val" id="top-deposit-val">Rp 0</span>
     </div>
@@ -601,7 +676,7 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
       <p style="font-size:14px;font-weight:600;">Peta aktif saat pengantaran</p>
     </div>
     <div id="map" class="d-none" style="flex:1;min-height:0;"></div>
-    <button class="center-btn d-none" id="center-map-btn" onclick="centerDriverOnMap()">
+    <button class="center-btn d-none" id="center-map-btn" onclick="playTap();centerDriverOnMap()">
       <span class="material-symbols-outlined">my_location</span>
     </button>
     <div class="floating-panel" id="active-order-panel">
@@ -629,7 +704,6 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
     </div>
     <div class="divider"></div>
     <div style="padding:20px;">
-      <!-- PROFILE HEADER -->
       <div class="section-card">
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
           <div class="profile-avatar" id="prof-avatar">
@@ -638,6 +712,8 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
           <div>
             <div style="font-size:18px;font-weight:700;" id="prof-nama">Driver</div>
             <div id="prof-nim" style="font-size:13px;color:var(--text-tertiary);">NIM: -</div>
+            <!-- FIX #10: tampilkan plat nomor -->
+            <div id="prof-plat" style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Plat: -</div>
             <div id="prof-rank-badge"></div>
           </div>
         </div>
@@ -651,12 +727,11 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
         </div>
       </div>
 
-      <!-- DEPOSIT & TABUNGAN -->
       <div class="deposit-card">
         <div class="deposit-label">SALDO DEPOSIT</div>
         <div class="deposit-val" id="prof-deposit">Rp 0</div>
         <div style="font-size:11px;opacity:0.65;margin-top:4px;">Dipotong 20% dari setiap pesanan selesai</div>
-        <button onclick="openTopupModal()" style="margin-top:12px;background:rgba(255,255,255,0.2);color:#FFF;border:1px solid rgba(255,255,255,0.3);border-radius:var(--r-md);padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">+ Topup Deposit</button>
+        <button onclick="playTap();openTopupModal()" style="margin-top:12px;background:rgba(255,255,255,0.2);color:#FFF;border:1px solid rgba(255,255,255,0.3);border-radius:var(--r-md);padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">+ Topup Deposit</button>
       </div>
       <div class="tabungan-card">
         <div>
@@ -666,19 +741,15 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
         <span class="material-symbols-outlined" style="font-size:32px;color:var(--oneui-green);opacity:0.5;">savings</span>
       </div>
 
-      <!-- GELAR -->
       <div class="section-card">
         <div class="section-title">Gelar & Verifikasi</div>
-        <div id="rank-info-block" style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
-          <!-- Dynamic -->
-        </div>
+        <div id="rank-info-block" style="font-size:13px;color:var(--text-secondary);line-height:1.7;"></div>
         <div style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">Untuk perubahan gelar, hubungi admin.</div>
-        <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20mengajukan%20verifikasi%20gelar." target="_blank" class="btn-oneui btn-secondary btn-sm" style="margin-top:12px;display:inline-flex;width:auto;">
+        <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20mengajukan%20verifikasi%20gelar." target="_blank" class="btn-oneui btn-secondary btn-sm" style="margin-top:12px;display:inline-flex;width:auto;" onclick="playTap()">
           <span class="material-symbols-outlined" style="font-size:16px;">verified</span> Ajukan Verifikasi
         </a>
       </div>
 
-      <!-- DOKUMEN -->
       <div class="section-card">
         <div class="section-title">Dokumen Saya</div>
         <div id="doc-list" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -688,8 +759,7 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
         </div>
       </div>
 
-      <!-- LOGOUT -->
-      <button class="btn-oneui btn-danger" onclick="window.doLogout()" style="margin-top:4px;">
+      <button class="btn-oneui btn-danger" onclick="playTap();window.doLogout()" style="margin-top:4px;">
         <span class="material-symbols-outlined" style="font-size:20px;">logout</span> Keluar dari Akun
       </button>
     </div>
@@ -697,21 +767,21 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 
   <!-- BOTTOM NAV -->
   <div class="bottom-nav">
-    <button class="nav-item active" id="nav-daftar" onclick="window.switchPage('daftar')">
+    <button class="nav-item active" id="nav-daftar" onclick="playTap();window.switchPage('daftar')">
       <div class="nav-badge" id="nb-daftar" data-count="0">
         <span class="material-symbols-outlined">list_alt</span>
       </div>
       <span class="nav-label">Daftar</span>
     </button>
-    <button class="nav-item" id="nav-maps" onclick="window.switchPage('maps')">
+    <button class="nav-item" id="nav-maps" onclick="playTap();window.switchPage('maps')">
       <span class="material-symbols-outlined">explore</span>
       <span class="nav-label">Antar</span>
     </button>
-    <button class="nav-item" id="nav-riwayat" onclick="window.switchPage('riwayat')">
+    <button class="nav-item" id="nav-riwayat" onclick="playTap();window.switchPage('riwayat')">
       <span class="material-symbols-outlined">receipt_long</span>
       <span class="nav-label">Riwayat</span>
     </button>
-    <button class="nav-item" id="nav-profil" onclick="window.switchPage('profil')">
+    <button class="nav-item" id="nav-profil" onclick="playTap();window.switchPage('profil')">
       <span class="material-symbols-outlined">person</span>
       <span class="nav-label">Profil</span>
     </button>
@@ -725,7 +795,7 @@ input, textarea, select { user-select:auto; -webkit-user-select:auto; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where, addDoc, serverTimestamp }
+import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseApp = initializeApp({
@@ -750,20 +820,47 @@ let activeOrders = [];
 let map = null;
 let currentDeviceCoords = null;
 let isOnline = true;
-let docFiles = {};         
-let tripTotalArgo = 0;     
+let docFiles = {};
+let tripTotalArgo = 0;
 let pendingAcceptOrder = null;
 let acceptCountdownTimer = null;
-let previousOrderIds = new Set();
 let currentDeliveryPin = null;
 window.filesBuffer = {};
+let isSigningUp = false;
 
-let isSigningUp = false; // <--- TAMBAHKAN INI
+// FIX #7: Order timing state
+let firstOrderType = null;       // 'normal' | 'gabungan' | null
+let firstOrderAcceptedAt = null; // timestamp
+let tibaTriggerAt = null;        // timestamp when swipe-tiba happened
 
+// FIX #6: Real-time order listener ref
+let availableOrdersUnsubscribe = null;
+
+// ========================= FIX #9: SOUND =========================
+window.playTap = function() {
+  try {
+    const a = document.getElementById('snd-tap');
+    if (a) { a.currentTime = 0; a.volume = 0.4; a.play().catch(() => {}); }
+  } catch(e) {}
+};
+
+function playSound(id) {
+  try {
+    const a = document.getElementById(id);
+    if (a) { a.currentTime = 0; a.play().catch(() => {}); }
+  } catch(e) {}
+}
+
+// FIX #9: Global click sound — attach to ALL buttons & interactive elements
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('button, .btn-oneui, .nav-item, .order-card, .swipe-knob, .cancel-small, .queue-item-clickable, [onclick]');
+  if (el && !el.closest('#snd-tap, #snd-order, #snd-accept, #snd-swipe, audio')) {
+    window.playTap();
+  }
+}, true);
 
 // ========================= CLOUDINARY UPLOAD =========================
 async function uploadToCloudinary(file, maxKB) {
-  // Compress image
   const compressed = await compressImage(file, maxKB);
   const fd = new FormData();
   fd.append('file', compressed);
@@ -842,17 +939,17 @@ window.switchPage = (p) => {
   if(pg) pg.classList.add('active');
   const nav = document.getElementById('nav-'+p);
   if(nav) nav.classList.add('active');
+  // FIX #4: Only resize map when maps page is shown (map should already exist from delivery phase)
   if(p === 'maps' && map) setTimeout(() => map.resize(), 100);
   if(p === 'profil') renderProfile();
+  if(p === 'riwayat') loadRiwayat();
 };
 
 // ========================= DRAGGABLE BOTTOM SHEET =========================
 (function initDraggableSheet() {
-  // Snap positions: fraction of panel height hidden (0=full up, 1=mostly hidden)
-  // We use translateY(px) — positive = more hidden
-  const SNAP_FULL = 0;       // full open
-  const SNAP_MID  = 0.45;    // mid peek (like Grab showing map mostly)
-  const SNAP_MINI = 0.72;    // mini peek
+  const SNAP_FULL = 0;
+  const SNAP_MID  = 0.45;
+  const SNAP_MINI = 0.72;
 
   let sheetEl, handleEl, innerEl;
   let isDragging = false;
@@ -860,9 +957,9 @@ window.switchPage = (p) => {
   let sheetHeight = 0;
 
   function getPanel() {
-    sheetEl    = document.getElementById('active-order-panel');
-    handleEl   = document.getElementById('sheet-drag-handle');
-    innerEl    = document.getElementById('sheet-inner-content');
+    sheetEl  = document.getElementById('active-order-panel');
+    handleEl = document.getElementById('sheet-drag-handle');
+    innerEl  = document.getElementById('sheet-inner-content');
     return sheetEl && handleEl;
   }
 
@@ -873,7 +970,6 @@ window.switchPage = (p) => {
     currentTranslate = ty;
     sheetEl.style.transition = 'transform 0.35s cubic-bezier(0.16,1,0.3,1)';
     sheetEl.style.transform = `translateY(${ty}px)`;
-    // Allow/block inner scroll based on position
     if (innerEl) innerEl.style.overflowY = fraction < 0.2 ? 'auto' : 'hidden';
   }
 
@@ -892,7 +988,6 @@ window.switchPage = (p) => {
 
   document.addEventListener('touchstart', e => {
     if (!getPanel()) return;
-    // Only drag if touch starts on the handle area
     const target = e.target;
     if (!handleEl.contains(target)) return;
     isDragging = true;
@@ -927,21 +1022,22 @@ window.showTab = (t) => {
   document.getElementById('tab-signup').classList.toggle('active', t === 'signup');
 };
 
-// ========================= SIGNUP STEPS =========================
+// ========================= SIGNUP STEPS (now 0-3) =========================
 let currentStep = 0;
 window.nextStep = (s) => {
   if (s > currentStep && !validateStep(currentStep)) return;
   document.getElementById('step-'+currentStep).classList.remove('active');
   currentStep = s;
   document.getElementById('step-'+s).classList.add('active');
-  for(let i=0; i<=3; i++) {
-    document.getElementById('sdot-'+i).classList.toggle('done', i <= s);
+  for(let i=0; i<=4; i++) {
+    const dot = document.getElementById('sdot-'+i);
+    if(dot) dot.classList.toggle('done', i <= s);
   }
 };
 
 function validateStep(s) {
   if (s === 0) {
-    const fields = ['reg-email','reg-pass','reg-nama','reg-hp','reg-nim'];
+    const fields = ['reg-email','reg-pass','reg-nama','reg-hp','reg-nim','reg-plat'];
     for (const f of fields) {
       if (!document.getElementById(f).value.trim()) { showToast('Lengkapi semua field terlebih dahulu!'); return false; }
     }
@@ -951,6 +1047,8 @@ function validateStep(s) {
     if (!docFiles['km']) { showToast('Upload Kartu Mahasiswa terlebih dahulu!'); return false; }
     if (!docFiles['ktp']) { showToast('Upload KTP terlebih dahulu!'); return false; }
     if (!docFiles['stnk']) { showToast('Upload STNK terlebih dahulu!'); return false; }
+    // FIX #10: plat nomor foto wajib
+    if (!docFiles['platNomor']) { showToast('Upload foto Plat Nomor terlebih dahulu!'); return false; }
   }
   if (s === 2) {
     if (!docFiles['profile']) { showToast('Upload foto profil terlebih dahulu!'); return false; }
@@ -967,11 +1065,9 @@ window.handleDocUpload = (e, key) => {
 };
 
 // ========================= AUTH =========================
-// =========================  =========================
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUid = user.uid;
-    // Hanya muat profil otomatis jika BUKAN dari proses pendaftaran baru
     if (!isSigningUp) {
       await loadDriverProfile();
     }
@@ -997,40 +1093,46 @@ window.doSignup = async () => {
   const nama = document.getElementById('reg-nama').value.trim();
   const hp = document.getElementById('reg-hp').value.trim();
   const nim = document.getElementById('reg-nim').value.trim();
+  const plat = document.getElementById('reg-plat').value.trim().toUpperCase();
 
   showLoading('Mendaftarkan akun...');
-  
-  isSigningUp = true; // <--- KUNCI LISTENER AUTH SEBELUM CREATE USER
-  
+  isSigningUp = true;
+
   try {
     const cred = await createUserWithEmailAndPassword(auth, e, p);
     showLoading('Mengupload dokumen...');
 
-    let urlKM='', urlKTP='', urlSTNK='', urlSIM='', urlProfile='';
+    let urlKM='', urlKTP='', urlSTNK='', urlSIM='', urlProfile='', urlPlatNomor='', urlSKCK='';
     if (docFiles['km']) urlKM = await uploadToCloudinary(docFiles['km'], 50);
     if (docFiles['ktp']) urlKTP = await uploadToCloudinary(docFiles['ktp'], 50);
     if (docFiles['stnk']) urlSTNK = await uploadToCloudinary(docFiles['stnk'], 50);
     if (docFiles['sim']) urlSIM = await uploadToCloudinary(docFiles['sim'], 50);
     if (docFiles['profile']) urlProfile = await uploadToCloudinary(docFiles['profile'], 30);
+    // FIX #10: upload plat nomor
+    if (docFiles['platNomor']) urlPlatNomor = await uploadToCloudinary(docFiles['platNomor'], 50);
+    // FIX #11: upload SKCK (opsional)
+    if (docFiles['skck']) urlSKCK = await uploadToCloudinary(docFiles['skck'], 50);
 
-    // Membuat dokumen dengan semua nama field bawaan yang dilarang disentuh
     await setDoc(doc(db, "user", cred.user.uid), {
       GetdriverID: cred.user.uid, nama, wa: hp, email: e,
-      idmahasiswa: nim, urlProfile, urlKartuMahasiswa: urlKM,
+      idmahasiswa: nim,
+      platNomor: plat,          // FIX #10
+      urlProfile, urlKartuMahasiswa: urlKM,
       urlKTP, urlSTNK, urlSIM,
+      urlPlatNomor,             // FIX #10
+      urlSKCK,                  // FIX #11
       role: 'driver', status: 'belumterverifikasi',
       deposit: 0, tabungan: 0,
       createdAt: serverTimestamp()
     });
-    
-    // Panggil profil SECARA MANUAL hanya setelah dokumen Firestore selesai dan aman dibuat
+
     await loadDriverProfile();
-    
-  } catch(err) { 
-    showToast('Gagal daftar: ' + err.message); 
-    hideLoading(); 
+
+  } catch(err) {
+    showToast('Gagal daftar: ' + err.message);
+    hideLoading();
   } finally {
-    isSigningUp = false; // <--- PASTIKAN KUNCI DIBUKA KEMBALI BAIK SUKSES MAUPUN GAGAL
+    isSigningUp = false;
   }
 };
 
@@ -1049,9 +1151,7 @@ async function loadDriverProfile() {
       listenOrders();
       listenProfile();
       hideLoading();
-      // Warm up canvas/image pipeline to avoid first-upload delay
       warmUpCanvas();
-      // Show welcome popup on first load
       if (!sessionStorage.getItem('welcomed')) {
         sessionStorage.setItem('welcomed','1');
         setTimeout(() => { document.getElementById('welcome-popup').classList.add('open'); }, 600);
@@ -1060,7 +1160,6 @@ async function loadDriverProfile() {
   } catch(e) { showToast('Gagal memuat profil'); hideLoading(); }
 }
 
-// Warm up the browser's canvas/image decode pipeline to avoid first-upload lag
 function warmUpCanvas() {
   try {
     const c = document.createElement('canvas');
@@ -1080,15 +1179,12 @@ function updateDepositDisplay() {
   const dep = driverData?.deposit || 0;
   document.getElementById('top-deposit-val').textContent = 'Rp ' + dep.toLocaleString('id-ID');
   document.getElementById('prof-deposit').textContent = 'Rp ' + dep.toLocaleString('id-ID');
-  
-  // Hitung tabungan hari ini dari localStorage
+
   const today = new Date().toLocaleDateString('id-ID');
   let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
-  
   let tabunganHariIni = dailyHistory
     .filter(r => r.tanggal === today)
     .reduce((sum, r) => sum + r.argo, 0);
-
   document.getElementById('prof-tabungan').textContent = 'Rp ' + tabunganHariIni.toLocaleString('id-ID');
 }
 
@@ -1097,15 +1193,15 @@ function renderProfile() {
   if (!driverData) return;
   document.getElementById('prof-nama').textContent = driverData.nama || 'Driver';
   document.getElementById('prof-nim').textContent = 'NIM: ' + (driverData.idmahasiswa || '-');
+  // FIX #10: tampilkan plat nomor
+  document.getElementById('prof-plat').textContent = 'Plat: ' + (driverData.platNomor || '-');
   document.getElementById('prof-email').textContent = driverData.email || '-';
   document.getElementById('prof-hp').textContent = driverData.wa || '-';
 
-  // Avatar
   if (driverData.urlProfile) {
     document.getElementById('prof-avatar').innerHTML = `<img src="${driverData.urlProfile}" alt="Profil">`;
   }
 
-  // Rank badge
   const rank = driverData.status || 'belumterverifikasi';
   let badgeHTML='', rankInfo='';
   if (rank === 'belumterverifikasi') {
@@ -1121,12 +1217,14 @@ function renderProfile() {
   document.getElementById('prof-rank-badge').innerHTML = badgeHTML;
   document.getElementById('rank-info-block').innerHTML = rankInfo;
 
-  // Dokumen
+  // FIX #10 + #11: dokumen list termasuk plat nomor & SKCK
   const docs = [
     { key:'urlKartuMahasiswa', label:'Kartu Mahasiswa', icon:'badge' },
     { key:'urlKTP', label:'KTP', icon:'id_card' },
     { key:'urlSTNK', label:'STNK', icon:'directions_bike' },
+    { key:'urlPlatNomor', label:'Plat Nomor', icon:'pin' },
     { key:'urlSIM', label:'SIM', icon:'drive_eta' },
+    { key:'urlSKCK', label:'SKCK', icon:'security' },
     { key:'urlProfile', label:'Foto Profil', icon:'person' },
   ];
   document.getElementById('doc-list').innerHTML = docs.map(d => {
@@ -1134,8 +1232,8 @@ function renderProfile() {
     return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-light);">
       <span class="material-symbols-outlined" style="color:${uploaded?'var(--oneui-green)':'var(--text-disabled)'};font-size:22px;">${d.icon}</span>
       <span style="flex:1;font-size:14px;font-weight:600;">${d.label}</span>
-      ${uploaded 
-        ? `<a href="${driverData[d.key]}" target="_blank" style="font-size:11px;color:var(--oneui-blue);font-weight:700;text-decoration:none;background:var(--oneui-blue-bg);padding:4px 8px;border-radius:var(--r-xs);">Lihat</a>`
+      ${uploaded
+        ? `<a href="${driverData[d.key]}" target="_blank" onclick="playTap()" style="font-size:11px;color:var(--oneui-blue);font-weight:700;text-decoration:none;background:var(--oneui-blue-bg);padding:4px 8px;border-radius:var(--r-xs);">Lihat</a>`
         : `<span style="font-size:11px;color:var(--text-tertiary);">Belum upload</span>`
       }
     </div>`;
@@ -1158,20 +1256,12 @@ window.centerDriverOnMap = () => {
 };
 
 // ========================= ARGO WITH RANK BONUS =========================
-
 function calcNetArgo(rawArgo) {
   const rank = driverData?.status || 'belumterverifikasi';
   let bonus = 0;
   if (rank === 'terverifikasi') bonus = 0.05;
   else if (rank === 'terpercaya') bonus = 0.15;
-  
-  // Hanya tambah bonus rank, tidak ada pemotongan platform di tampilan
-  return Math.round(rawArgo * (1 + bonus)); 
-}
-
-// ========================= SOUNDS =========================
-function playSound(id) {
-  try { const a = document.getElementById(id); a.currentTime=0; a.play().catch(()=>{}); } catch(e){}
+  return Math.round(rawArgo * (1 + bonus));
 }
 
 // ========================= ONLINE STATUS =========================
@@ -1191,6 +1281,67 @@ window.toggleOnlineStatus = () => {
   }
 };
 
+// ========================= FIX #7: BATCH ORDER RULES =========================
+/**
+ * Apakah driver boleh mengambil order baru berdasarkan aturan:
+ * - Belum ada order → boleh ambil apapun
+ * - Pertama ambil NORMAL:
+ *   - Boleh tambah 1 gabungan dalam 10 menit sejak terima OR 5 menit sejak swipe-tiba
+ *   - Tidak boleh tambah lagi setelah itu
+ * - Pertama ambil GABUNGAN:
+ *   - Boleh tambah gabungan maks 5 total
+ *   - Sebelum swipe-tiba: batas waktu 20 menit sejak pertama terima
+ *   - Sesudah swipe-tiba: batas waktu 10 menit sejak tiba
+ */
+function canAddOrder(jenisOrder) {
+  const now = Date.now();
+
+  // Tidak ada order aktif → boleh ambil apa saja
+  if (activeOrders.length === 0) return { ok: true };
+
+  const normalCount = activeOrders.filter(o => o.jenisOrder === 'normal').length;
+  const gabCount = activeOrders.filter(o => o.jenisOrder === 'gabungan').length;
+
+  // Sudah punya order normal SEBELUM ada gabungan, ini berarti first = normal
+  if (firstOrderType === 'normal') {
+    // hanya boleh 1 gabungan tambahan
+    if (gabCount >= 1) return { ok: false, reason: 'Batas 1 pesanan gabungan tambahan tercapai' };
+    if (jenisOrder !== 'gabungan') return { ok: false, reason: 'Sedang membawa pesanan normal, hanya boleh tambah gabungan' };
+    // Cek waktu: 10 menit sejak terima ATAU 5 menit sejak tiba
+    const sinceAccept = (now - firstOrderAcceptedAt) / 60000;
+    if (tibaTriggerAt) {
+      const sinceTiba = (now - tibaTriggerAt) / 60000;
+      if (sinceTiba > 5) return { ok: false, reason: 'Sudah lebih dari 5 menit sejak tiba, tidak bisa tambah pesanan' };
+    } else {
+      if (sinceAccept > 10) return { ok: false, reason: 'Sudah lebih dari 10 menit sejak terima pesanan' };
+    }
+    return { ok: true };
+  }
+
+  // First = gabungan
+  if (firstOrderType === 'gabungan') {
+    if (jenisOrder === 'normal') return { ok: false, reason: 'Sedang membawa pesanan gabungan, tidak bisa ambil normal' };
+    if (gabCount >= 5) return { ok: false, reason: 'Batas maksimal 5 pesanan gabungan tercapai' };
+    const sinceAccept = (now - firstOrderAcceptedAt) / 60000;
+    if (tibaTriggerAt) {
+      const sinceTiba = (now - tibaTriggerAt) / 60000;
+      if (sinceTiba > 10) return { ok: false, reason: 'Sudah lebih dari 10 menit sejak tiba' };
+    } else {
+      if (sinceAccept > 20) return { ok: false, reason: 'Sudah lebih dari 20 menit sejak terima pesanan pertama' };
+    }
+    return { ok: true };
+  }
+
+  return { ok: true };
+}
+
+// ========================= FIX #5: Deposit check =========================
+function hasEnoughDeposit(orderArgo) {
+  const deposit = driverData?.deposit || 0;
+  const required = Math.round(orderArgo * 0.20);
+  return deposit >= required;
+}
+
 // ========================= LISTENERS =========================
 function listenOrders() {
   // Active orders
@@ -1202,56 +1353,61 @@ function listenOrders() {
       if (o.status !== 'selesai' && o.status !== 'dibatalkan') tmp.push({ id:d.id, ...o });
     });
     activeOrders = tmp;
+
+    // FIX #7: Track first order type & acceptance time
+    if (activeOrders.length > 0 && !firstOrderType) {
+      // Determine by most recent accepted
+      const sorted = [...activeOrders].sort((a,b) => (a.acceptedAt||0) - (b.acceptedAt||0));
+      firstOrderType = sorted[0].jenisOrder || 'normal';
+      firstOrderAcceptedAt = sorted[0].acceptedAt || Date.now();
+    }
+    if (activeOrders.length === 0) {
+      firstOrderType = null;
+      firstOrderAcceptedAt = null;
+      tibaTriggerAt = null;
+    }
+
     renderActivePanel();
     updateMapsNavBadge();
   });
 
-  // Available orders
+  // FIX #6: Real-time available orders with proper live listener
+  startListeningAvailableOrders();
+}
+
+let previousOrderIds = new Set();
+
+function startListeningAvailableOrders() {
+  if (availableOrdersUnsubscribe) availableOrdersUnsubscribe();
+
   const qAvail = query(collection(db,"orders"), where("getdriverId","==",""), where("status","==","menunggu"));
-  onSnapshot(qAvail, snap => {
+  availableOrdersUnsubscribe = onSnapshot(qAvail, snap => {
     if (!isOnline) {
       document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">wifi_off</span><p>Anda sedang offline</p></div>`;
       return;
     }
 
-    // Check max orders
-    const normalCount = activeOrders.filter(o => o.jenisOrder === 'normal').length;
-    const gabCount = activeOrders.filter(o => o.jenisOrder === 'gabungan').length;
-
     let newOrders = [];
     snap.forEach(d => {
-      const o = d.data();
       if (!previousOrderIds.has(d.id)) {
         newOrders.push(d.id);
       }
       previousOrderIds.add(d.id);
     });
 
-    // Play sound for new orders
     if (newOrders.length > 0) playSound('snd-order');
 
-    renderAvailableOrders(snap, normalCount, gabCount);
+    renderAvailableOrders(snap);
   });
 }
 
-function renderAvailableOrders(snap, normalCount, gabCount) {
-  // Determine if driver can take more orders
-  const canTakeNormal = normalCount === 0;
-  const canTakeGabungan = gabCount < 5;
-  const maxReached = !canTakeNormal && !canTakeGabungan;
+function renderAvailableOrders(snap) {
   const inDelivery = activeOrders.some(o => o.status === 'ngantar' || o.status === 'tiba');
-
-  if (maxReached) {
-    document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">check_circle</span><p style="font-size:14px;font-weight:600;">Batas pesanan aktif tercapai</p><p style="font-size:12px;margin-top:4px;">Selesaikan pesanan yang berjalan</p></div>`;
-    document.getElementById('daftar-sub').textContent = 'Pesanan penuh';
-    return;
-  }
+  const now = Date.now();
 
   let orders = [];
-  const now = Date.now();
   snap.forEach(d => {
     const o = d.data();
-    // Time filter
     let show = false;
     if (o.waktuAmbil === 'Langsung') show = true;
     else {
@@ -1259,25 +1415,31 @@ function renderAvailableOrders(snap, normalCount, gabCount) {
       const diffMin = (sched - now) / 60000;
       if (diffMin <= 60 && diffMin >= -120) show = true;
     }
-    // Batching logic
-    if (inDelivery && o.jenisOrder !== 'gabungan') show = false; // during delivery, only gabungan available
-    if (gabCount > 0 && o.jenisOrder === 'normal') show = false; // can't take normal if has gabungan
-    if (o.jenisOrder === 'gabungan' && !canTakeGabungan) show = false;
-    if (o.jenisOrder === 'normal' && !canTakeNormal) show = false;
+    if (!show) return;
 
-    if (show) orders.push({ id: d.id, ...o });
+    // FIX #7: Filter by canAddOrder
+    const check = canAddOrder(o.jenisOrder);
+    if (!check.ok) return;
+
+    if (inDelivery && o.jenisOrder !== 'gabungan') return;
+
+    orders.push({ id: d.id, ...o });
   });
 
+  // FIX #6: Always update DOM immediately when snapshot fires
+  const list = document.getElementById('available-orders-list');
   document.getElementById('daftar-sub').textContent = orders.length > 0 ? `${orders.length} pesanan tersedia` : 'Mencari pesanan...';
   document.getElementById('nb-daftar').dataset.count = orders.length;
 
   if (orders.length === 0) {
-    document.getElementById('available-orders-list').innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">search</span><p style="font-size:14px;font-weight:600;">Mencari pesanan baru...</p><p style="font-size:12px;margin-top:4px;">Kami akan memberitahu saat ada pesanan</p></div>`;
+    list.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">search</span><p style="font-size:14px;font-weight:600;">Mencari pesanan baru...</p><p style="font-size:12px;margin-top:4px;">Kami akan memberitahu saat ada pesanan</p></div>`;
     return;
   }
 
   const html = orders.map(o => {
     const netArgo = calcNetArgo(o.Argo || 0);
+    // FIX #3: tampilkan jenis pembayaran
+    const bayar = o.pembayaran || '-';
     return `
     <div class="order-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
@@ -1289,6 +1451,7 @@ function renderAvailableOrders(snap, normalCount, gabCount) {
           <span class="badge badge-${o.jenisOrder==='gabungan'?'gabungan':'normal'}">${(o.jenisOrder||'').toUpperCase()}</span>
           <span class="badge badge-kategori">${o.kategori||''}</span>
           <span class="badge badge-kategori">${o.JarakTempuh||0} km</span>
+          <span class="badge badge-bayar">💳 ${bayar}</span>
         </div>
       </div>
       <div class="loc-row">
@@ -1299,14 +1462,14 @@ function renderAvailableOrders(snap, normalCount, gabCount) {
         <span class="material-symbols-outlined loc-icon" style="color:var(--oneui-red);">location_on</span>
         <div class="loc-info"><div class="loc-name">${o.NamaAntar||'-'}</div><div class="loc-sub">Titik Antar • ${o.namaPenerima||'-'}</div></div>
       </div>
-      <div class="swipe-wrap sw-blue" data-action="terima" data-orderid="${o.id}" data-argo="${netArgo}">
+      <div class="swipe-wrap sw-blue" data-action="terima" data-orderid="${o.id}" data-argo="${netArgo}" data-jenis="${o.jenisOrder||'normal'}">
         <div class="swipe-text txt-blue">Geser untuk Terima Pesanan</div>
         <div class="swipe-knob knob-blue"><span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span></div>
       </div>
     </div>`;
   }).join('');
 
-  document.getElementById('available-orders-list').innerHTML = html;
+  list.innerHTML = html;
   initSwipes();
 }
 
@@ -1319,16 +1482,18 @@ function updateMapsNavBadge() {
   }
 }
 
-// ========================= ACCEPT ORDER FLOW (10s countdown) =========================
+// ========================= ACCEPT ORDER FLOW =========================
 function triggerAcceptModal(orderId, orderData) {
   pendingAcceptOrder = { id: orderId, ...orderData };
   playSound('snd-order');
+  const netArgo = calcNetArgo(orderData.Argo||0);
   document.getElementById('accept-order-info').innerHTML = `
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <span class="badge badge-${orderData.jenisOrder==='gabungan'?'gabungan':'normal'}">${(orderData.jenisOrder||'').toUpperCase()}</span>
       <span class="badge badge-kategori">${orderData.kategori||''}</span>
+      <span class="badge badge-bayar">💳 ${orderData.pembayaran||'-'}</span>
     </div>
-    <div style="font-size:20px;font-weight:700;color:var(--oneui-green);">Rp ${calcNetArgo(orderData.Argo||0).toLocaleString('id-ID')}</div>
+    <div style="font-size:20px;font-weight:700;color:var(--oneui-green);">Rp ${netArgo.toLocaleString('id-ID')}</div>
     <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">${orderData.JarakTempuh||0} km</div>
     <div style="font-size:13px;color:var(--text-secondary);">📍 ${orderData.namaAmbil||'-'} → ${orderData.NamaAntar||'-'}</div>
   `;
@@ -1360,7 +1525,9 @@ window.confirmAcceptOrder = async () => {
       rankDriver: driverData.status,
       UrlprofileDriver: driverData.urlProfile||'',
       kendaraanDriver: driverData.stnk||'-',
-      status: 'terima'
+      platNomorDriver: driverData.platNomor||'-',
+      status: 'terima',
+      acceptedAt: Date.now()
     });
     playSound('snd-accept');
     showToast('✅ Pesanan berhasil diterima!');
@@ -1375,13 +1542,37 @@ window.rejectOrder = () => {
   pendingAcceptOrder = null;
 };
 
+// ========================= FIX #2: Queue Detail Modal =========================
+window.openQueueDetail = (orderJson) => {
+  playTap();
+  let o;
+  try { o = JSON.parse(decodeURIComponent(orderJson)); } catch(e) { return; }
+  const format = (v) => v || '-';
+  document.getElementById('queue-detail-content').innerHTML = `
+    <div class="detail-row"><span class="detail-label">Alamat Ambil</span><span class="detail-value">${format(o.mapsAmbil)}</span></div>
+    <div class="detail-row"><span class="detail-label">Nama Ambil</span><span class="detail-value">${format(o.namaAmbil)}</span></div>
+    <div class="detail-row"><span class="detail-label">Alamat Antar</span><span class="detail-value">${format(o.mpasAntar)}</span></div>
+    <div class="detail-row"><span class="detail-label">Nama Antar</span><span class="detail-value">${format(o.NamaAntar)}</span></div>
+    <div class="detail-row"><span class="detail-label">Nama Penerima</span><span class="detail-value">${format(o.namaPenerima)}</span></div>
+    <div class="detail-row"><span class="detail-label">WA Penerima</span><span class="detail-value">${format(o.waPenerima)}</span></div>
+    <div class="detail-row"><span class="detail-label">Catatan</span><span class="detail-value">${format(o.catatan)}</span></div>
+    <div class="detail-row"><span class="detail-label">Waktu Ambil</span><span class="detail-value">${format(o.waktuAmbil)}</span></div>
+    <div class="detail-row"><span class="detail-label">Jarak Tempuh</span><span class="detail-value">${format(o.JarakTempuh)} km</span></div>
+    <div class="detail-row"><span class="detail-label">Argo</span><span class="detail-value" style="color:var(--oneui-green);font-size:16px;font-weight:700;">Rp ${calcNetArgo(o.Argo||0).toLocaleString('id-ID')}</span></div>
+    <div class="detail-row"><span class="detail-label">Pembayaran</span><span class="detail-value"><span class="badge badge-bayar">💳 ${format(o.pembayaran)}</span></span></div>
+  `;
+  document.getElementById('queue-detail-modal').classList.add('open');
+};
+window.closeQueueDetail = () => {
+  document.getElementById('queue-detail-modal').classList.remove('open');
+};
+
 // ========================= ACTIVE ORDER PANEL =========================
 function sortByRoute(orders, refCoords) {
   if (!refCoords) return orders;
   return [...orders].sort((a, b) => {
     const cA = parseCoords(a.mpasAntar), cB = parseCoords(b.mpasAntar);
     if (!cA) return 1; if (!cB) return -1;
-    // nearest-neighbor sort (greedy TSP)
     return haversine(refCoords[1],refCoords[0],cA[1],cA[0]) - haversine(refCoords[1],refCoords[0],cB[1],cB[0]);
   });
 }
@@ -1402,18 +1593,18 @@ function renderActivePanel() {
   }
 
   const pickups = activeOrders.filter(o => o.status === 'terima' || o.status === 'ambil');
-  
+
   if (pickups.length > 0) {
+    // FIX #4: Peta TIDAK dimuat saat pickup, hanya saat ngantar
     mapPlaceholder.style.display = 'flex';
     mapEl.classList.add('d-none');
     centerBtn.classList.add('d-none');
     renderPickupPhase(pickups);
-    // Sheet full open (no map behind)
     setTimeout(() => window.snapSheetFull && window.snapSheetFull(), 50);
     return;
   }
 
-  // DELIVERY PHASE — show map, sheet snapped to mid (Grab style)
+  // FIX #4: Peta dimuat DI SINI — saat mulai fase pengantaran
   mapPlaceholder.style.display = 'none';
   mapEl.classList.remove('d-none');
   centerBtn.classList.remove('d-none');
@@ -1426,13 +1617,11 @@ function renderActivePanel() {
   drawAllPinsAndRoute(sorted);
   renderDeliveryPhase(sorted);
 
-  // Snap sheet to mid so map is visible (Grab style)
   setTimeout(() => window.snapSheetMid && window.snapSheetMid(), 80);
 }
 
 function renderPickupPhase(pickups) {
   const panel = document.getElementById('sheet-inner-content');
-  // Group by same pickup location
   const targetLoc = pickups[0].mapsAmbil;
   const group = pickups.filter(o => o.mapsAmbil === targetLoc);
   const isTerima = group.some(o => o.status === 'terima');
@@ -1448,17 +1637,31 @@ function renderPickupPhase(pickups) {
   </div>`;
 
   if (isTerima) {
-    // Show all in group
     group.forEach(o => {
+      // FIX #2: tiap item antrian bisa diklik untuk lihat detail
+      const oJson = encodeURIComponent(JSON.stringify({
+        mapsAmbil: o.mapsAmbil, namaAmbil: o.namaAmbil,
+        mpasAntar: o.mpasAntar, NamaAntar: o.NamaAntar,
+        catatan: o.catatan, waktuAmbil: o.waktuAmbil,
+        namaPenerima: o.namaPenerima, waPenerima: o.waPenerima,
+        JarakTempuh: o.JarakTempuh, Argo: o.Argo,
+        pembayaran: o.pembayaran
+      }));
       html += `
-      <div style="background:var(--surface-input);border-radius:var(--r-md);padding:10px 12px;margin-bottom:8px;">
-        <div style="font-size:13px;font-weight:700;">${o.namaPenerima||'-'}</div>
-        <div style="font-size:12px;color:var(--text-tertiary);">${o.catatan||'Tidak ada catatan'}</div>
-        <div style="font-size:13px;color:var(--oneui-green);font-weight:600;margin-top:4px;">Rp ${calcNetArgo(o.Argo||0).toLocaleString('id-ID')}</div>
+      <div class="queue-item-clickable" onclick="openQueueDetail('${oJson}')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;">${o.namaPenerima||'-'}</div>
+            <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">${o.catatan||'Tidak ada catatan'}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="font-size:13px;color:var(--oneui-green);font-weight:600;">Rp ${calcNetArgo(o.Argo||0).toLocaleString('id-ID')}</div>
+            <span class="material-symbols-outlined" style="font-size:16px;color:var(--text-tertiary);">chevron_right</span>
+          </div>
+        </div>
       </div>`;
     });
 
-    // DELAY 2s + countdown 10s before allowing "ambil"
     html += `
     <div class="countdown-bar" id="amb-countdown-bar">
       <span class="material-symbols-outlined" style="color:var(--oneui-orange);font-size:20px;">timer</span>
@@ -1472,7 +1675,10 @@ function renderPickupPhase(pickups) {
     </div>`;
 
   } else {
-    // Upload photos per order
+    // Upload photos per order (fase ambil barang)
+    // FIX #4: Inisialisasi peta saat memasuki sesi upload bukti pengambilan
+    initMapForPickup();
+
     group.forEach((o, i) => {
       html += `
       <div style="background:var(--surface-input);border-radius:var(--r-md);padding:12px;margin-bottom:10px;">
@@ -1497,7 +1703,6 @@ function renderPickupPhase(pickups) {
   panel.innerHTML = html;
   initSwipes();
 
-  // Start countdown if 'terima' phase
   if (isTerima) {
     let sec = 10;
     const timer = setInterval(() => {
@@ -1518,6 +1723,35 @@ function renderPickupPhase(pickups) {
   }
 }
 
+// FIX #4: Inisialisasi peta saat sesi upload bukti pengambilan
+function initMapForPickup() {
+  const mapEl = document.getElementById('map');
+  const mapPlaceholder = document.getElementById('map-placeholder-div');
+  const centerBtn = document.getElementById('center-map-btn');
+
+  mapPlaceholder.style.display = 'none';
+  mapEl.classList.remove('d-none');
+  centerBtn.classList.remove('d-none');
+
+  if (!map) {
+    map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://tiles.openfreemap.org/styles/bright',
+      center: currentDeviceCoords || [110.3939, -7.0515],
+      zoom: 14,
+      attributionControl: false
+    });
+    map.on('load', () => {
+      map.addSource('driver-loc', { type:'geojson', data:{ type:'Point', coordinates: currentDeviceCoords||[0,0] } });
+      map.addLayer({ id:'driver-layer', type:'circle', source:'driver-loc', paint:{ 'circle-radius':10, 'circle-color':'#1259C3', 'circle-stroke-width':3, 'circle-stroke-color':'#FFF' } });
+      map.addSource('route', { type:'geojson', data:{ type:'LineString', coordinates:[] } });
+      map.addLayer({ id:'route-layer', type:'line', source:'route', layout:{'line-join':'round','line-cap':'round'}, paint:{'line-color':'#1259C3','line-width':5,'line-opacity':0.8} });
+    });
+  } else {
+    setTimeout(() => map.resize(), 50);
+  }
+}
+
 window.cancelOrderGroup = async (ids) => {
   if (!confirm('Batalkan pesanan ini?')) return;
   showLoading('Membatalkan...');
@@ -1525,6 +1759,8 @@ window.cancelOrderGroup = async (ids) => {
     const idArr = ids.split(',');
     await Promise.all(idArr.map(id => updateDoc(doc(db,"orders",id), { getdriverId:'', driverName:'', status:'menunggu' })));
     showToast('Pesanan dibatalkan');
+    // Reset timing state
+    firstOrderType = null; firstOrderAcceptedAt = null; tibaTriggerAt = null;
   } catch(e) { showToast('Gagal batalkan: '+e.message); }
   finally { hideLoading(); }
 };
@@ -1534,13 +1770,11 @@ function renderDeliveryPhase(sorted) {
   const o = sorted[0];
   const netArgo = calcNetArgo(o.Argo||0);
 
-  // Pin list
   const pinListHTML = sorted.map((item, i) => {
-    const isDone = false;
     const isActive = i === 0;
     return `
     <div class="pin-item">
-      <div class="pin-badge ${isActive?'pin-active':isDone?'pin-done':'pin-next'}">${isActive?'▶':i+1}</div>
+      <div class="pin-badge ${isActive?'pin-active':'pin-next'}">${isActive?'▶':i+1}</div>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:${isActive?700:500};color:${isActive?'var(--text-primary)':'var(--text-tertiary)'};">${item.namaPenerima||'-'}</div>
         <div style="font-size:11px;color:var(--text-tertiary);">${item.NamaAntar||'-'}</div>
@@ -1590,6 +1824,7 @@ function renderDeliveryPhase(sorted) {
     <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${o.namaPenerima||'-'} <span style="font-size:11px;font-weight:400;color:var(--text-tertiary);">${o.waPenerima||''}</span></div>
     <div style="font-size:12px;color:var(--text-tertiary);">${o.NamaAntar||'-'}</div>
     <div style="font-size:12px;color:var(--text-tertiary);">Catatan: ${o.catatan||'-'}</div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Pembayaran: <strong>${o.pembayaran||'-'}</strong></div>
   </div>
   ${actionHTML}
   ${sorted.length > 1 ? `
@@ -1604,7 +1839,6 @@ function renderDeliveryPhase(sorted) {
 // ========================= MAPS =========================
 function initMap() {
   if (map) {
-    // Map already exists — just resize and redraw if needed
     setTimeout(() => map.resize(), 50);
     return;
   }
@@ -1622,7 +1856,6 @@ function initMap() {
     map.addSource('route', { type:'geojson', data:{ type:'LineString', coordinates:[] } });
     map.addLayer({ id:'route-layer', type:'line', source:'route', layout:{'line-join':'round','line-cap':'round'}, paint:{'line-color':'#1259C3','line-width':5,'line-opacity':0.8} });
 
-    // Draw route immediately if delivery phase is already active
     const deliveries = activeOrders.filter(o => o.status === 'ngantar' || o.status === 'tiba');
     if (deliveries.length > 0) {
       const sorted = sortByRoute(deliveries, currentDeviceCoords);
@@ -1633,12 +1866,10 @@ function initMap() {
 
 function drawAllPinsAndRoute(sorted) {
   if (!map) return;
-  // If map style not yet loaded, wait for it
   if (!map.isStyleLoaded()) {
     map.once('load', () => drawAllPinsAndRoute(sorted));
     return;
   }
-  // Remove old markers
   document.querySelectorAll('.maplibregl-marker').forEach(m => m.remove());
 
   sorted.forEach((o, i) => {
@@ -1647,17 +1878,16 @@ function drawAllPinsAndRoute(sorted) {
     const el = document.createElement('div');
     el.className = 'map-pin';
     el.style.background = i === 0 ? '#1259C3' : '#8A8A8A';
+    el.style.color = '#FFF';
     el.textContent = i + 1;
     new maplibregl.Marker({ element: el }).setLngLat(coords).addTo(map);
   });
 
-  // Draw route: driver → all pins via OSRM
   if (!currentDeliveryPin) return;
   const start = currentDeviceCoords || parseCoords(currentDeliveryPin.titikAmbil);
   const end = parseCoords(currentDeliveryPin.mpasAntar);
   if (!start || !end) return;
 
-  // Build multi-stop waypoints
   let waypoints = [start];
   sorted.forEach(o => { const c = parseCoords(o.mpasAntar); if(c) waypoints.push(c); });
   const coordStr = waypoints.map(c => `${c[0]},${c[1]}`).join(';');
@@ -1702,7 +1932,11 @@ function initSwipes() {
       if(!isDragging) return;
       isDragging=false;
       knob.style.transition='transform 0.3s ease';
-      if(curX >= maxDrag()*0.85) { knob.style.transform=`translateX(${maxDrag()}px)`; executeSwipe(container); }
+      if(curX >= maxDrag()*0.85) {
+        knob.style.transform=`translateX(${maxDrag()}px)`;
+        playSound('snd-swipe');
+        executeSwipe(container);
+      }
       else { knob.style.transform='translateX(0)'; curX=0; }
     };
     knob.addEventListener('touchstart', onStart, {passive:true});
@@ -1723,16 +1957,15 @@ async function executeSwipe(container) {
   const orderIds = container.dataset.orderids ? container.dataset.orderids.split(',') : [];
   const orderId = container.dataset.orderid;
 
-  // 2-second delay for most actions
   const delayActions = ['batch_ambil','tiba_tujuan','selesai_pesanan'];
   if (delayActions.includes(action)) {
     let barId, secId;
     if(action==='tiba_tujuan') { barId=`tiba-countdown-bar-${orderId}`; secId=`tiba-sec-${orderId}`; }
     else if(action==='selesai_pesanan') { barId=`sel-countdown-bar-${orderId}`; secId=`sel-sec-${orderId}`; }
-    
+
     if(barId) {
       const bar = document.getElementById(barId);
-      if(bar) { bar.style.display='flex'; }
+      if(bar) bar.style.display='flex';
       let s=2;
       await new Promise(r => {
         const t = setInterval(() => {
@@ -1751,13 +1984,35 @@ async function executeSwipe(container) {
   showLoading('Memproses...');
   try {
     if (action === 'terima') {
-      // Use accept modal for new order accept
-      const o = { id: orderId };
+      // FIX #5: Cek deposit 20% dari argo sebelum terima
+      const orderArgo = parseInt(container.dataset.argo) || 0;
+      if (!hasEnoughDeposit(orderArgo)) {
+        showToast(`❌ Deposit tidak cukup! Butuh min. Rp ${Math.round(orderArgo*0.20).toLocaleString('id-ID')} (20% dari argo)`);
+        hideLoading(); resetAllSwipes(); return;
+      }
+      // FIX #7: Cek canAddOrder
+      const jenisOrder = container.dataset.jenis || 'normal';
+      const check = canAddOrder(jenisOrder);
+      if (!check.ok) {
+        showToast('❌ ' + check.reason);
+        hideLoading(); resetAllSwipes(); return;
+      }
+
       await updateDoc(doc(db,"orders",orderId), {
         getdriverId: currentUid, driverName: driverData.nama, waDriver: driverData.wa,
         rankDriver: driverData.status, UrlprofileDriver: driverData.urlProfile||'',
-        kendaraanDriver: driverData.stnk||'-', status:'terima'
+        kendaraanDriver: driverData.stnk||'-',
+        platNomorDriver: driverData.platNomor||'-',
+        status:'terima',
+        acceptedAt: Date.now()
       });
+
+      // FIX #7: Set firstOrder state
+      if (!firstOrderType) {
+        firstOrderType = jenisOrder;
+        firstOrderAcceptedAt = Date.now();
+      }
+
       playSound('snd-accept');
       showToast('✅ Pesanan diterima!');
       window.switchPage('maps');
@@ -1771,61 +2026,67 @@ async function executeSwipe(container) {
       }
       showLoading(`Mengupload ${orderIds.length} foto...`);
       const koordinat = currentDeviceCoords ? `${currentDeviceCoords[0]},${currentDeviceCoords[1]}` : '';
-      // Upload all files in PARALLEL (not sequentially) to avoid first-upload lag
+      // FIX #1: Upload ALL files first, then map results by index to their respective orderIds
       const uploadResults = await Promise.all(orderIds.map(id => uploadToCloudinary(window.filesBuffer[id+'_ambil'], 20)));
       orderIds.forEach(id => delete window.filesBuffer[id+'_ambil']);
+      // FIX #1: Use correct index for each order's upload result
       await Promise.all(orderIds.map((id, idx) =>
-        updateDoc(doc(db,"orders",id), { titikAmbil:koordinat, urlbuktiAmbil:uploadResults[idx], status:'ngantar' })
+        updateDoc(doc(db,"orders",id), {
+          titikAmbil: koordinat,
+          urlbuktiAmbil: uploadResults[idx],  // FIX #1: each order gets its own upload URL
+          status:'ngantar'
+        })
       ));
     }
     else if (action === 'tiba_tujuan') {
+      // FIX #7: Record tiba time for timing rules
+      tibaTriggerAt = Date.now();
       await updateDoc(doc(db,"orders",orderId), { status:'tiba' });
     }
-        else if (action === 'selesai_pesanan') {
+    else if (action === 'selesai_pesanan') {
       if(!window.filesBuffer[orderId+'_selesai']) { showToast('Pilih foto bukti selesai!'); hideLoading(); resetAllSwipes(); return; }
       const url = await uploadToCloudinary(window.filesBuffer[orderId+'_selesai'], 30);
       delete window.filesBuffer[orderId+'_selesai'];
-      
-      const netArgo = parseInt(container.dataset.argo) || 0; // Ini sekarang bernilai 100% (Argo Utuh)
+
+      const netArgo = parseInt(container.dataset.argo) || 0;
 
       await updateDoc(doc(db,"orders",orderId), { urlbuktiSelesai:url, status:'selesai' });
 
-      // Pemotongan deposit 20% langsung dari argo utuh
-      const platformCut = Math.round(netArgo * 0.20); 
+      const platformCut = Math.round(netArgo * 0.20);
       const newDeposit = Math.max(0, (driverData.deposit||0) - platformCut);
-      
-      // Update hanya deposit di Firestore (Tabungan tidak disimpan di Firestore)
+
       await updateDoc(doc(db,"user",currentUid), { deposit:newDeposit });
 
-      // Simpan riwayat harian ke LocalStorage
+      // FIX #1: Simpan riwayat dengan data alamat yang benar per orderId
+      const orderData = activeOrders.find(o => o.id === orderId);
       const today = new Date().toLocaleDateString('id-ID');
       let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
-      
-      // Bersihkan riwayat hari sebelumnya agar tidak menumpuk
       dailyHistory = dailyHistory.filter(r => r.tanggal === today);
-      
       dailyHistory.push({
-        orderId, 
-        argo: netArgo, 
-        namaAntar: currentDeliveryPin?.NamaAntar||'-',
+        orderId,
+        argo: netArgo,
+        // FIX #1: Gunakan data dari orderData spesifik, bukan currentDeliveryPin
+        namaAntar: orderData?.NamaAntar || currentDeliveryPin?.NamaAntar || '-',
+        alamatAntar: orderData?.mpasAntar || '-',
+        namaPenerima: orderData?.namaPenerima || '-',
+        pembayaran: orderData?.pembayaran || '-',
         selesaiAt: Date.now(),
         tanggal: today
       });
       localStorage.setItem('riwayat_harian_' + currentUid, JSON.stringify(dailyHistory));
 
-      // Panggil fungsi display untuk langsung update angka tabungan
       updateDepositDisplay();
-
       tripTotalArgo += netArgo;
 
-      // Check if all orders done
       const remaining = activeOrders.filter(o => o.id !== orderId);
       if (remaining.length === 0) {
         showEarningPopup(tripTotalArgo);
         tripTotalArgo = 0;
+        // Reset timing state after all orders done
+        firstOrderType = null; firstOrderAcceptedAt = null; tibaTriggerAt = null;
       }
     }
-    
+
     hideLoading();
   } catch(e) {
     showToast('Error: ' + e.message);
@@ -1854,8 +2115,6 @@ window.closeTopupModal = () => document.getElementById('topup-modal').classList.
 function loadRiwayat() {
   const today = new Date().toLocaleDateString('id-ID');
   let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
-  
-  // Filter khusus riwayat hari ini
   dailyHistory = dailyHistory.filter(r => r.tanggal === today);
 
   if (dailyHistory.length === 0) {
@@ -1863,29 +2122,27 @@ function loadRiwayat() {
     return;
   }
 
-  // Urutkan dari yang paling baru
   dailyHistory.sort((a,b) => b.selesaiAt - a.selesaiAt);
 
   document.getElementById('riwayat-list').innerHTML = dailyHistory.map(r => {
     const timeStr = new Date(r.selesaiAt).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
     return `
       <div class="riwayat-item">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div style="font-size:14px;font-weight:600;">${r.namaAntar||'-'}</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:14px;font-weight:600;">${r.namaPenerima||r.namaAntar||'-'}</div>
+            <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">${r.alamatAntar||r.namaAntar||'-'}</div>
+          </div>
           <div style="font-size:16px;font-weight:700;color:var(--oneui-green);">+Rp ${(r.argo||0).toLocaleString('id-ID')}</div>
         </div>
-        <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px;">Hari ini, ${timeStr}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+          <div style="font-size:12px;color:var(--text-tertiary);">Hari ini, ${timeStr}</div>
+          ${r.pembayaran ? `<span class="badge badge-bayar" style="font-size:10px;">💳 ${r.pembayaran}</span>` : ''}
+        </div>
       </div>
     `;
   }).join('');
 }
-
-// Override switchPage to load riwayat lazily
-const _origSwitch = window.switchPage;
-window.switchPage = (p) => {
-  _origSwitch(p);
-  if (p === 'riwayat') loadRiwayat();
-};
 
 </script>
 </body>
