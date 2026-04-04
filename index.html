@@ -988,11 +988,9 @@ function parseCoords(str) {
   const lat = Math.abs(v1) > 90 ? v2 : v1;
   return [lng, lat];
 }
-// Helper link Google Maps yang dipastikan Latitude, Longitude (Fix #3)
 function createGoogleMapsLink(coordsStr) {
   const coords = parseCoords(coordsStr);
   if (!coords) return null;
-  // coords array format is [lng, lat]
   return `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
 }
 
@@ -1143,7 +1141,6 @@ window.doSignup = async () => {
     if (docFiles['platNomor']) urlPlatNomor = await uploadToCloudinary(docFiles['platNomor'], 50);
     if (docFiles['skck']) urlSKCK = await uploadToCloudinary(docFiles['skck'], 50);
     
-    // Fix #1: Free deposit 25k untuk user baru dan inisialisasi lastMonthlyDeposit
     await setDoc(doc(db, "user", cred.user.uid), {
       GetdriverID: cred.user.uid, nama, wa: hp, email: e,
       idmahasiswa: nim, platNomor: plat,
@@ -1162,16 +1159,13 @@ window.doSignup = async () => {
 window.doLogout = () => { if(confirm('Keluar dari akun?')) signOut(auth); };
 
 // ========================= DEPOSIT BULANAN =========================
-// Fix #1: Deposit bulanan 5k
 async function checkMonthlyDeposit(userData) {
   if (!userData || !currentUid) return;
   const now = Date.now();
   const lastDep = userData.lastMonthlyDeposit || 0;
-  // 30 Hari dalam miliseconds
   const thirtyDays = 30 * 24 * 60 * 60 * 1000;
   
   if (!userData.lastMonthlyDeposit) {
-     // Jika akun lama belum punya data ini, setel tracker baru
      try { await updateDoc(doc(db, "user", currentUid), { lastMonthlyDeposit: now }); } catch(e) {}
      return;
   }
@@ -1379,7 +1373,7 @@ function startListeningAvailableOrders() {
 }
 
 function renderAvailableOrders(snap) {
-  const inDelivery = activeOrders.some(o => o.status === 'ngantar' || o.status === 'tiba');
+  const inDelivery = activeOrders.some(o => ['ngantar', 'tiba', 'menungguAntar'].includes(o.status));
   const now = Date.now();
   let orders = [];
   snap.forEach(d => {
@@ -1496,7 +1490,6 @@ window.openOrderDetail = (orderJson) => {
   a1Context = o;
 
   const waktuStr = o.waktuAmbil ? new Date(o.waktuAmbil).toLocaleString('id-ID', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
-  // Fix #3: Google Maps Link diperbaiki ke format standard
   const mapsAmbilUrl = createGoogleMapsLink(o.mapsAmbil);
   const mapsAntarUrl = createGoogleMapsLink(o.mapsAntar || o.mpasAntar);
   const waUrl = o.waPenerima ? `https://wa.me/${o.waPenerima.replace(/^0/,'62').replace(/\D/g,'')}` : null;
@@ -1597,11 +1590,8 @@ window.submitA1 = () => {
 };
 
 // ========================= ACTIVE ORDER PANEL =========================
-// Fix #2: Modifikasi sortByRoute agar orderan yang status 'tiba' tetap terkunci di urutan pertama
 function sortByRoute(orders, refCoords) {
   if (!refCoords) return orders;
-  
-  // Deteksi jika ada order yang sedang ditangani proses tiba/selesainya
   const tibaOrder = orders.find(o => o.status === 'tiba');
   
   let sorted = [...orders].sort((a, b) => {
@@ -1610,12 +1600,10 @@ function sortByRoute(orders, refCoords) {
     return haversine(refCoords[1],refCoords[0],cA[1],cA[0]) - haversine(refCoords[1],refCoords[0],cB[1],cB[0]);
   });
   
-  // Jika ada order tiba, tarik paksa ke index 0 (kunci supaya tdk bergeser)
   if (tibaOrder) {
     sorted = sorted.filter(o => o.id !== tibaOrder.id);
     sorted.unshift(tibaOrder);
   }
-  
   return sorted;
 }
 
@@ -1649,7 +1637,8 @@ function renderActivePanel() {
   centerBtn.classList.remove('d-none');
   initMap();
 
-  const deliveries = activeOrders.filter(o => o.status === 'ngantar' || o.status === 'tiba');
+  // Menambahkan pengecekan 'menungguAntar' pada fase Pengantaran
+  const deliveries = activeOrders.filter(o => ['ngantar', 'tiba', 'menungguAntar'].includes(o.status));
   const sorted = sortByRoute(deliveries, currentDeviceCoords);
   currentDeliveryPin = sorted[0];
 
@@ -1830,7 +1819,8 @@ function renderDeliveryPhase(sorted) {
   }).join('');
 
   let actionHTML = '';
-  if (o.status === 'ngantar') {
+  // Mentolerir jika status 'menungguAntar' berada di urutan pertama (berperan sebagai orderan aktif)
+  if (o.status === 'ngantar' || o.status === 'menungguAntar') {
     actionHTML = `
     <div class="countdown-bar" id="tiba-countdown-bar-${o.id}" style="display:none">
       <span class="material-symbols-outlined" style="font-size:20px;">timer</span>
@@ -1861,7 +1851,6 @@ function renderDeliveryPhase(sorted) {
     </div>`;
   }
 
-  // Fix #3: Mapping URL
   const antarMapsUrl = createGoogleMapsLink(o.mpasAntar || o.mapsAntar);
   const activeOJson = encodeURIComponent(JSON.stringify({
     mapsAmbil: o.mapsAmbil, namaAmbil: o.namaAmbil,
@@ -1874,7 +1863,7 @@ function renderDeliveryPhase(sorted) {
   panel.innerHTML = `
   <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
     <div>
-      <div style="font-size:17px;font-weight:700;">${o.status==='ngantar'?'Pengantaran Aktif':'Tiba Pengantaran'}</div>
+      <div style="font-size:17px;font-weight:700;">${['ngantar', 'menungguAntar'].includes(o.status)?'Pengantaran Aktif':'Tiba Pengantaran'}</div>
       <div style="font-size:12px;color:var(--text-tertiary);">Ketuk urutan pin untuk detail pesanan</div>
     </div>
     <button onclick="playTap();openOrderDetail('${activeOJson}')" style="background:var(--oneui-blue-bg);color:var(--oneui-blue);border:none;border-radius:var(--r-md);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
@@ -1916,7 +1905,9 @@ function initMap() {
     map.addLayer({ id:'driver-layer', type:'circle', source:'driver-loc', paint:{ 'circle-radius':10, 'circle-color':'#1259C3', 'circle-stroke-width':3, 'circle-stroke-color':'#FFF' } });
     map.addSource('route', { type:'geojson', data:{ type:'LineString', coordinates:[] } });
     map.addLayer({ id:'route-layer', type:'line', source:'route', layout:{'line-join':'round','line-cap':'round'}, paint:{'line-color':'#1259C3','line-width':5,'line-opacity':0.8} });
-    const deliveries = activeOrders.filter(o => o.status === 'ngantar' || o.status === 'tiba');
+    
+    // Pastikan filter di sini juga menangkap 'menungguAntar'
+    const deliveries = activeOrders.filter(o => ['ngantar', 'tiba', 'menungguAntar'].includes(o.status));
     if (deliveries.length > 0) { const sorted = sortByRoute(deliveries, currentDeviceCoords); drawAllPinsAndRoute(sorted); }
   });
 }
@@ -2062,10 +2053,24 @@ async function executeSwipe(container) {
       showLoading(`Mengupload ${orderIds.length} foto...`);
       const koordinat = currentDeviceCoords ? `${currentDeviceCoords[0]},${currentDeviceCoords[1]}` : '';
       const uploadResults = await Promise.all(orderIds.map(id => uploadToCloudinary(window.filesBuffer[id+'_ambil'], 20)));
+      
+      // Sort pesanan berdasarkan rute terdekat agar index 0 adalah pesanan yang paling rasional untuk diantar duluan
+      const ordersToDeliver = activeOrders.filter(o => orderIds.includes(o.id));
+      const sortedOrders = sortByRoute(ordersToDeliver, currentDeviceCoords);
+      const sortedIds = sortedOrders.map(o => o.id);
+
+      // Urutan pertama mendapat 'ngantar', sisanya masuk antrean 'menungguAntar'
+      await Promise.all(sortedIds.map((id, idx) => {
+        const origIdx = orderIds.indexOf(id);
+        const statusUpdate = idx === 0 ? 'ngantar' : 'menungguAntar';
+        return updateDoc(doc(db,"orders",id), { 
+          titikAmbil: koordinat, 
+          urlbuktiAmbil: uploadResults[origIdx], 
+          status: statusUpdate 
+        });
+      }));
+
       orderIds.forEach(id => delete window.filesBuffer[id+'_ambil']);
-      await Promise.all(orderIds.map((id, idx) =>
-        updateDoc(doc(db,"orders",id), { titikAmbil: koordinat, urlbuktiAmbil: uploadResults[idx], status:'ngantar' })
-      ));
     }
     else if (action === 'tiba_tujuan') {
       tibaTriggerAt = Date.now();
@@ -2076,7 +2081,21 @@ async function executeSwipe(container) {
       const url = await uploadToCloudinary(window.filesBuffer[orderId+'_selesai'], 30);
       delete window.filesBuffer[orderId+'_selesai'];
       const netArgo = parseInt(container.dataset.argo) || 0;
+      
+      // Update order yang saat ini diselesaikan
       await updateDoc(doc(db,"orders",orderId), { urlbuktiSelesai:url, status:'selesai' });
+
+      // Trigger update status 'ngantar' pada pesanan urutan selanjutnya (jika ada)
+      const remainingForDelivery = activeOrders.filter(o => o.id !== orderId && ['ngantar', 'tiba', 'menungguAntar'].includes(o.status));
+      if (remainingForDelivery.length > 0) {
+        const sortedRemaining = sortByRoute(remainingForDelivery, currentDeviceCoords);
+        const nextOrder = sortedRemaining[0];
+        // Mengubah status antrean agar menjadi aktif
+        if (nextOrder && nextOrder.status === 'menungguAntar') {
+           await updateDoc(doc(db, "orders", nextOrder.id), { status: 'ngantar' });
+        }
+      }
+
       const platformCut = Math.round(netArgo * 0.20);
       const newDeposit = Math.max(0, (driverData.deposit||0) - platformCut);
       await updateDoc(doc(db,"user",currentUid), { deposit:newDeposit });
@@ -2098,8 +2117,9 @@ async function executeSwipe(container) {
       localStorage.setItem('riwayat_harian_' + currentUid, JSON.stringify(dailyHistory));
       updateDepositDisplay();
       tripTotalArgo += netArgo;
-      const remaining = activeOrders.filter(o => o.id !== orderId);
-      if (remaining.length === 0) {
+      
+      const remainingOrders = activeOrders.filter(o => o.id !== orderId);
+      if (remainingOrders.length === 0) {
         showEarningPopup(tripTotalArgo);
         tripTotalArgo = 0;
         firstOrderType = null; firstOrderAcceptedAt = null; tibaTriggerAt = null;
@@ -2158,6 +2178,5 @@ function loadRiwayat() {
   }).join('');
 }
 </script>
-
 </body>
 </html>
