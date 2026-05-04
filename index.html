@@ -308,10 +308,46 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
 .status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 .dot-online { background:var(--oneui-green); box-shadow:0 0 0 2px rgba(27,138,63,0.2); }
 .dot-offline { background:var(--text-disabled); }
-/* Deposit tap area */
-.top-deposit { display:flex; flex-direction:column; align-items:flex-end; gap:1px; cursor:pointer; padding:4px 0; }
-.top-deposit-label { font-size:10px; color:var(--text-tertiary); font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
-.top-deposit-val { font-size:17px; font-weight:800; color:var(--text-primary); letter-spacing:-0.5px; }
+.top-action-group { display:flex; align-items:center; gap:10px; }
+.top-icon-btn {
+  position:relative;
+  width:40px; height:40px;
+  border:none; border-radius:50%;
+  background:var(--surface-input);
+  color:var(--text-primary);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.top-icon-btn .material-symbols-rounded { font-size:22px; }
+.top-icon-btn .notif-badge {
+  position:absolute; top:-2px; right:-2px;
+  min-width:16px; height:16px;
+  padding:0 4px; border-radius:999px;
+  background:var(--oneui-red); color:#fff;
+  font-size:9px; font-weight:800; line-height:16px;
+  border:1.5px solid var(--surface-card);
+  display:none;
+}
+.top-icon-btn[data-count]:not([data-count="0"]) .notif-badge { display:block; }
+.notif-list { display:flex; flex-direction:column; gap:10px; }
+.notif-item {
+  display:flex; gap:12px; align-items:flex-start;
+  padding:12px; border:1px solid var(--border-light);
+  border-radius:var(--r-lg); background:var(--surface-elevated);
+}
+.notif-thumb {
+  width:56px; height:56px; border-radius:16px;
+  background:var(--surface-input); flex-shrink:0;
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
+}
+.notif-thumb img { width:100%; height:100%; object-fit:cover; }
+.notif-content { flex:1; min-width:0; }
+.notif-title { font-size:14px; font-weight:800; color:var(--text-primary); margin-bottom:3px; }
+.notif-desc { font-size:12px; color:var(--text-secondary); line-height:1.55; }
+.notif-time { font-size:11px; color:var(--text-tertiary); margin-top:6px; font-weight:600; }
+.notif-item.read { opacity:0.72; }
+.notif-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.notif-actions .chip-action { padding:5px 12px; font-size:11px; }
 
 /* ======== PAGES ======== */
 .page { flex:1; overflow-y:auto; display:none; padding-bottom:92px; -webkit-overflow-scrolling:touch; }
@@ -576,29 +612,7 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
   margin-bottom:12px;
 }
 
-/* ======== DEPOSIT CARD ======== */
-.deposit-card {
-  background:var(--oneui-blue);
-  border-radius:var(--r-xl); padding:20px 20px;
-  color:#FFF; margin-bottom:10px;
-  position:relative; overflow:hidden;
-}
-.deposit-card::before {
-  content:'';
-  position:absolute; top:-30px; right:-20px;
-  width:120px; height:120px;
-  background:rgba(255,255,255,0.06);
-  border-radius:50%;
-}
-.deposit-card::after {
-  content:'';
-  position:absolute; bottom:-40px; left:40px;
-  width:90px; height:90px;
-  background:rgba(255,255,255,0.04);
-  border-radius:50%;
-}
-.deposit-label { font-size:11px; font-weight:700; opacity:0.75; text-transform:uppercase; letter-spacing:0.5px; }
-.deposit-val { font-size:30px; font-weight:800; letter-spacing:-1px; margin-top:4px; }
+
 .tabungan-card {
   background:var(--oneui-green-bg);
   border-radius:var(--r-lg); padding:16px 20px;
@@ -807,6 +821,21 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
           <input type="password" class="oneui-input" id="reg-pass" placeholder="Minimal 6 karakter">
         </div>
         <div class="field-group">
+          <div class="field-label">Konfirmasi Password <span class="field-required">*</span></div>
+          <input type="password" class="oneui-input" id="reg-pass-confirm" placeholder="Ulangi password">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Area Layanan <span class="field-required">*</span></div>
+          <input type="text" class="oneui-input" id="reg-area" list="area-layanan-list" placeholder="Pilih atau ketik area layanan">
+          <datalist id="area-layanan-list">
+            <option value="UNNES Sekaran"></option>
+            <option value="Gunungpati"></option>
+            <option value="Banyumanik"></option>
+            <option value="Tembalang"></option>
+            <option value="Lainnya"></option>
+          </datalist>
+        </div>
+        <div class="field-group">
           <div class="field-label">Nama Lengkap <span class="field-required">*</span></div>
           <input type="text" class="oneui-input" id="reg-nama" placeholder="Sesuai KTP">
         </div>
@@ -948,6 +977,30 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
   </div>
 </div>
 
+
+<!-- ============================================================
+     ACCOUNT INACTIVE MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="inactive-modal">
+  <div class="modal-sheet" style="max-height:90vh;text-align:center;">
+    <div class="modal-handle"></div>
+    <img
+      src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='360' viewBox='0 0 720 360'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231259C3'/%3E%3Cstop offset='100%25' stop-color='%230A3D8F'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='720' height='360' rx='32' fill='url(%23g)'/%3E%3Ccircle cx='610' cy='92' r='78' fill='rgba(255,255,255,0.10)'/%3E%3Ccircle cx='124' cy='292' r='112' fill='rgba(255,255,255,0.07)'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M360 92v138'/%3E%3Cpath d='M360 254h0'/%3E%3C/g%3E%3Ccircle cx='360' cy='184' r='86' fill='rgba(255,255,255,0.16)'/%3E%3Cpath d='M360 132c-22 0-40 18-40 40 0 10 4 19 10 26v20h60v-20c6-7 10-16 10-26 0-22-18-40-40-40zm-18 116h36v18h-36z' fill='%23ffffff'/%3E%3Ctext x='360' y='308' text-anchor='middle' fill='%23ffffff' font-family='Arial, Helvetica, sans-serif' font-size='28' font-weight='700'%3EMenunggu Aktivasi%3C/text%3E%3C/svg%3E"
+      alt="Menunggu aktivasi"
+      onerror="this.onerror=null;this.src='https://cdn-icons-png.flaticon.com/512/1828/1828640.png';"
+      style="width:100%;border-radius:24px;margin-bottom:16px;object-fit:cover;"
+    >
+    <div class="modal-title" style="font-size:22px;font-weight:800;">Akun Belum Aktif</div>
+    <div class="modal-sub">Akun anda belum aktif hubungi admin!</div>
+    <div style="background:var(--oneui-orange-bg);border-radius:var(--r-lg);padding:14px 16px;margin:0 0 16px;line-height:1.7;font-size:13px;color:var(--oneui-orange);font-weight:600;">
+      Silakan menunggu aktivasi dari admin sebelum menggunakan aplikasi.
+    </div>
+    <a href="https://wa.me/6285138238914?text=Akun%20saya%20belum%20aktif.%20Mohon%20bantu%20aktivasi." target="_blank" class="btn-oneui btn-primary" style="text-decoration:none;display:flex;" onclick="playTap()">
+      <span class="material-symbols-rounded" style="font-size:20px;">chat</span> Hubungi Admin WhatsApp
+    </a>
+  </div>
+</div>
+
 <!-- ============================================================
      WELCOME POPUP
      ============================================================ -->
@@ -972,12 +1025,34 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
         2. Ambil pesanan normal → boleh tambah 1 gabungan (dalam 10 menit)<br>
         3. Jika ambil gabungan pertama → maks 5 dalam 20 menit<br>
         4. Upload bukti foto di setiap tahapan<br>
-        5. Argo yang diterima sudah dipotong 20% komisi platform
+        5. Argo yang diterima 100% tanpa potongan platform
       </div>
     </div>
     <button class="btn-oneui btn-primary" onclick="playTap();closeWelcomePopup()">
       <span class="material-symbols-rounded" style="font-size:20px;">check_circle</span> Saya Mengerti, Siap Bekerja!
     </button>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     NOTIFICATION MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="notif-modal">
+  <div class="modal-sheet" style="max-height:88vh;">
+    <div class="modal-handle"></div>
+    <div class="panel-header-row">
+      <div>
+        <div class="panel-title">Notifikasi</div>
+        <div class="panel-sub">Koleksi notifikasi terbaru</div>
+      </div>
+      <button class="chip-action" id="notif-refresh-btn" onclick="playTap();markNotificationsSeen();">
+        <span class="material-symbols-rounded" style="font-size:16px;">done_all</span>
+        Tandai semua dibaca
+      </button>
+    </div>
+    <div id="notif-list" class="notif-list"></div>
+    <button class="btn-oneui btn-secondary" onclick="playTap();closeNotifModal()" style="margin-top:12px;">Tutup</button>
   </div>
 </div>
 
@@ -1017,30 +1092,6 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
     <button class="btn-oneui btn-primary" onclick="playTap();closeEarningPopup()">
       <span class="material-symbols-rounded" style="font-size:20px;">done</span> Lanjutkan
     </button>
-  </div>
-</div>
-
-<!-- ============================================================
-     TOPUP DEPOSIT MODAL
-     ============================================================ -->
-<div class="modal-overlay" id="topup-modal">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Topup Deposit</div>
-    <div class="modal-sub">Deposit digunakan sebagai jaminan modal operasional. Biaya platform akan dipotong dari deposit setiap pesanan selesai.</div>
-    <div style="background:var(--oneui-orange-bg);border-radius:var(--r-md);padding:14px;margin-bottom:16px;">
-      <div style="font-size:13px;font-weight:700;color:var(--oneui-orange);">Cara Topup Deposit:</div>
-      <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.7;">
-        1. Transfer ke <strong>ShopeePay: 08xxxx (Admin JastipUnnes)</strong><br>
-        2. Screenshot bukti transfer<br>
-        3. Hubungi Admin via WhatsApp dengan menyertakan screenshot & nominal topup<br>
-        4. Deposit akan diproses dalam 1x24 jam
-      </div>
-    </div>
-    <a href="https://wa.me/6281xxxxxxxx?text=Halo%20Admin%2C%20saya%20ingin%20topup%20deposit%20JastipUnnes." target="_blank" class="btn-oneui btn-primary" style="text-decoration:none;display:flex;" onclick="playTap()">
-      <span class="material-symbols-rounded" style="font-size:20px;">chat</span> Hubungi Admin via WhatsApp
-    </a>
-    <button class="btn-oneui btn-secondary" onclick="playTap();closeTopupModal()" style="margin-top:10px;">Tutup</button>
   </div>
 </div>
 
@@ -1093,8 +1144,6 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
         <option value="Laporan">Laporan</option>
         <option value="Minta Verifikasi dan Terpercaya">Minta Verifikasi dan Terpercaya</option>
         <option value="Edit Dokumen">Edit Dokumen</option>
-        <option value="Terkait Deposit">Terkait Deposit</option>
-        <option value="Terkait Topup">Terkait Topup</option>
         <option value="Terkait Penghapusan Akun">Terkait Penghapusan Akun</option>
       </select>
     </div>
@@ -1129,9 +1178,11 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
       <span class="status-dot dot-online" id="status-dot"></span>
       <span id="status-text">Online</span>
     </button>
-    <div class="top-deposit" onclick="playTap();openTopupModal()" style="cursor:pointer;">
-      <span class="top-deposit-label">DEPOSIT</span>
-      <span class="top-deposit-val" id="top-deposit-val">Rp 0</span>
+    <div class="top-action-group">
+      <button class="top-icon-btn" id="notif-btn" onclick="playTap();openNotifModal()" aria-label="Notifikasi">
+        <span class="material-symbols-rounded">notifications</span>
+        <span class="notif-badge" id="notif-badge">0</span>
+      </button>
     </div>
   </div>
 
@@ -1206,18 +1257,11 @@ button:active, .order-card:active { transform: scale(0.975); transition: transfo
       </div>
 
       <!-- Finance cards -->
-      <div class="deposit-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <div class="deposit-label">SALDO DEPOSIT</div>
-            <div class="deposit-val" id="prof-deposit">Rp 0</div>
-            <div style="font-size:11px;opacity:0.6;margin-top:3px;">Dipotong 20% per pesanan selesai</div>
-          </div>
-          <span class="material-symbols-rounded" style="font-size:28px;opacity:0.5;">account_balance_wallet</span>
+      <div class="section-card" style="background:var(--oneui-blue-bg);">
+        <div class="section-title">Argo Driver</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+          Driver menerima <strong>100% argo</strong> tanpa potongan platform.
         </div>
-        <button onclick="playTap();openTopupModal()" style="margin-top:14px;background:rgba(255,255,255,0.18);color:#FFF;border:1.5px solid rgba(255,255,255,0.28);border-radius:var(--r-full);padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;">
-          <span class="material-symbols-rounded" style="font-size:16px;">add</span> Topup Deposit
-        </button>
       </div>
 
       <div class="tabungan-card">
@@ -1316,6 +1360,8 @@ let tripTotalArgo = 0;
 let pendingAcceptOrder = null;
 let acceptCountdownTimer = null;
 let currentDeliveryPin = null;
+let notificationsData = [];
+let notificationsUnsubscribe = null;
 window.filesBuffer = {};
 let isSigningUp = false;
 
@@ -1364,29 +1410,50 @@ async function uploadToCloudinary(file, maxKB) {
     return new Promise(r => { const rd = new FileReader(); rd.onload = ev => r(ev.target.result); rd.readAsDataURL(compressed); });
   }
 }
-function compressImage(file, maxKB) {
-  return new Promise(resolve => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      let canvas = document.createElement('canvas');
-      let [w, h] = [img.width, img.height];
-      const maxPx = 800;
-      if (w > maxPx || h > maxPx) { const ratio = Math.min(maxPx/w, maxPx/h); w = Math.round(w*ratio); h = Math.round(h*ratio); }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      let q = 0.8;
-      const tryCompress = () => {
-        canvas.toBlob(blob => {
-          if (blob.size <= maxKB * 1024 || q <= 0.1) resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-          else { q -= 0.1; tryCompress(); }
-        }, 'image/jpeg', q);
+async function compressImage(file, maxKB) {
+  const targetBytes = maxKB * 1024;
+  if (file.size <= targetBytes && /^image\//.test(file.type)) return file;
+  const maxPx = maxKB <= 20 ? 960 : 1200;
+  const quality = file.size > targetBytes * 4 ? 0.68 : file.size > targetBytes * 2 ? 0.74 : 0.82;
+  const bitmap = window.createImageBitmap ? await createImageBitmap(file).catch(() => null) : null;
+
+  if (!bitmap) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let [w, h] = [img.naturalWidth || img.width, img.naturalHeight || img.height];
+        if (w > maxPx || h > maxPx) {
+          const ratio = Math.min(maxPx / w, maxPx / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => resolve(new File([blob || file], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })), 'image/jpeg', quality);
       };
-      tryCompress();
-    };
-    img.src = url;
-  });
+      img.src = url;
+    });
+  }
+
+  const canvas = 'OffscreenCanvas' in window ? new OffscreenCanvas(bitmap.width, bitmap.height) : document.createElement('canvas');
+  let [w, h] = [bitmap.width, bitmap.height];
+  if (w > maxPx || h > maxPx) {
+    const ratio = Math.min(maxPx / w, maxPx / h);
+    w = Math.round(w * ratio);
+    h = Math.round(h * ratio);
+  }
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  const blob = canvas.convertToBlob
+    ? await canvas.convertToBlob({ type: 'image/jpeg', quality })
+    : await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+  return new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
 }
 
 // ========================= HAVERSINE & COORDS =========================
@@ -1422,6 +1489,208 @@ function showToast(m) {
   clearTimeout(_tt);
   _tt = setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+function resolveImageUrl(value) {
+  if (!value) return '';
+  let raw = value;
+  if (typeof raw === 'object') {
+    raw = raw.url || raw.gambar || raw.link || raw.src || raw.downloadURL || raw.thumbnail || raw.path || '';
+  }
+  raw = String(raw).trim();
+  if (!raw) return '';
+  try {
+    if (/^https?:\/\//i.test(raw) || /^data:/i.test(raw) || /^blob:/i.test(raw)) return encodeURI(raw).replace(/'/g, '%27');
+    return encodeURI(raw).replace(/'/g, '%27');
+  } catch (e) {
+    return '';
+  }
+}
+
+function formatNotifTime(value) {
+  if (!value) return 'Baru saja';
+  try {
+    if (typeof value.toDate === 'function') {
+      return value.toDate().toLocaleString('id-ID', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    }
+    const date = value instanceof Date ? value : new Date(value.seconds ? value.seconds * 1000 : value);
+    if (Number.isNaN(date.getTime())) return 'Baru saja';
+    return date.toLocaleString('id-ID', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  } catch (e) {
+    return 'Baru saja';
+  }
+}
+
+function normalizeArea(v) {
+  return (v || '').toString().trim().toLowerCase();
+}
+
+function getOrderArea(order) {
+  return normalizeArea(order?.areaLayanan || order?.area || order?.area_layanan);
+}
+
+function getDriverArea() {
+  return normalizeArea(driverData?.areaLayanan || driverData?.area || driverData?.area_layanan);
+}
+
+function getNotifStateKey() {
+  return 'notif_state_' + (currentUid || 'guest');
+}
+function readNotifState() {
+  try {
+    const raw = localStorage.getItem(getNotifStateKey());
+    if (!raw) return { seen: [], deleted: [] };
+    const parsed = JSON.parse(raw);
+    return {
+      seen: Array.isArray(parsed.seen) ? parsed.seen : [],
+      deleted: Array.isArray(parsed.deleted) ? parsed.deleted : []
+    };
+  } catch (e) {
+    return { seen: [], deleted: [] };
+  }
+}
+function saveNotifState(state) {
+  localStorage.setItem(getNotifStateKey(), JSON.stringify({
+    seen: [...new Set(state.seen || [])],
+    deleted: [...new Set(state.deleted || [])]
+  }));
+}
+function markNotifRead(id, silent = false) {
+  if (!id) return;
+  const state = readNotifState();
+  if (!state.seen.includes(id)) state.seen.push(id);
+  state.deleted = state.deleted.filter(x => x !== id);
+  saveNotifState(state);
+  renderNotifications();
+  if (!silent) showToast('Notifikasi ditandai sudah dibaca');
+}
+function deleteNotif(id, silent = false) {
+  if (!id) return;
+  const state = readNotifState();
+  state.seen = state.seen.filter(x => x !== id);
+  if (!state.deleted.includes(id)) state.deleted.push(id);
+  saveNotifState(state);
+  renderNotifications();
+  if (!silent) showToast('Notifikasi dihapus');
+}
+function markNotificationsSeen() {
+  const state = readNotifState();
+  const visibleIds = notificationsData
+    .filter(n => !state.deleted.includes(n.id) && !state.seen.includes(n.id))
+    .map(n => n.id);
+  visibleIds.forEach(id => state.seen.push(id));
+  saveNotifState(state);
+  renderNotifications();
+  showToast(visibleIds.length ? 'Semua notifikasi ditandai sudah dibaca' : 'Tidak ada notifikasi baru');
+}
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  const badge = document.getElementById('notif-badge');
+  const btn = document.getElementById('notif-btn');
+  const refreshBtn = document.getElementById('notif-refresh-btn');
+  if (!list || !badge || !btn) return;
+
+  const state = readNotifState();
+  const unreadItems = [...notificationsData]
+    .filter(n => !state.deleted.includes(n.id) && !state.seen.includes(n.id))
+    .sort((a, b) => (b.sortAt || 0) - (a.sortAt || 0));
+
+  const count = unreadItems.length || 0;
+  badge.textContent = String(count);
+  btn.dataset.count = String(count);
+
+  if (refreshBtn) refreshBtn.textContent = count ? 'Tandai semua dibaca' : 'Segarkan';
+
+  if (count === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:40px 16px;"><span class="material-symbols-rounded">notifications_off</span><p>Belum ada notifikasi baru</p></div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  unreadItems.forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'notif-item';
+
+    const thumb = document.createElement('div');
+    thumb.className = 'notif-thumb';
+
+    const imgSrc = resolveImageUrl(n.gambar);
+    if (imgSrc) {
+      const img = document.createElement('img');
+      img.src = imgSrc;
+      img.alt = (n.judul || 'Notifikasi').toString();
+      img.loading = 'lazy';
+      img.referrerPolicy = 'no-referrer';
+      img.onerror = () => {
+        thumb.innerHTML = '<span class="material-symbols-rounded" style="font-size:28px;color:var(--text-disabled);">notifications</span>';
+      };
+      thumb.appendChild(img);
+    } else {
+      thumb.innerHTML = '<span class="material-symbols-rounded" style="font-size:28px;color:var(--text-disabled);">notifications</span>';
+    }
+
+    const content = document.createElement('div');
+    content.className = 'notif-content';
+
+    const title = document.createElement('div');
+    title.className = 'notif-title';
+    title.textContent = n.judul || 'Notifikasi';
+
+    const desc = document.createElement('div');
+    desc.className = 'notif-desc';
+    desc.textContent = n.keterangan || '-';
+
+    const time = document.createElement('div');
+    time.className = 'notif-time';
+    time.textContent = formatNotifTime(n.createdAt);
+
+    const actionRow = document.createElement('div');
+    actionRow.className = 'notif-actions';
+
+    const readBtn = document.createElement('button');
+    readBtn.className = 'chip-action';
+    readBtn.style.padding = '5px 12px';
+    readBtn.style.fontSize = '11px';
+    readBtn.textContent = 'Dibaca';
+    readBtn.onclick = (e) => {
+      e.stopPropagation();
+      markNotifRead(n.id);
+    };
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'chip-action';
+    delBtn.style.padding = '5px 12px';
+    delBtn.style.fontSize = '11px';
+    delBtn.style.background = 'var(--oneui-red-bg)';
+    delBtn.style.color = 'var(--oneui-red)';
+    delBtn.textContent = 'Hapus';
+    delBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm('Hapus notifikasi ini dari perangkat ini?')) deleteNotif(n.id);
+    };
+
+    actionRow.appendChild(readBtn);
+    actionRow.appendChild(delBtn);
+
+    content.appendChild(title);
+    content.appendChild(desc);
+    content.appendChild(time);
+    content.appendChild(actionRow);
+
+    item.appendChild(thumb);
+    item.appendChild(content);
+    list.appendChild(item);
+  });
+}
+
+function openNotifModal() {
+  renderNotifications();
+  document.getElementById('notif-modal').classList.add('open');
+}
+function closeNotifModal() {
+  document.getElementById('notif-modal').classList.remove('open');
+}
+window.openNotifModal = openNotifModal;
+window.closeNotifModal = closeNotifModal;
 
 window.switchPage = (p) => {
   document.querySelectorAll('.page,.nav-item').forEach(el => el.classList.remove('active'));
@@ -1500,9 +1769,10 @@ window.nextStep = (s) => {
 };
 function validateStep(s) {
   if (s === 0) {
-    const fields = ['reg-email','reg-pass','reg-nama','reg-hp','reg-nim','reg-plat'];
+    const fields = ['reg-email','reg-pass','reg-pass-confirm','reg-area','reg-nama','reg-hp','reg-nim','reg-plat'];
     for (const f of fields) { if (!document.getElementById(f).value.trim()) { showToast('Lengkapi semua field terlebih dahulu!'); return false; } }
     if (document.getElementById('reg-pass').value.length < 6) { showToast('Password minimal 6 karakter!'); return false; }
+    if (document.getElementById('reg-pass').value !== document.getElementById('reg-pass-confirm').value) { showToast('Konfirmasi password tidak sama!'); return false; }
   }
   if (s === 1) {
     if (!docFiles['km']) { showToast('Upload Kartu Mahasiswa terlebih dahulu!'); return false; }
@@ -1524,7 +1794,12 @@ window.handleDocUpload = (e, key) => {
 // ========================= AUTH =========================
 onAuthStateChanged(auth, async (user) => {
   if (user) { currentUid = user.uid; if (!isSigningUp) await loadDriverProfile(); }
-  else { document.getElementById('app').classList.remove('visible'); document.getElementById('splash').classList.remove('hidden'); }
+  else {
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('splash').classList.remove('hidden');
+    document.getElementById('inactive-modal').classList.remove('open');
+    document.getElementById('notif-modal').classList.remove('open');
+  }
 });
 
 window.doLogin = async () => {
@@ -1544,6 +1819,7 @@ window.doSignup = async () => {
   const hp = document.getElementById('reg-hp').value.trim();
   const nim = document.getElementById('reg-nim').value.trim();
   const plat = document.getElementById('reg-plat').value.trim().toUpperCase();
+  const areaLayanan = document.getElementById('reg-area').value.trim();
   showLoading('Mendaftarkan akun...');
   isSigningUp = true;
   try {
@@ -1559,13 +1835,13 @@ window.doSignup = async () => {
     if (docFiles['skck']) urlSKCK = await uploadToCloudinary(docFiles['skck'], 50);
     
     await setDoc(doc(db, "user", cred.user.uid), {
-      GetdriverID: cred.user.uid, nama, wa: hp, email: e,
-      idmahasiswa: nim, platNomor: plat,
+      getdriverId: cred.user.uid, nama, wa: hp, email: e,
+      idmahasiswa: nim, platNomor: plat, areaLayanan,
       urlProfile, urlKartuMahasiswa: urlKM, urlKTP, urlSTNK, urlSIM,
       urlPlatNomor, urlSKCK,
       role: 'driver', status: 'belumterverifikasi',
-      deposit: 25000, tabungan: 0, 
-      lastMonthlyDeposit: Date.now(),
+      aktivasi: 'mati',
+      tabungan: 0,
       createdAt: serverTimestamp()
     });
     await loadDriverProfile();
@@ -1575,42 +1851,27 @@ window.doSignup = async () => {
 
 window.doLogout = () => { if(confirm('Keluar dari akun?')) signOut(auth); };
 
-// ========================= DEPOSIT BULANAN =========================
-async function checkMonthlyDeposit(userData) {
-  if (!userData || !currentUid) return;
-  const now = Date.now();
-  const lastDep = userData.lastMonthlyDeposit || 0;
-  const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-  
-  if (!userData.lastMonthlyDeposit) {
-     try { await updateDoc(doc(db, "user", currentUid), { lastMonthlyDeposit: now }); } catch(e) {}
-     return;
-  }
-  
-  if (now - lastDep >= thirtyDays) {
-    try {
-      await updateDoc(doc(db, "user", currentUid), {
-        deposit: (userData.deposit || 0) + 5000,
-        lastMonthlyDeposit: now
-      });
-    } catch(e) { console.error("Gagal update deposit bulanan", e); }
-  }
-}
-
 // ========================= LOAD PROFILE =========================
 async function loadDriverProfile() {
   try {
     const snap = await getDoc(doc(db, "user", currentUid));
     if (snap.exists() && snap.data().role === 'driver') {
       driverData = snap.data();
-      checkMonthlyDeposit(driverData);
-      
+      if ((driverData.aktivasi || 'mati') !== 'aktif') {
+        document.getElementById('splash').classList.add('hidden');
+        document.getElementById('app').classList.remove('visible');
+        document.getElementById('inactive-modal').classList.add('open');
+        hideLoading();
+        return;
+      }
+      document.getElementById('inactive-modal').classList.remove('open');
       document.getElementById('splash').classList.add('hidden');
       document.getElementById('app').classList.add('visible');
       updateDepositDisplay();
       trackGPS();
       listenOrders();
       listenProfile();
+      listenNotifications();
       hideLoading();
       warmUpCanvas();
       if (!sessionStorage.getItem('welcomed')) {
@@ -1627,19 +1888,16 @@ function listenProfile() {
   onSnapshot(doc(db, "user", currentUid), snap => { 
     if(snap.exists()) { 
       driverData = snap.data(); 
-      checkMonthlyDeposit(driverData);
       updateDepositDisplay(); 
     } 
   });
 }
 function updateDepositDisplay() {
-  const dep = driverData?.deposit || 0;
-  document.getElementById('top-deposit-val').textContent = 'Rp ' + dep.toLocaleString('id-ID');
-  document.getElementById('prof-deposit').textContent = 'Rp ' + dep.toLocaleString('id-ID');
   const today = new Date().toLocaleDateString('id-ID');
   let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
   let tabunganHariIni = dailyHistory.filter(r => r.tanggal === today).reduce((sum, r) => sum + r.argo, 0);
-  document.getElementById('prof-tabungan').textContent = 'Rp ' + tabunganHariIni.toLocaleString('id-ID');
+  const tabunganEl = document.getElementById('prof-tabungan');
+  if (tabunganEl) tabunganEl.textContent = 'Rp ' + tabunganHariIni.toLocaleString('id-ID');
 }
 
 // ========================= RENDER PROFILE =========================
@@ -1655,13 +1913,13 @@ function renderProfile() {
   let badgeHTML='', rankInfo='';
   if (rank === 'belumterverifikasi') {
     badgeHTML = `<span class="rank-badge rank-belum"><span class="material-symbols-rounded" style="font-size:14px;">person</span>Belum Terverifikasi</span>`;
-    rankInfo = `<strong>Belum Terverifikasi:</strong> Argo biasa (tanpa tambahan).<br><br>Untuk mendapat gelar <strong>Terverifikasi</strong>, upload SIM & SKCK lalu hubungi admin.`;
+    rankInfo = `<strong>Belum Terverifikasi:</strong> Status akun standar.<br><br>Untuk mendapat gelar <strong>Terverifikasi</strong>, upload SIM & SKCK lalu hubungi admin.`;
   } else if (rank === 'terverifikasi') {
     badgeHTML = `<span class="rank-badge rank-verified"><span class="material-symbols-rounded" style="font-size:14px;">verified</span>Terverifikasi</span>`;
-    rankInfo = `<strong>Terverifikasi :</strong> Mendapat <span style="color:var(--oneui-blue);font-weight:700;">+5% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Upload SIM & SKCK aktif.`;
+    rankInfo = `<strong>Terverifikasi :</strong> Status verifikasi aktif.<br><br>Syarat: Upload SIM & SKCK aktif.`;
   } else if (rank === 'terpercaya') {
     badgeHTML = `<span class="rank-badge rank-trusted"><span class="material-symbols-rounded" style="font-size:14px;">workspace_premium</span>Terpercaya</span>`;
-    rankInfo = `<strong>Terpercaya :</strong> Mendapat <span style="color:var(--oneui-purple);font-weight:700;">+15% bonus argo</span> dari setiap pesanan.<br><br>Syarat: Aktif menerima order secara konsisten.`;
+    rankInfo = `<strong>Terpercaya :</strong> Status prioritas akun.<br><br>Syarat: Aktif menerima order secara konsisten.`;
   }
   document.getElementById('prof-rank-badge').innerHTML = badgeHTML;
   document.getElementById('rank-info-block').innerHTML = rankInfo;
@@ -1686,6 +1944,25 @@ function renderProfile() {
   }).join('');
 }
 
+function listenNotifications() {
+  if (notificationsUnsubscribe) notificationsUnsubscribe();
+  notificationsUnsubscribe = onSnapshot(collection(db, "notifikasi"), snap => {
+    const items = [];
+    snap.forEach(d => {
+      const data = d.data() || {};
+      let sortAt = 0;
+      const created = data.createdAt;
+      if (created && typeof created.toMillis === 'function') sortAt = created.toMillis();
+      else if (created && created.seconds) sortAt = created.seconds * 1000;
+      else if (created instanceof Date) sortAt = created.getTime();
+      else if (typeof created === 'number') sortAt = created;
+      items.push({ id: d.id, ...data, sortAt });
+    });
+    notificationsData = items;
+    renderNotifications();
+  });
+}
+
 // ========================= GPS =========================
 function trackGPS() {
   if (!navigator.geolocation) return;
@@ -1698,11 +1975,7 @@ window.centerDriverOnMap = () => { if (map && currentDeviceCoords) map.flyTo({ c
 
 // ========================= ARGO WITH RANK BONUS =========================
 function calcNetArgo(rawArgo) {
-  const rank = driverData?.status || 'belumterverifikasi';
-  let bonus = 0;
-  if (rank === 'terverifikasi') bonus = 0.05;
-  else if (rank === 'terpercaya') bonus = 0.15;
-  return Math.round(rawArgo * (1 + bonus));
+  return Math.round(rawArgo || 0);
 }
 
 // ========================= ONLINE STATUS =========================
@@ -1751,11 +2024,6 @@ function canAddOrder(jenisOrder) {
   return { ok: true };
 }
 
-// ========================= DEPOSIT CHECK =========================
-function hasEnoughDeposit(orderArgo) {
-  return (driverData?.deposit || 0) >= Math.round(orderArgo * 0.20);
-}
-
 // ========================= LISTENERS =========================
 function listenOrders() {
   const qActive = query(collection(db,"orders"), where("getdriverId","==",currentUid));
@@ -1797,6 +2065,9 @@ function renderAvailableOrders(snap) {
   let orders = [];
   snap.forEach(d => {
     const o = d.data();
+    const driverArea = getDriverArea();
+    const orderArea = getOrderArea(o);
+    if (!driverArea || !orderArea || driverArea !== orderArea) return;
     let show = false;
     if (o.waktuAmbil === 'Langsung') show = true;
     else { const sched = new Date(o.waktuAmbil).getTime(); const diffMin = (sched-now)/60000; if (diffMin <= 60 && diffMin >= -120) show = true; }
@@ -1830,8 +2101,13 @@ function renderAvailableOrders(snap) {
         </div>
       </div>
       <div class="loc-row">
-        <span class="material-symbols-rounded loc-icon" style="color:var(--oneui-green);">radio_button_checked</span>
-        <div class="loc-info"><div class="loc-name">${o.namaAmbil||'-'}</div><div class="loc-sub">Titik Ambil</div></div>
+        ${createGoogleMapsLink(o.mapsAmbil) ? `<a href="${createGoogleMapsLink(o.mapsAmbil)}" target="_blank" class="addr-link" onclick="playTap()" style="display:flex;gap:12px;align-items:flex-start;width:100%;text-decoration:none;">
+          <span class="material-symbols-rounded loc-icon" style="color:var(--oneui-green);">radio_button_checked</span>
+          <div class="loc-info"><div class="loc-name">${o.namaAmbil||'-'}</div><div class="loc-sub">Titik Ambil • Buka Google Maps</div></div>
+        </a>` : `<div style="display:flex;gap:12px;align-items:flex-start;width:100%;">
+          <span class="material-symbols-rounded loc-icon" style="color:var(--oneui-green);">radio_button_checked</span>
+          <div class="loc-info"><div class="loc-name">${o.namaAmbil||'-'}</div><div class="loc-sub">Titik Ambil</div></div>
+        </div>`}
       </div>
       <div class="loc-row" style="margin-bottom:12px;">
         <span class="material-symbols-rounded loc-icon" style="color:var(--oneui-red);">location_on</span>
@@ -2426,28 +2702,9 @@ async function executeSwipe(container) {
   const orderIds = container.dataset.orderids ? container.dataset.orderids.split(',') : [];
   const orderId = container.dataset.orderid;
 
-  const delayActions = ['batch_ambil','tiba_tujuan','selesai_pesanan'];
-  if (delayActions.includes(action)) {
-    let barId, secId;
-    if(action==='tiba_tujuan') { barId=`tiba-countdown-bar-${orderId}`; secId=`tiba-sec-${orderId}`; }
-    else if(action==='selesai_pesanan') { barId=`sel-countdown-bar-${orderId}`; secId=`sel-sec-${orderId}`; }
-    if(barId) {
-      const bar = document.getElementById(barId);
-      if(bar) bar.style.display='flex';
-      let s=2;
-      await new Promise(r => { const t = setInterval(() => { s--; const secEl = document.getElementById(secId); if(secEl) secEl.textContent=s; if(s<=0){clearInterval(t);r();} },1000); });
-      if(bar) bar.style.display='none';
-    } else { await new Promise(r=>setTimeout(r,2000)); }
-  }
-
   showLoading('Memproses...');
   try {
     if (action === 'terima') {
-      const orderArgo = parseInt(container.dataset.argo) || 0;
-      if (!hasEnoughDeposit(orderArgo)) {
-        showToast(` Deposit tidak cukup! Butuh min. Rp ${Math.round(orderArgo*0.20).toLocaleString('id-ID')} (20% dari argo)`);
-        hideLoading(); resetAllSwipes(); return;
-      }
       const jenisOrder = container.dataset.jenis || 'normal';
       const check = canAddOrder(jenisOrder);
       if (!check.ok) { showToast(' ' + check.reason); hideLoading(); resetAllSwipes(); return; }
@@ -2515,10 +2772,6 @@ async function executeSwipe(container) {
         }
       }
 
-      const platformCut = Math.round(netArgo * 0.20);
-      const newDeposit = Math.max(0, (driverData.deposit||0) - platformCut);
-      await updateDoc(doc(db,"user",currentUid), { deposit:newDeposit });
-
       const orderData = activeOrders.find(o => o.id === orderId);
       const today = new Date().toLocaleDateString('id-ID');
       let dailyHistory = JSON.parse(localStorage.getItem('riwayat_harian_' + currentUid)) || [];
@@ -2561,8 +2814,6 @@ window.closeEarningPopup = () => {
 
 // ========================= MODALS =========================
 window.closeWelcomePopup = () => document.getElementById('welcome-popup').classList.remove('open');
-window.openTopupModal = () => document.getElementById('topup-modal').classList.add('open');
-window.closeTopupModal = () => document.getElementById('topup-modal').classList.remove('open');
 
 // ========================= RIWAYAT =========================
 function loadRiwayat() {
