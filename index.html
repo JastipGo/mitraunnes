@@ -2059,8 +2059,15 @@ function startListeningAvailableOrders() {
   });
 }
 
+function getOrderAvailabilityInfo(order) {
+  const check = canAddOrder(order?.jenisOrder);
+  return {
+    canTake: !!check.ok,
+    reason: check.ok ? '' : (check.reason || 'Order tidak dapat diambil saat ini')
+  };
+}
+
 function renderAvailableOrders(snap) {
-  const inDelivery = activeOrders.some(o => ['ngantar', 'tiba', 'menungguAntar'].includes(o.status));
   const now = Date.now();
   let orders = [];
   snap.forEach(d => {
@@ -2070,22 +2077,29 @@ function renderAvailableOrders(snap) {
     if (!driverArea || !orderArea || driverArea !== orderArea) return;
     let show = false;
     if (o.waktuAmbil === 'Langsung') show = true;
-    else { const sched = new Date(o.waktuAmbil).getTime(); const diffMin = (sched-now)/60000; if (diffMin <= 60 && diffMin >= -120) show = true; }
+    else {
+      const sched = new Date(o.waktuAmbil).getTime();
+      const diffMin = (sched - now) / 60000;
+      if (diffMin <= 60 && diffMin >= -120) show = true;
+    }
     if (!show) return;
-    const check = canAddOrder(o.jenisOrder);
-    if (!check.ok) return;
-    if (inDelivery && o.jenisOrder !== 'gabungan') return;
     orders.push({ id: d.id, ...o });
   });
+
   const list = document.getElementById('available-orders-list');
   document.getElementById('daftar-sub').textContent = orders.length > 0 ? `${orders.length} pesanan tersedia` : 'Mencari pesanan...';
   document.getElementById('nb-daftar').dataset.count = orders.length;
+
   if (orders.length === 0) {
     list.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search</span><p style="font-size:14px;font-weight:600;">Mencari pesanan baru...</p><p style="font-size:12px;margin-top:4px;">Kami akan memberitahu saat ada pesanan</p></div>`;
     return;
   }
+
   list.innerHTML = orders.map(o => {
     const netArgo = calcNetArgo(o.Argo || 0);
+    const availability = getOrderAvailabilityInfo(o);
+    const jenisLabel = (o.jenisOrder || '').toUpperCase();
+    const isGabungan = o.jenisOrder === 'gabungan';
     return `
     <div class="order-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
@@ -2094,7 +2108,7 @@ function renderAvailableOrders(snap) {
           <div class="argo-net" style="font-size:11px;color:var(--text-tertiary);">Dari argo Rp ${(o.Argo||0).toLocaleString('id-ID')}</div>
         </div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
-          <span class="badge badge-${o.jenisOrder==='gabungan'?'gabungan':'normal'}">${(o.jenisOrder||'').toUpperCase()}</span>
+          <span class="badge badge-${isGabungan ? 'gabungan' : 'normal'}">${jenisLabel}</span>
           <span class="badge badge-kategori">${o.kategori||''}</span>
           <span class="badge badge-kategori">${o.JarakTempuh||0} km</span>
           <span class="badge badge-bayar">${o.pembayaran||'-'}</span>
@@ -2113,10 +2127,15 @@ function renderAvailableOrders(snap) {
         <span class="material-symbols-rounded loc-icon" style="color:var(--oneui-red);">location_on</span>
         <div class="loc-info"><div class="loc-name">${o.NamaAntar||'-'}</div><div class="loc-sub">Titik Antar • ${o.namaPenerima||'-'}</div></div>
       </div>
+      ${availability.canTake ? `
       <div class="swipe-wrap sw-blue" data-action="terima" data-orderid="${o.id}" data-argo="${netArgo}" data-jenis="${o.jenisOrder||'normal'}">
         <div class="swipe-text txt-blue">Geser untuk Terima Pesanan</div>
         <div class="swipe-knob knob-blue"><span class="material-symbols-rounded" style="font-size:20px;">arrow_forward</span></div>
-      </div>
+      </div>` : `
+      <div style="margin-top:12px;padding:12px 14px;border-radius:var(--r-md);background:var(--surface-input);border:1px solid var(--border-light);">
+        <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">Tidak tersedia untuk diambil</div>
+        <div style="font-size:12px;color:var(--text-tertiary);line-height:1.5;">${availability.reason}</div>
+      </div>`}
     </div>`;
   }).join('');
   initSwipes();
